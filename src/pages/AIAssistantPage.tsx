@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, ArrowRight, RefreshCw, MessageCircle, Bot, Check, X, ShieldAlert, BarChart2 } from 'lucide-react';
+import { Sparkles, Send, ArrowRight, RefreshCw, MessageCircle, Bot, Check, X, ShieldAlert, BarChart2, Plus } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { aiService } from '../financialAI/aiService';
 import { executeActionPlan } from '../financialAI/actionExecutor';
@@ -53,6 +53,7 @@ export const AIAssistantPage: React.FC = () => {
     recurringTransactions,
     subscriptions,
     refreshAll,
+    setQuickActionOpen,
   } = useFinance();
 
   const [tab, setTab] = useState<'chat' | 'agents'>('chat');
@@ -395,14 +396,24 @@ export const AIAssistantPage: React.FC = () => {
                 e.preventDefault();
                 handleAsk(inputQuestion);
               }}
-              className="flex items-center space-x-2 p-1.5 rounded-2xl bg-[#14171D] border border-[#222733] focus-within:border-[#8B7CFF] transition-all min-h-[48px]"
+              className="flex items-center space-x-1.5 p-1.5 rounded-2xl bg-[#14171D] border border-[#222733] focus-within:border-[#8B7CFF] transition-all min-h-[48px]"
             >
+              <button
+                type="button"
+                onClick={() => setQuickActionOpen(true)}
+                className="w-9 h-9 rounded-xl bg-[#1A1F29] hover:bg-[#222733] text-[#8B7CFF] flex items-center justify-center transition-all shrink-0 active:scale-95 min-w-[36px] min-h-[36px]"
+                title="Ação Rápida"
+                aria-label="Nova Operação Rápida"
+              >
+                <Plus size={18} strokeWidth={2.5} />
+              </button>
+
               <input
                 type="text"
                 value={inputQuestion}
                 onChange={e => setInputQuestion(e.target.value)}
                 placeholder="Pergunte algo ou solicite uma ação..."
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-[#F5F5F5] placeholder-[#5F6570] focus:outline-none"
+                className="flex-1 bg-transparent px-2.5 py-2 text-sm text-[#F5F5F5] placeholder-[#5F6570] focus:outline-none"
                 style={{ fontSize: '16px' }}
               />
               <button

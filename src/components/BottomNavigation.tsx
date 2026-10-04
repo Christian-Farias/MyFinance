@@ -10,7 +10,7 @@ export const BottomNavigation: React.FC = () => {
   const location = useLocation();
 
   // Hide FAB on IA chat page to prevent covering the input box and send button
-  const isAIPage = location.pathname === '/ia';
+  const isAIPage = location.pathname.startsWith('/ia');
 
   const mainNav = [
     { to: '/', label: 'Início', icon: Home },

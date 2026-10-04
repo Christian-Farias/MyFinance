@@ -41,8 +41,8 @@
   /* Bottom nav height — single source of truth */
   --bottom-nav-h: 64px;
 
-  /* Content bottom clearance = nav + safe area + extra breathing */
-  --page-bottom-pad: calc(var(--bottom-nav-h) + var(--sab) + 16px);
+  /* Content bottom clearance = nav + safe area + extra breathing for FAB */
+  --page-bottom-pad: calc(var(--bottom-nav-h) + var(--sab) + 68px);
 
   /* Spacing scale */
   --sp-1:  4px;

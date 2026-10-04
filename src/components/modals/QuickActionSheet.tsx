@@ -21,6 +21,11 @@ export const QuickActionSheet: React.FC = () => {
 
   if (!isQuickActionOpen) return null;
 
+  const handleSelectAction = (actionFn: () => void) => {
+    setQuickActionOpen(false);
+    actionFn();
+  };
+
   const actions = [
     {
       title: 'Nova Despesa',
@@ -52,10 +57,7 @@ export const QuickActionSheet: React.FC = () => {
       icon: Clock,
       color: '#8B7CFF',
       bgColor: '#8B7CFF20',
-      action: () => {
-        setQuickActionOpen(false);
-        navigate('/compromissos');
-      }
+      action: () => navigate('/compromissos')
     },
     {
       title: 'Nova Meta',
@@ -63,10 +65,7 @@ export const QuickActionSheet: React.FC = () => {
       icon: Target,
       color: '#38BDF8',
       bgColor: '#38BDF820',
-      action: () => {
-        setQuickActionOpen(false);
-        navigate('/metas');
-      }
+      action: () => navigate('/metas')
     },
     {
       title: 'Novo Investimento',
@@ -74,10 +73,7 @@ export const QuickActionSheet: React.FC = () => {
       icon: LineChart,
       color: '#39D98A',
       bgColor: '#39D98A20',
-      action: () => {
-        setQuickActionOpen(false);
-        navigate('/investimentos');
-      }
+      action: () => navigate('/investimentos')
     },
     {
       title: 'Novo Orçamento',
@@ -85,10 +81,7 @@ export const QuickActionSheet: React.FC = () => {
       icon: Sliders,
       color: '#FFB74D',
       bgColor: '#FFB74D20',
-      action: () => {
-        setQuickActionOpen(false);
-        navigate('/orcamentos');
-      }
+      action: () => navigate('/orcamentos')
     }
   ];
 
@@ -121,7 +114,7 @@ export const QuickActionSheet: React.FC = () => {
             return (
               <button
                 key={index}
-                onClick={act.action}
+                onClick={() => handleSelectAction(act.action)}
                 className="flex items-center space-x-3.5 p-3 rounded-2xl bg-[#1A1F29] hover:bg-[#222733] active:scale-[0.99] border border-[#262C3A] hover:border-[#8B7CFF]/40 transition-all text-left group"
               >
                 <div 
