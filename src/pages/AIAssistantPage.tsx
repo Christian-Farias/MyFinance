@@ -179,7 +179,7 @@ export const AIAssistantPage: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col animate-fade-in h-[calc(100dvh-var(--bottom-nav-h)-max(12px,env(safe-area-inset-bottom))-max(16px,env(safe-area-inset-top))-24px)] md:h-[calc(100dvh-80px)]"
+      className="flex flex-col animate-fade-in flex-1 min-h-0 overflow-hidden pb-[calc(var(--bottom-nav-h)+max(12px,env(safe-area-inset-bottom)))] md:pb-4"
     >
       {/* ── HEADER ── */}
       <div className="pt-2 pb-3 px-1 shrink-0">

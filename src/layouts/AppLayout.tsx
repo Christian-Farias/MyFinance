@@ -13,28 +13,30 @@ export const AppLayout: React.FC = () => {
   return (
     <div
       className="bg-[#050505] text-[#F5F5F5] flex flex-col md:flex-row"
-      style={{ minHeight: '100dvh' }}
+      style={{ minHeight: '100dvh', height: '100dvh', maxHeight: '100dvh' }}
     >
       {/* ── Desktop Sidebar (hidden on mobile) ── */}
       <Sidebar />
 
       {/* ── Main Content Area ── */}
       <main
-        className="flex-1 min-w-0 w-full"
-        style={{
-          /* On desktop: no extra bottom pad needed (no bottom nav) */
-          /* On mobile: padding handled by .page-content on each page */
-          maxWidth: '100%',
-        }}
+        className="flex-1 min-w-0 w-full flex flex-col min-h-0 overflow-hidden"
       >
-        {/* Inner wrapper constrains width on wide screens */}
-        <div className="max-w-2xl mx-auto md:max-w-4xl px-4 sm:px-5 md:px-8 pt-0 md:pt-6">
-          {/* Safe area top padding — pushes content below Dynamic Island */}
-          <div
-            className="md:hidden"
-            style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
-          />
-          <Outlet />
+        {/* Safe area top padding — pushes content below Dynamic Island/notch */}
+        <div
+          className="md:hidden shrink-0"
+          style={{ height: 'max(16px, env(safe-area-inset-top))' }}
+        />
+
+        {/* Scrollable content area — each page controls its own layout */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+          id="page-scroll-container"
+        >
+          {/* Width constraint applied here, not on main */}
+          <div className="max-w-2xl mx-auto md:max-w-4xl px-4 sm:px-5 md:px-8 md:pt-6 h-full flex flex-col">
+            <Outlet />
+          </div>
         </div>
       </main>
 

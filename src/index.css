@@ -118,14 +118,17 @@ body {
    doesn't hide behind bottom nav.
 ══════════════════════════════════════════════════ */
 .page-content {
-  /* On mobile: clear bottom nav + safe area */
+  /* On mobile: clear bottom nav + safe area + FAB breathing room */
   padding-bottom: var(--page-bottom-pad);
+  /* Pages extend to the bottom of the scroll container */
+  min-height: 100%;
 }
 
 /* On desktop (md+) bottom nav is hidden, so reset */
 @media (min-width: 768px) {
   .page-content {
     padding-bottom: var(--sp-8);
+    min-height: unset;
   }
 }
 
@@ -434,15 +437,16 @@ select {
   font-size: 16px !important;
 }
 
-/* Minimum touch target for interactive elements */
-button, a, [role="button"] {
+/* Touch-target helper — apply to buttons that need large hit areas.
+   NOT applied globally to avoid breaking small icon buttons. */
+.touch-target {
   min-height: 44px;
-  /* Don't force width — let layout handle */
+  min-width: 44px;
 }
 
-/* But allow small inline pills/badges */
-.pill, .pill > *, .label-xs, .label-section {
-  min-height: unset;
+/* Nav links and main action buttons always get large touch targets */
+nav a, nav button {
+  min-height: 44px;
 }
 
 /* ══════════════════════════════════════════════════
