@@ -1,30 +1,24 @@
 import React, { useState } from 'react';
-import { 
-  Calendar, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Plus, 
-  CreditCard, 
-  Repeat, 
-  Tv, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Check, 
-  Trash2, 
-  Edit2, 
-  Sparkles,
-  Layers,
-  ChevronRight
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Plus,
+  Repeat,
+  Tv,
+  ArrowUpRight,
+  Check,
+  Trash2,
+  Edit2,
 } from 'lucide-react';
-import { ErrorState, LoadingState } from '../components/ui';
+import { ConfirmDialog, ErrorState, LoadingState, useToast } from '../components/ui';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
 import { formatCurrency, formatDateBR, formatRelativeDate, calculateSubscriptionsSummary, calculateFixedVsVariableExpenses } from '../calculations/financialCalculations';
 import { BillModal } from '../components/modals/BillModal';
 import { ReceivableModal } from '../components/modals/ReceivableModal';
 import { RecurringModal } from '../components/modals/RecurringModal';
-import type { Bill, Receivable, RecurringTransaction, Subscription } from '../types';
+import type { Bill, Receivable, RecurringTransaction } from '../types';
 
 export const CommitmentsPage: React.FC = () => {
   const { isLoading, loadFailed, retry } = usePageData();
@@ -46,6 +40,39 @@ export const CommitmentsPage: React.FC = () => {
   } = useFinance();
 
   const [tab, setTab] = useState<'bills' | 'receivables' | 'subscriptions' | 'recurring'>('bills');
+
+  const [today] = useState(() => new Date().toISOString().split('T')[0]);
+
+  /* deleteBill/deleteReceivable/deleteRecurring eram desestruturados e nunca
+     chamados: as abas Contas, Receber e Recorrências não tinham como apagar.
+     A exclusão de assinatura existia, porém sem confirmação. */
+  const toast = useToast();
+  const [pendingDelete, setPendingDelete] = useState<
+    | { kind: 'bill'; id: string; label: string }
+    | { kind: 'receivable'; id: string; label: string }
+    | { kind: 'recurring'; id: string; label: string }
+    | { kind: 'subscription'; id: string; label: string }
+    | null
+  >(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    const target = pendingDelete;
+    setIsDeleting(true);
+    try {
+      if (target.kind === 'bill') await deleteBill(target.id);
+      else if (target.kind === 'receivable') await deleteReceivable(target.id);
+      else if (target.kind === 'recurring') await deleteRecurring(target.id);
+      else await deleteSubscription(target.id);
+      toast.success('Excluído com sucesso.');
+      setPendingDelete(null);
+    } catch {
+      toast.error('Não foi possível excluir. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   // Modals state
   const [isBillModalOpen, setIsBillModalOpen] = useState(false);
@@ -211,7 +238,7 @@ export const CommitmentsPage: React.FC = () => {
             <div className="space-y-2">
               {bills.map(bill => {
                 const isPaid = bill.status === 'paid';
-                const isOverdue = bill.status === 'overdue' || (bill.status === 'pending' && bill.dueDate < new Date().toISOString().split('T')[0]);
+                const isOverdue = bill.status === 'overdue' || (bill.status === 'pending' && bill.dueDate < today);
 
                 return (
                   <div 
@@ -263,10 +290,18 @@ export const CommitmentsPage: React.FC = () => {
 
                         <button
                           onClick={() => { setBillToEdit(bill); setIsBillModalOpen(true); }}
-                          className="w-8 h-8 rounded-lg text-ink-muted hover:text-ink flex items-center justify-center"
+                          className="btn btn-icon text-ink-muted hover:text-ink"
                           aria-label={`Editar conta ${bill.description}`}
                         >
                           <Edit2 size={14} />
+                        </button>
+
+                        <button
+                          onClick={() => setPendingDelete({ kind: 'bill', id: bill.id, label: bill.description })}
+                          className="btn btn-icon text-ink-muted hover:text-negative-strong"
+                          aria-label={`Excluir conta ${bill.description}`}
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
@@ -337,10 +372,18 @@ export const CommitmentsPage: React.FC = () => {
 
                         <button
                           onClick={() => { setReceivableToEdit(rec); setIsRecModalOpen(true); }}
-                          className="w-8 h-8 rounded-lg text-ink-muted hover:text-ink flex items-center justify-center"
+                          className="btn btn-icon text-ink-muted hover:text-ink"
                           aria-label={`Editar recebimento ${rec.description}`}
                         >
                           <Edit2 size={14} />
+                        </button>
+
+                        <button
+                          onClick={() => setPendingDelete({ kind: 'receivable', id: rec.id, label: rec.description })}
+                          className="btn btn-icon text-ink-muted hover:text-negative-strong"
+                          aria-label={`Excluir recebimento ${rec.description}`}
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
@@ -388,8 +431,8 @@ export const CommitmentsPage: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => deleteSubscription(sub.id)}
-                    className="w-8 h-8 rounded-lg text-ink-muted hover:text-negative-strong flex items-center justify-center transition-colors"
+                    onClick={() => setPendingDelete({ kind: 'subscription', id: sub.id, label: sub.name })}
+                    className="btn btn-icon text-ink-muted hover:text-negative-strong"
                     aria-label={`Excluir assinatura ${sub.name}`}
                   >
                     <Trash2 size={14} />
@@ -438,10 +481,18 @@ export const CommitmentsPage: React.FC = () => {
 
                   <button
                     onClick={() => { setRecurringToEdit(rule); setIsRecurringModalOpen(true); }}
-                    className="w-8 h-8 rounded-lg text-ink-muted hover:text-ink flex items-center justify-center"
+                    className="btn btn-icon text-ink-muted hover:text-ink"
                     aria-label={`Editar regra ${rule.description}`}
                   >
                     <Edit2 size={14} />
+                  </button>
+
+                  <button
+                    onClick={() => setPendingDelete({ kind: 'recurring', id: rule.id, label: rule.description })}
+                    className="btn btn-icon text-ink-muted hover:text-negative-strong"
+                    aria-label={`Excluir regra ${rule.description}`}
+                  >
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
@@ -454,6 +505,20 @@ export const CommitmentsPage: React.FC = () => {
       <BillModal isOpen={isBillModalOpen} onClose={() => setIsBillModalOpen(false)} billToEdit={billToEdit} />
       <ReceivableModal isOpen={isRecModalOpen} onClose={() => setIsRecModalOpen(false)} receivableToEdit={receivableToEdit} />
       <RecurringModal isOpen={isRecurringModalOpen} onClose={() => setIsRecurringModalOpen(false)} recurringToEdit={recurringToEdit} />
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Confirmar exclusão?"
+        description={
+          pendingDelete
+            ? `"${pendingDelete.label}" será removido permanentemente. Esta ação não pode ser desfeita.`
+            : undefined
+        }
+        confirmLabel={isDeleting ? 'Excluindo…' : 'Sim, excluir'}
+        tone="danger"
+      />
     </div>
   );
 };

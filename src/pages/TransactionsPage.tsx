@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, ArrowDownLeft, ArrowUpRight, Calendar } from 'lucide-react';
+import { Search, Plus,   Calendar } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
 import { TransactionItem } from '../components/TransactionItem';

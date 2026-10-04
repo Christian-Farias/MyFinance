@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, ArrowRight, RefreshCw, MessageCircle, Bot, Check, X, ShieldAlert, BarChart2, Plus } from 'lucide-react';
+import {  Send, ArrowRight,  MessageCircle, Bot, Check,  ShieldAlert,  Plus } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
 import { aiService } from '../financialAI/aiService';
 import { executeActionPlan } from '../financialAI/actionExecutor';
 import type { AIResponse, AIActionPlan } from '../financialAI/types';
-import { useNavigate } from 'react-router-dom';
 import { ErrorState, LoadingState } from '../components/ui';
 
 interface ChatMessage {
@@ -42,7 +41,6 @@ const AgentCard: React.FC<{
 
 export const AIAssistantPage: React.FC = () => {
   const { isLoading, loadFailed, retry } = usePageData();
-  const navigate = useNavigate();
   const { 
     transactions, 
     accounts, 
@@ -126,7 +124,7 @@ export const AIAssistantPage: React.FC = () => {
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
-    } catch (err: any) {
+    } catch {
       setMessages(prev => [
         ...prev,
         {

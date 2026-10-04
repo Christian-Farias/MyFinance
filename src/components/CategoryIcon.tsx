@@ -1,24 +1,23 @@
 import React from 'react';
-import { 
-  Utensils, 
-  Home, 
-  Car, 
-  HeartPulse, 
-  GraduationCap, 
-  Gamepad2, 
-  ShoppingBag, 
-  Tv, 
-  Plane, 
-  TrendingUp, 
-  Wallet, 
-  LineChart, 
-  MoreHorizontal, 
+import {
+  Utensils,
+  Home,
+  Car,
+  HeartPulse,
+  GraduationCap,
+  Gamepad2,
+  ShoppingBag,
+  Tv,
+  Plane,
+  TrendingUp,
+  Wallet,
+  LineChart,
   Tag,
   Building2,
   DollarSign,
   Coffee,
   Shield,
-  Smartphone
+  Smartphone,
 } from 'lucide-react';
 
 interface CategoryIconProps {

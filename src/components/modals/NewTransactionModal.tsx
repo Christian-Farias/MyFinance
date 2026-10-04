@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, CreditCard, Wallet, Layers, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { TransactionType } from '../../types';
 import { AmountField, CheckboxField, Modal, SegmentedControl, SelectField, TextAreaField, TextField } from '../ui';
@@ -20,7 +20,7 @@ export const NewTransactionModal: React.FC = () => {
   const [type, setType] = useState<TransactionType>(newTxDefaultType);
   const [amountStr, setAmountStr] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [categoryId, setCategoryId] = useState<string>('');
   const [accountId, setAccountId] = useState<string>('');
   const [destinationAccountId, setDestinationAccountId] = useState<string>('');
@@ -239,7 +239,6 @@ export const NewTransactionModal: React.FC = () => {
 
         {type === 'expense' && cards.length > 0 && (
           <fieldset className="pt-2">
-            <legend className="field-label">Forma de Pagamento</legend>
             <SegmentedControl
               label="Forma de Pagamento"
               value={isCreditCard ? 'card' : 'account'}

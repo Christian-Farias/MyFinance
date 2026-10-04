@@ -1,15 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar as CalendarIcon, 
-  ArrowDownLeft, 
-  ArrowUpRight, 
-  CreditCard, 
-  Check, 
-  Clock, 
-  Tv, 
-  Layers 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  ArrowDownLeft,
+  ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import { ErrorState, LoadingState } from '../components/ui';
 import { useFinance } from '../context/FinanceContext';
@@ -27,21 +22,17 @@ interface CalendarEventItem {
 
 export const CalendarPage: React.FC = () => {
   const { isLoading, loadFailed, retry } = usePageData();
-  const { 
-    bills, 
-    receivables, 
-    transactions, 
-    subscriptions, 
-    cards, 
-    selectedPeriod, 
-    setSelectedPeriod 
+  const {
+    bills,
+    receivables,
+    transactions,
+    selectedPeriod,
+    setSelectedPeriod,
   } = useFinance();
 
-  const [selectedDayStr, setSelectedDayStr] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
-  });
+  const [today] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [selectedDayStr, setSelectedDayStr] = useState<string>(today);
 
-  const [viewMode, setViewMode] = useState<'timeline' | 'month'>('timeline');
 
   // Parse current year/month
   const [yearStr, monthStr] = selectedPeriod.split('-');
@@ -229,7 +220,7 @@ export const CalendarPage: React.FC = () => {
             const hasOutflow = dayEvents.some(e => e.type === 'bill' || e.type === 'transaction_expense');
             const hasInflow = dayEvents.some(e => e.type === 'receivable' || e.type === 'transaction_income');
             const isSelected = cd.dateStr === selectedDayStr;
-            const isToday = cd.dateStr === new Date().toISOString().split('T')[0];
+            const isToday = cd.dateStr === today;
 
             return (
               <button
@@ -268,6 +259,33 @@ export const CalendarPage: React.FC = () => {
             {selectedDateEvents.length} registro(s)
           </span>
         </div>
+
+        {selectedDateEvents.length > 0 && (selectedTotalInflow > 0 || selectedTotalOutflow > 0) && (
+          <div className="grid grid-cols-2 gap-3">
+            {selectedTotalInflow > 0 && (
+              <div className="card p-3 flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-positive/12 text-positive flex items-center justify-center shrink-0">
+                  <ArrowUpRight size={15} />
+                </span>
+                <div className="min-w-0">
+                  <span className="label-xs text-positive">Entradas</span>
+                  <div className="text-sm font-bold text-ink truncate">+{formatCurrency(selectedTotalInflow)}</div>
+                </div>
+              </div>
+            )}
+            {selectedTotalOutflow > 0 && (
+              <div className="card p-3 flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-negative/12 text-negative flex items-center justify-center shrink-0">
+                  <ArrowDownRight size={15} />
+                </span>
+                <div className="min-w-0">
+                  <span className="label-xs text-negative">Saídas</span>
+                  <div className="text-sm font-bold text-ink truncate">-{formatCurrency(selectedTotalOutflow)}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {selectedDateEvents.length === 0 ? (
           <div className="card p-6 text-center text-ink-muted">

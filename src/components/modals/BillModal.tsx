@@ -15,7 +15,7 @@ export const BillModal: React.FC<BillModalProps> = ({ isOpen, onClose, billToEdi
 
   const [description, setDescription] = useState(billToEdit?.description || '');
   const [amountStr, setAmountStr] = useState(billToEdit ? billToEdit.amount.toString() : '');
-  const [dueDate, setDueDate] = useState(billToEdit?.dueDate || new Date().toISOString().split('T')[0]);
+  const [dueDate, setDueDate] = useState(() => billToEdit?.dueDate || new Date().toISOString().split('T')[0]);
   const [categoryId, setCategoryId] = useState(billToEdit?.categoryId || (categories[0]?.id || 'outros'));
   const [accountId, setAccountId] = useState(billToEdit?.accountId || (accounts[0]?.id || ''));
   const [cardId, setCardId] = useState(billToEdit?.cardId || '');

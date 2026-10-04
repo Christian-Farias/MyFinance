@@ -17,7 +17,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({ isOpen, onClose,
   const [amountStr, setAmountStr] = useState(recurringToEdit ? recurringToEdit.amount.toString() : '');
   const [type, setType] = useState<'expense' | 'income'>(recurringToEdit?.type || 'expense');
   const [frequency, setFrequency] = useState<RecurrenceFrequency>(recurringToEdit?.frequency || 'monthly');
-  const [startDate, setStartDate] = useState(recurringToEdit?.startDate || new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(() => recurringToEdit?.startDate || new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(recurringToEdit?.endDate || '');
   const [categoryId, setCategoryId] = useState(recurringToEdit?.categoryId || (categories[0]?.id || 'outros'));
   const [accountId, setAccountId] = useState(recurringToEdit?.accountId || (accounts[0]?.id || ''));

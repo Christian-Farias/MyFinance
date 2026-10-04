@@ -18,23 +18,28 @@ export interface PageHeaderProps {
   action?: React.ReactNode;
   /** Period stepper or filter, rendered right-aligned next to the action. */
   aside?: React.ReactNode;
+  /** Leading slot before the title block — logo, avatar, back button. */
+  leading?: React.ReactNode;
 }
 
-export function PageHeader({ title, eyebrow, subtitle, action, aside }: PageHeaderProps) {
+export function PageHeader({ title, eyebrow, subtitle, action, aside, leading }: PageHeaderProps) {
   return (
     <header className="flex items-start justify-between gap-3 pt-2">
-      <div className="min-w-0">
-        {eyebrow && (
-          <p className="label-xs text-ink-muted">{eyebrow}</p>
-        )}
-        <h1 className="text-xl font-bold text-ink tracking-tight truncate">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="mt-1 text-xs text-ink-muted leading-relaxed">
-            {subtitle}
-          </p>
-        )}
+      <div className="flex items-center gap-3 min-w-0">
+        {leading}
+        <div className="min-w-0">
+          {eyebrow && (
+            <p className="label-xs text-ink-muted">{eyebrow}</p>
+          )}
+          <h1 className="text-xl font-bold text-ink tracking-tight truncate">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mt-1 text-xs text-ink-muted leading-relaxed">
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
 
       {(action || aside) && (

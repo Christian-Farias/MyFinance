@@ -1,32 +1,26 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  TrendingUp, 
-  TrendingDown, 
-  Sparkles, 
-  CheckCircle2, 
-  PieChart, 
-  Tag, 
-  Shield, 
-  Clock, 
-  Repeat,
-  DollarSign,
+import {
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Sparkles,
+  PieChart,
+  Tag,
+  Shield,
   ArrowUpRight,
-  ArrowDownLeft
+  ArrowDownLeft,
 } from 'lucide-react';
 import { ErrorState, LoadingState } from '../components/ui';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
-import { 
-  formatCurrency, 
-  formatPercentage, 
-  calculateMonthlyComparison, 
-  calculateFixedVsVariableExpenses, 
-  calculateCostOfLiving, 
-  getPreviousMonthYear, 
+import {
+  formatCurrency,
+  formatPercentage,
+  calculateCostOfLiving,
+  getPreviousMonthYear,
   getNextMonthYear,
-  generateMonthlyClosingSnapshot 
+  generateMonthlyClosingSnapshot,
 } from '../calculations/financialCalculations';
 
 export const MonthlyClosingPage: React.FC = () => {
@@ -39,7 +33,6 @@ export const MonthlyClosingPage: React.FC = () => {
     recurringTransactions, 
     bills,
     selectedPeriod,
-    setSelectedPeriod
   } = useFinance();
 
   const [activeMonthYear, setActiveMonthYear] = useState<string>(selectedPeriod);

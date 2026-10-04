@@ -1,14 +1,10 @@
 import React, { useMemo } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  ShieldCheck, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Calendar, 
-  Wallet,
-  Sparkles
+import {
+  AlertTriangle,
+  ShieldCheck,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Calendar,
 } from 'lucide-react';
 import { ErrorState, LoadingState } from '../components/ui';
 import { 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X, Smartphone, ShieldCheck } from 'lucide-react';
+import { Download, X, Smartphone} from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -9,14 +9,11 @@ interface BeforeInstallPromptEvent extends Event {
 export const PWAInstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
-  const [isInstalled, setIsInstalled] = useState<boolean>(false);
+  const [isInstalled] = useState<boolean>(() =>
+    typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+  );
 
   useEffect(() => {
-    // Check if already in standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
-    }
-
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -29,10 +26,7 @@ export const PWAInstallPrompt: React.FC = () => {
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstalled(true);
-    }
+    await deferredPrompt.userChoice;
     setDeferredPrompt(null);
   };
 
@@ -40,13 +34,13 @@ export const PWAInstallPrompt: React.FC = () => {
 
   return (
     <div
-      className="fixed right-4 left-4 md:left-auto md:w-96 z-30 p-4 rounded-2xl bg-[#0E0F13] border border-[#22242A] shadow-2xl flex items-start space-x-3.5 animate-slide-up"
+      className="fixed right-4 left-4 md:left-auto md:w-96 z-30 p-4 rounded-2xl bg-surface border border-edge-strong shadow-2xl flex items-start space-x-3.5 animate-slide-up"
       style={{
         /* On mobile: above the FAB and bottom nav */
         bottom: 'calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom)) + 70px)',
       }}
     >
-      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent flex items-center justify-center text-ink shrink-0 shadow-md">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-info flex items-center justify-center text-on-accent shrink-0 shadow-md">
         <Smartphone size={20} />
       </div>
 
@@ -58,7 +52,7 @@ export const PWAInstallPrompt: React.FC = () => {
         <div className="flex items-center space-x-2 mt-2.5">
           <button
             onClick={handleInstallClick}
-            className="py-1.5 px-3 rounded-lg bg-accent hover:bg-[#7c4df0] text-on-accent text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm"
+            className="py-1.5 px-3 rounded-lg bg-accent hover:bg-accent-hover text-on-accent text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm"
           >
             <Download size={13} />
             <span>Instalar app</span>

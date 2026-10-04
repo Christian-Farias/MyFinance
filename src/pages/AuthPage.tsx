@@ -117,7 +117,7 @@ export const AuthPage: React.FC = () => {
       {/* ── TOP / LOGO ── */}
       <div className="w-full max-w-sm mx-auto flex flex-col items-center pt-2 sm:pt-6">
         <div className="relative mb-3">
-          <div className="absolute -inset-1 bg-gradient-to-r from-accent to-accent rounded-3xl blur-md opacity-30 animate-pulse" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-accent to-info rounded-3xl blur-md opacity-30 animate-pulse" />
           <img 
             src="/logo.png" 
             alt="MyFinance" 

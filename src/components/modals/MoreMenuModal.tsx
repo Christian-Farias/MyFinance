@@ -13,8 +13,7 @@ import {
   Clock,
   Calendar,
   TrendingUp,
-  FileSpreadsheet,
-  Bot
+  FileSpreadsheet
 } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { Modal } from '../ui';

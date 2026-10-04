@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, CheckCircle2, AlertCircle, FileText, Table } from 'lucide-react';
+import { UploadCloud, CheckCircle2, AlertCircle, FileCheck } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
 import { importService, type ColumnMapping, type PreviewTransaction, type ParsedRawRow } from '../services/importService';
@@ -12,6 +12,7 @@ export const ImportPage: React.FC = () => {
   const [activeFormat, setActiveFormat] = useState<'csv' | 'ofx'>('csv');
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [step, setStep] = useState<'upload' | 'mapping' | 'preview' | 'success'>('upload');
 
   const [headers, setHeaders] = useState<string[]>([]);
@@ -28,12 +29,16 @@ export const ImportPage: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
+  const selectFile = async (selected: File) => {
     setFile(selected);
     setErrorMsg('');
     await processFile(selected);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+    await selectFile(selected);
   };
 
   const processFile = async (f: File) => {
@@ -158,7 +163,17 @@ export const ImportPage: React.FC = () => {
         <div className="space-y-5">
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-edge hover:border-accent/50 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all bg-on-accent hover:bg-surface group"
+            onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={e => {
+              e.preventDefault();
+              setIsDragging(false);
+              const dropped = e.dataTransfer.files?.[0];
+              if (dropped) void selectFile(dropped);
+            }}
+            className={`border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all bg-on-accent hover:bg-surface group ${
+              isDragging ? 'border-accent bg-accent/5' : 'border-edge hover:border-accent/50'
+            }`}
           >
             <input
               ref={fileInputRef}
@@ -167,11 +182,19 @@ export const ImportPage: React.FC = () => {
               onChange={handleFileChange}
               className="hidden"
             />
-            <div className="w-16 h-16 rounded-full bg-surface-raised text-accent group-hover:scale-110 flex items-center justify-center mx-auto mb-4 transition-transform">
-              <UploadCloud size={30} />
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-transform ${
+              file ? 'bg-positive/12 text-positive' : 'bg-surface-raised text-accent group-hover:scale-110'
+            }`}>
+              {file ? <FileCheck size={30} /> : <UploadCloud size={30} />}
             </div>
-            <h3 className="text-base font-bold text-ink mb-1">Arraste o arquivo aqui</h3>
-            <p className="text-xs text-ink-muted mb-4">ou selecione no seu dispositivo</p>
+            <h3 className="text-base font-bold text-ink mb-1">
+              {file ? file.name : 'Arraste o arquivo aqui'}
+            </h3>
+            <p className="text-xs text-ink-muted mb-4">
+              {file
+                ? `${(file.size / 1024).toFixed(1)} KB · pronto para importar`
+                : 'ou selecione no seu dispositivo'}
+            </p>
             <div className="label-xs space-y-0.5 font-mono">
               <p>Formatos aceitos: .{activeFormat}</p>
               <p>Tamanho máximo: 10MB</p>

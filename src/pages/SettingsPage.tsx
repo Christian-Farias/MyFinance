@@ -1,13 +1,11 @@
 import React, { useState, useRef } from 'react';
 import {
-  User,
   Info,
   Download,
   Upload,
   Trash2,
   ChevronRight,
   Sparkles,
-  CheckCircle2,
   AlertTriangle,
   LogOut,
 } from 'lucide-react';
@@ -20,9 +18,8 @@ import { backupService } from '../services/backupService';
 export const SettingsPage: React.FC = () => {
   const { isLoading, loadFailed, retry } = usePageData();
   const { settings, updateSettings, loadDemoData, resetAllData } = useFinance();
-  const { user, userEmail, userName, signOut } = useAuth();
+  const { userEmail, userName, signOut } = useAuth();
   const [confirmClear, setConfirmClear] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const backupInputRef = useRef<HTMLInputElement>(null);
@@ -52,8 +49,7 @@ export const SettingsPage: React.FC = () => {
   const handleExportBackup = async () => {
     try {
       await backupService.downloadBackupFile();
-      setSuccessMsg('Backup exportado com sucesso!');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      toast.success('Backup exportado com sucesso!');
     } catch (err) {
       console.error(err);
     }
@@ -67,14 +63,14 @@ export const SettingsPage: React.FC = () => {
       const text = await file.text();
       const success = await backupService.importData(text);
       if (success) {
-        setSuccessMsg('Backup restaurado com sucesso! Atualizando tela...');
-        setTimeout(() => window.location.reload(), 1500);
+        toast.success('Backup restaurado. Atualizando…');
+        setTimeout(() => window.location.reload(), 1200);
       } else {
-        alert('Arquivo de backup inválido.');
+        toast.error('Arquivo de backup inválido.');
       }
     } catch (err) {
       console.error(err);
-      alert('Erro ao carregar arquivo de backup.');
+      toast.error('Erro ao carregar arquivo de backup.');
     } finally {
       setIsProcessing(false);
     }
@@ -84,8 +80,7 @@ export const SettingsPage: React.FC = () => {
     setIsProcessing(true);
     await loadDemoData();
     setIsProcessing(false);
-    setSuccessMsg('Dados de demonstração carregados com sucesso!');
-    setTimeout(() => setSuccessMsg(''), 3000);
+    toast.success('Dados de demonstração carregados com sucesso!');
   };
 
   const handleResetData = async () => {
@@ -93,8 +88,7 @@ export const SettingsPage: React.FC = () => {
     await resetAllData();
     setIsProcessing(false);
     setConfirmClear(false);
-    setSuccessMsg('Todos os dados foram excluídos.');
-    setTimeout(() => setSuccessMsg(''), 3000);
+    toast.success('Todos os dados foram excluídos.');
   };
 
   /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
@@ -132,12 +126,6 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* ── SUCCESS MESSAGE ── */}
-      {successMsg && (
-        <div className="p-3.5 rounded-2xl bg-positive/8 border border-positive/20 text-positive text-xs flex items-center space-x-2">
-          <CheckCircle2 size={16} />
-          <span>{successMsg}</span>
-        </div>
-      )}
 
       {/* ── USER PROFILE ── */}
       <div className="card p-4 flex items-center justify-between">

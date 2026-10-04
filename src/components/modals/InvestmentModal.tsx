@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { Investment, InvestmentType } from '../../types';
 import { Modal, SelectField, TextAreaField, TextField } from '../ui';

@@ -1,25 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, TrendingUp, Sliders, CreditCard, Layers, CheckCircle2, Clock, CheckCheck, AlertTriangle, ArrowRight, Info, EyeOff, Bot, Sparkles } from 'lucide-react';
+import { Bell, TrendingUp, Sliders, CreditCard, Layers, CheckCircle2, Clock, CheckCheck, AlertTriangle, ArrowRight, Info, EyeOff,  Sparkles } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
 import { agentService } from '../financialAgents/agentService';
 import type { FinancialInsight, InsightPriority } from '../financialAgents/agentTypes';
-import type { SmartAlert, AlertType } from '../types';
+import type {  AlertType } from '../types';
 import { ErrorState, LoadingState } from '../components/ui';
 
-const ALERT_VISUALS: Record<AlertType, { icon: React.ElementType; color: string; bgColor: string; why: string; action: string }> = {
-  expense_spike: { icon: TrendingUp,    color: 'var(--color-negative)', bgColor: '#FF5C5C15', why: 'Seus gastos estão acima do padrão.',      action: 'Ver gastos'     },
-  budget:        { icon: Sliders,       color: 'var(--color-warning)', bgColor: '#F59E0B15', why: 'Você está próximo do seu limite mensal.',  action: 'Ver orçamentos' },
-  invoice:       { icon: CreditCard,    color: 'var(--color-accent)', bgColor: '#8B7CFF15', why: 'Fatura com vencimento se aproximando.',   action: 'Ver cartões'    },
-  installment:   { icon: Layers,        color: '#EC4899', bgColor: '#EC489915', why: 'Parcela próxima do vencimento.',          action: 'Ver cartões'    },
-  saving:        { icon: CheckCircle2,  color: 'var(--color-positive)', bgColor: '#39D98A15', why: 'Você está progredindo bem nas economias.', action: 'Ver metas'     },
-  goal:          { icon: CheckCircle2,  color: 'var(--color-positive)', bgColor: '#39D98A15', why: 'Meta com atualização disponível.',        action: 'Ver metas'      },
-  duplicate:             { icon: AlertTriangle, color: 'var(--color-warning)', bgColor: '#F59E0B15', why: 'Possível lançamento duplicado detectado.', action: 'Ver transações' },
-  bill_due:              { icon: Clock,         color: 'var(--color-negative)', bgColor: '#FF5C5C15', why: 'Conta com vencimento próximo.',          action: 'Ver compromissos' },
-  receivable_due:        { icon: CheckCircle2,  color: 'var(--color-positive)', bgColor: '#39D98A15', why: 'Recebimento previsto para breve.',       action: 'Ver compromissos' },
-  projected_balance_low: { icon: AlertTriangle, color: 'var(--color-warning)', bgColor: '#F59E0B15', why: 'Risco de saldo baixo nos próximos dias.',  action: 'Ver fluxo de caixa' },
-  system:        { icon: Bell,          color: 'var(--color-accent)', bgColor: '#8B7CFF15', why: 'Notificação do sistema.',                 action: 'Saiba mais'     },
+function formatAlertDate(date: string): string {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+
+const ALERT_TONE: Record<string, string> = {
+  negative: 'bg-negative/12 text-negative',
+  warning: 'bg-warning/12 text-warning',
+  accent: 'bg-accent/12 text-accent',
+  positive: 'bg-positive/12 text-positive',
+  pink: 'bg-negative-strong/12 text-negative-strong',
+};
+
+const ALERT_VISUALS: Record<AlertType, { icon: React.ElementType; tone: string; why: string; action: string; href: string }> = {
+  expense_spike: { icon: TrendingUp, tone: 'negative', why: 'Seus gastos estão acima do padrão.', action: 'Ver gastos', href: '/gastos' },
+  budget: { icon: Sliders, tone: 'warning', why: 'Você está próximo do seu limite mensal.', action: 'Ver orçamentos', href: '/orcamentos' },
+  invoice: { icon: CreditCard, tone: 'accent', why: 'Fatura com vencimento se aproximando.', action: 'Ver cartões', href: '/cartoes' },
+  installment: { icon: Layers, tone: 'pink', why: 'Parcela próxima do vencimento.', action: 'Ver cartões', href: '/cartoes' },
+  saving: { icon: CheckCircle2, tone: 'positive', why: 'Você está progredindo bem nas economias.', action: 'Ver metas', href: '/metas' },
+  goal: { icon: CheckCircle2, tone: 'positive', why: 'Meta com atualização disponível.', action: 'Ver metas', href: '/metas' },
+  duplicate: { icon: AlertTriangle, tone: 'warning', why: 'Possível lançamento duplicado detectado.', action: 'Ver transações', href: '/transacoes' },
+  bill_due: { icon: Clock, tone: 'negative', why: 'Conta com vencimento próximo.', action: 'Ver compromissos', href: '/compromissos' },
+  receivable_due: { icon: CheckCircle2, tone: 'positive', why: 'Recebimento previsto para breve.', action: 'Ver compromissos', href: '/compromissos' },
+  projected_balance_low: { icon: AlertTriangle, tone: 'warning', why: 'Risco de saldo baixo nos próximos dias.', action: 'Ver fluxo de caixa', href: '/fluxo-caixa' },
+  system: { icon: Bell, tone: 'accent', why: 'Notificação do sistema.', action: 'Saiba mais', href: '' },
 };
 
 export const AlertsPage: React.FC = () => {
@@ -45,6 +59,7 @@ export const AlertsPage: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'insights' | 'alerts'>('all');
   const [agentInsights, setAgentInsights] = useState<FinancialInsight[]>([]);
   const [expandedInsightId, setExpandedInsightId] = useState<string | null>(null);
+  const [expandedAlertId, setExpandedAlertId] = useState<string | null>(null);
 
   useEffect(() => {
     const runAgents = async () => {
@@ -65,7 +80,7 @@ export const AlertsPage: React.FC = () => {
       setAgentInsights(res);
     };
     runAgents();
-  }, [accounts, transactions, bills, goals, budgets]);
+  }, [accounts, transactions, categories, cards, bills, receivables, recurringTransactions, subscriptions, investments, goals, budgets]);
 
   const handleDismissInsight = (id: string) => {
     agentService.dismissInsight(id);
@@ -74,11 +89,11 @@ export const AlertsPage: React.FC = () => {
 
   const getPriorityBadge = (priority: InsightPriority) => {
     switch (priority) {
-      case 'CRITICAL': return 'bg-[#FF5C5C20] text-negative border-[#FF5C5C40]';
-      case 'HIGH':     return 'bg-[#F59E0B20] text-warning border-[#F59E0B40]';
-      case 'MEDIUM':   return 'bg-[#8B7CFF20] text-accent border-[#8B7CFF40]';
+      case 'CRITICAL': return 'bg-negative/12 text-negative border-negative/25';
+      case 'HIGH':     return 'bg-warning/12 text-warning border-warning/25';
+      case 'MEDIUM':   return 'bg-accent/12 text-accent border-accent/25';
       case 'LOW':
-      default:         return 'bg-[#39D98A20] text-positive border-[#39D98A40]';
+      default:         return 'bg-positive/12 text-positive border-positive/25';
     }
   };
 
@@ -203,6 +218,87 @@ export const AlertsPage: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+
+      {/* ── ALERTAS DO SISTEMA ── */}
+      {(filter === 'all' || filter === 'alerts') && alerts.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <Bell size={13} className="text-ink-faint" />
+            <h2 className="label-xs font-bold uppercase tracking-wider text-ink-faint">Alertas do sistema</h2>
+          </div>
+          <div className="space-y-2 stagger">
+            {alerts.map(alert => {
+              const visual = ALERT_VISUALS[alert.type] ?? ALERT_VISUALS.system;
+              const Icon = visual.icon;
+              const isExpanded = expandedAlertId === alert.id;
+              const isUnread = !alert.isRead;
+
+              return (
+                <div
+                  key={alert.id}
+                  className={`card p-3.5 flex items-start gap-3 transition-colors ${isUnread ? 'border-l-2 border-l-accent' : ''} ${isUnread ? 'bg-surface-raised' : ''}`}
+                >
+                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${ALERT_TONE[visual.tone]}`}>
+                    <Icon size={15} />
+                  </span>
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className={`text-xs ${isUnread ? 'font-bold text-ink' : 'font-semibold text-ink-muted'}`}>
+                        {alert.title}
+                        {isUnread && <span className="sr-only"> (não lido)</span>}
+                      </p>
+                      <time className="text-[10px] text-ink-faint shrink-0">{formatAlertDate(alert.date)}</time>
+                    </div>
+                    <p className="text-[11px] text-ink-muted leading-relaxed">{alert.message}</p>
+
+                    {isExpanded && (
+                      <p className="text-[11px] text-ink-faint leading-relaxed animate-fade-in">
+                        {visual.why}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-3 pt-0.5">
+                      <button
+                        onClick={() => setExpandedAlertId(isExpanded ? null : alert.id)}
+                        aria-expanded={isExpanded}
+                        className="text-[11px] font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                      >
+                        <Info size={11} />
+                        <span>Por que estou vendo isso?</span>
+                      </button>
+
+                      {(alert.actionUrl || visual.href) && (
+                        <button
+                          onClick={() => {
+                            const url = alert.actionUrl || visual.href;
+                            if (isUnread) void markAlertAsRead(alert.id);
+                            if (url) navigate(url);
+                          }}
+                          className="text-[11px] font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                        >
+                          <span>{visual.action}</span>
+                          <ArrowRight size={11} />
+                        </button>
+                      )}
+
+                      {isUnread && (
+                        <button
+                          onClick={() => void markAlertAsRead(alert.id)}
+                          className="text-[11px] font-semibold text-ink-faint hover:text-ink hover:underline"
+                        >
+                          Marcar como lido
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

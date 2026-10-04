@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { Receivable } from '../../types';
 import { AmountField, CheckboxField, Modal, SelectField, TextField } from '../ui';
@@ -15,7 +15,7 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({ isOpen, onClos
 
   const [description, setDescription] = useState(receivableToEdit?.description || '');
   const [amountStr, setAmountStr] = useState(receivableToEdit ? receivableToEdit.amount.toString() : '');
-  const [expectedDate, setExpectedDate] = useState(receivableToEdit?.expectedDate || new Date().toISOString().split('T')[0]);
+  const [expectedDate, setExpectedDate] = useState(() => receivableToEdit?.expectedDate || new Date().toISOString().split('T')[0]);
   const [categoryId, setCategoryId] = useState(receivableToEdit?.categoryId || (categories.find(c => c.type === 'income')?.id || 'trabalho'));
   const [accountId, setAccountId] = useState(receivableToEdit?.accountId || (accounts[0]?.id || ''));
   const [origin, setOrigin] = useState(receivableToEdit?.origin || '');
@@ -103,6 +103,13 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({ isOpen, onClos
           <AmountField label="Valor Previsto" value={amountStr} onChange={setAmountStr} placeholder="1000,00" />
           <TextField label="Data Prevista" type="date" value={expectedDate} onChange={setExpectedDate} />
         </div>
+
+        <SelectField
+          label="Categoria"
+          value={categoryId}
+          onChange={setCategoryId}
+          options={categories.map((c) => ({ value: c.id, label: c.name }))}
+        />
 
         <div className="grid grid-cols-2 gap-3">
           <SelectField

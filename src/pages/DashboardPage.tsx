@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp,
@@ -32,14 +32,13 @@ import {
   calculateBudgetUsage,
 } from '../calculations/financialCalculations';
 import { TransactionItem } from '../components/TransactionItem';
-import { EmptyState, ErrorState, LoadingState } from '../components/ui';
+import { EmptyState, ErrorState, LoadingState, PageHeader } from '../components/ui';
 import { usePageData } from '../hooks/usePageData';
 
 /* ─── Greeting helper ─── */
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'Bom dia';
-  if (h < 18) return 'Boa tarde';
+function getGreeting(hour: number): string {
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
   return 'Boa noite';
 }
 
@@ -61,6 +60,7 @@ const MiniSparkline: React.FC<{ data: { v: number }[]; color: string }> = ({ dat
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading, loadFailed, retry } = usePageData();
+  const [now] = useState(() => new Date());
   const {
     accounts,
     transactions,
@@ -100,8 +100,8 @@ export const DashboardPage: React.FC = () => {
 
   /* ─── Sparkline data (6 months) ─── */
   const sparklineData = useMemo(() => {
-    let baseYear = new Date().getFullYear();
-    let baseMonth = new Date().getMonth() + 1;
+    let baseYear = now.getFullYear();
+    let baseMonth = now.getMonth() + 1;
     if (selectedPeriod?.includes('-')) {
       const [y, m] = selectedPeriod.split('-');
       baseYear  = parseInt(y, 10);
@@ -114,7 +114,7 @@ export const DashboardPage: React.FC = () => {
       const exp = calculateTotalExpenses(transactions, ym);
       return { v: Math.max(0, inc - exp + netWorth / 6) };
     });
-  }, [transactions, selectedPeriod, netWorth]);
+  }, [transactions, selectedPeriod, netWorth, now]);
 
   /* ─── Dynamic insight ─── */
   const insight = useMemo(() => {
@@ -171,12 +171,11 @@ export const DashboardPage: React.FC = () => {
     /* Cards invoice due soon */
     const cardsDueSoon = cards.find(c => {
       if (!c.dueDay) return false;
-      const today = new Date().getDate();
-      const diff  = c.dueDay - today;
+      const diff = c.dueDay - now.getDate();
       return diff >= 0 && diff <= 5;
     });
     if (cardsDueSoon) {
-      const diff = (cardsDueSoon.dueDay ?? 0) - new Date().getDate();
+      const diff = (cardsDueSoon.dueDay ?? 0) - now.getDate();
       items.push({
         icon: CreditCard,
         iconColor: 'var(--color-accent)',
@@ -211,7 +210,7 @@ export const DashboardPage: React.FC = () => {
     }
 
     return items.slice(0, 3);
-  }, [budgetReports, cards, alerts, comparison, categoryBreakdown]);
+  }, [budgetReports, cards, alerts, comparison, categoryBreakdown, now]);
 
   /* ─── Recent 5 transactions ─── */
   const recent = transactions.slice(0, 5);
@@ -233,8 +232,10 @@ export const DashboardPage: React.FC = () => {
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center space-x-3">
+      <PageHeader
+        eyebrow={`${getGreeting(now.getHours())},`}
+        title={`${settings.name || 'Você'} 👋`}
+        leading={
           <button
             type="button"
             onClick={() => navigate('/configuracoes')}
@@ -247,29 +248,25 @@ export const DashboardPage: React.FC = () => {
               className="w-10 h-10 rounded-2xl object-contain bg-black border border-active"
             />
           </button>
-          <div>
-            <p className="label-xs mb-0.5">{getGreeting()},</p>
-            <h1 className="text-xl font-bold text-ink tracking-tight">
-              {settings.name || 'Você'} 👋
-            </h1>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate('/alertas')}
-          aria-label={
-            unreadAlertCount > 0
-              ? `Notificações (${unreadAlertCount} não lidas)`
-              : 'Notificações'
-          }
-          className="relative btn btn-icon btn-ghost shrink-0"
-        >
-          <Bell size={17} aria-hidden="true" />
-          {unreadAlertCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-negative" />
-          )}
-        </button>
-      </div>
+        }
+        action={
+          <button
+            type="button"
+            onClick={() => navigate('/alertas')}
+            aria-label={
+              unreadAlertCount > 0
+                ? `Notificações (${unreadAlertCount} não lidas)`
+                : 'Notificações'
+            }
+            className="relative btn btn-icon btn-ghost shrink-0"
+          >
+            <Bell size={17} aria-hidden="true" />
+            {unreadAlertCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-negative" />
+            )}
+          </button>
+        }
+      />
 
       {/* ── PATRIMÔNIO ── */}
       <div className="card p-5">

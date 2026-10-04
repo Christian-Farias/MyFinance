@@ -206,7 +206,7 @@ export function Modal({
       // Defer so the trigger is focusable again before we hand focus back.
       requestAnimationFrame(() => previouslyFocused?.focus?.());
     };
-  }, [open, onClose, focusFirst]);
+  }, [open, onClose, focusFirst, dialogId, closeOnEscape]);
 
   if (!open) return null;
 
