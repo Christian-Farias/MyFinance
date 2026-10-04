@@ -64,7 +64,7 @@ export const AIAssistantPage: React.FC = () => {
     {
       id: 'init_1',
       sender: 'assistant',
-      text: 'Olá! Sou seu assistente financeiro pessoal. Analiso seus dados localmente — sem enviar nada para a nuvem.\n\nComo posso te ajudar hoje?',
+      text: 'E aí! Sou o Neguin, seu assistente financeiro pessoal. 🐒\n\nAnaliso seus dados aqui mesmo, sem mandar nada pra nuvem — tudo fica entre a gente!\n\nComo posso te ajudar hoje?',
       timestamp: 'Agora',
     },
   ]);
@@ -195,17 +195,17 @@ export const AIAssistantPage: React.FC = () => {
       {/* ── HEADER ── */}
       <div className="pt-2 pb-3 px-1 shrink-0">
         <div className="flex items-center space-x-3 mb-4">
-          <img 
-            src="/logo.png" 
-            alt="MyFinance AI" 
-            className="w-10 h-10 rounded-2xl object-contain bg-black border border-active shadow-md shadow-accent/15" 
-          />
+          <div className="relative shrink-0">
+            <img 
+              src="/logo.png" 
+              alt="Neguin" 
+              className="w-11 h-11 rounded-2xl object-contain bg-black border border-active shadow-md shadow-accent/15" 
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-positive border-2 border-[#050505]" />
+          </div>
           <div>
-            <h1 className="text-base font-bold text-ink tracking-tight">IA Financeira Local</h1>
-            <div className="flex items-center space-x-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-positive" />
-              <span className="label-xs text-positive">Modo Privado / Offline</span>
-            </div>
+            <h1 className="text-base font-bold text-ink tracking-tight">Neguin 🐒</h1>
+            <span className="label-xs text-positive">Assistente Financeiro · Modo Offline</span>
           </div>
         </div>
 
@@ -261,8 +261,8 @@ export const AIAssistantPage: React.FC = () => {
                   {!isUser && (
                     <img 
                       src="/logo.png" 
-                      alt="MyFinance Bot" 
-                      className="w-7 h-7 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
+                      alt="Neguin" 
+                      className="w-8 h-8 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
                     />
                   )}
 
@@ -387,8 +387,8 @@ export const AIAssistantPage: React.FC = () => {
               <div className="flex items-end gap-2.5">
                 <img 
                   src="/logo.png" 
-                  alt="MyFinance Bot" 
-                  className="w-7 h-7 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
+                  alt="Neguin digitando..." 
+                  className="w-8 h-8 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
                 />
                 <div className="bg-panel border border-active px-4 py-3 rounded-3xl rounded-bl-sm flex items-center space-x-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce" />
@@ -443,7 +443,10 @@ export const AIAssistantPage: React.FC = () => {
       {/* ── TAB: AGENTS ── */}
       {tab === 'agents' && (
         <div className="flex-1 overflow-y-auto space-y-2.5 px-1 pr-1">
-          <p className="label-xs mb-3">Agentes em segundo plano:</p>
+          <div className="flex items-center space-x-2 mb-3">
+            <img src="/logo.png" alt="Neguin" className="w-6 h-6 rounded-lg object-contain bg-black border border-[#222733]" />
+            <p className="label-xs">Agentes do Neguin em segundo plano:</p>
+          </div>
           {proactiveAgents.map(a => (
             <AgentCard key={a.title} {...a} />
           ))}

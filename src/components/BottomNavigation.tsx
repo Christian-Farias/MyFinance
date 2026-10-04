@@ -24,7 +24,7 @@ export const BottomNavigation: React.FC = () => {
   const mainNav = [
     { to: '/', label: 'Início', icon: Home },
     { to: '/gastos', label: 'Gastos', icon: PieChart },
-    { to: '/ia', label: 'IA', icon: Sparkles },
+    { to: '/ia', label: 'Neguin', icon: Sparkles },
     { to: '/cartoes', label: 'Cartões', icon: CreditCard },
   ];
 

@@ -99,8 +99,8 @@ export function generateResponse(
       const diffAmount = Math.abs(comp.currentExpense - comp.previousExpense);
 
       const comparisonText = isExpenseLess
-        ? `Você gastou **${formatCurrency(diffAmount)} a menos** que no mês passado (uma redução de ${Math.abs(comp.expenseVariationPercent).toFixed(1)}%).`
-        : `Seus gastos subiram **${formatCurrency(diffAmount)}** em comparação ao mês passado (+${comp.expenseVariationPercent.toFixed(1)}%).`;
+        ? `Você gastou **${formatCurrency(diffAmount)} a menos** que no mês passado (uma redução de ${Math.abs(comp.expenseVariationPercent).toFixed(1)}%). 💪`
+        : `Seus gastos subiram **${formatCurrency(diffAmount)}** em comparação ao mês passado (+${comp.expenseVariationPercent.toFixed(1)}%). Katrovou 🐒`;
 
       return {
         text: `${comparisonText}\n\n• **Mês Atual (${comp.currentMonth.label})**: ${formatCurrency(comp.currentExpense)}\n• **Mês Anterior (${comp.previousMonth.label})**: ${formatCurrency(comp.previousExpense)}`,
@@ -188,8 +188,9 @@ export function generateResponse(
     case 'CAN_I_SPEND': {
       const checkAmount = params?.amount || 200;
       const result = calculateAffordability(checkAmount, state);
+      const canSpendSuffix = result.canAfford ? '' : ' Katrovou 🐒';
       return {
-        text: `${result.advice}`,
+        text: `${result.advice}${canSpendSuffix}`,
         intent,
         explanation: `Cálculo realizado: Saldo Atual (${formatCurrency(result.currentBalance)}) - Compromissos Próximos (${formatCurrency(result.commitmentsNext7Days)}) - Valor Desejado (${formatCurrency(checkAmount)}).`,
         visual: {
@@ -208,8 +209,10 @@ export function generateResponse(
 
     case 'GET_FORECAST': {
       const forecast = financialTools.getForecast(state, 30);
+      const forecastBad = forecast.projectedEndBalance < 0;
+      const forecastSuffix = forecastBad ? ' Katrovou 🐒' : '';
       return {
-        text: `Sua previsão de saldo ao fim de 30 dias é de **${formatCurrency(forecast.projectedEndBalance)}**.\n\n• **Saldo Inicial**: ${formatCurrency(forecast.initialBalance)}\n• **Entradas Previstas**: +${formatCurrency(forecast.totalInflows)}\n• **Saídas Previstas**: -${formatCurrency(forecast.totalOutflows)}`,
+        text: `Sua previsão de saldo ao fim de 30 dias é de **${formatCurrency(forecast.projectedEndBalance)}**.${forecastSuffix}\n\n• **Saldo Inicial**: ${formatCurrency(forecast.initialBalance)}\n• **Entradas Previstas**: +${formatCurrency(forecast.totalInflows)}\n• **Saídas Previstas**: -${formatCurrency(forecast.totalOutflows)}`,
         intent,
         explanation: 'Estimativa baseada em saldos atuais, contas a pagar, recebíveis e recorrências ativas.',
         visual: {
@@ -229,8 +232,10 @@ export function generateResponse(
     case 'GET_FINANCIAL_HEALTH': {
       const health = diagnoseFinancialHealth(state);
       const pointsText = health.pointsOfInterest.map(p => `• ${p}`).join('\n');
+      const isHealthBad = health.status === 'crítico' || health.status === 'atenção';
+      const healthSuffix = isHealthBad ? '\n\nKatrovou 🐒' : '';
       return {
-        text: `**Status: ${health.status.toUpperCase()}**\n\n${health.summary}\n\n${pointsText}`,
+        text: `**Status: ${health.status.toUpperCase()}**\n\n${health.summary}\n\n${pointsText}${healthSuffix}`,
         intent,
         followUpSuggestions: ['Quanto gastei este mês?', 'Como estão meus orçamentos?', 'Quanto falta para minha meta?'],
       };
