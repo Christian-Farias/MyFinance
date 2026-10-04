@@ -268,37 +268,37 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#1D2026]">
           <button
             onClick={() => navigate('/contas')}
-            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group"
+            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group min-w-0"
           >
-            <div className="flex items-center space-x-1.5 mb-1">
-              <Wallet size={12} className="text-[#8B919B] group-hover:text-[#39D98A] transition-colors" />
-              <span className="label-xs">Contas</span>
+            <div className="flex items-center space-x-1.5 mb-1 max-w-full">
+              <Wallet size={12} className="text-[#8B919B] group-hover:text-[#39D98A] transition-colors shrink-0" />
+              <span className="label-xs truncate">Contas</span>
             </div>
-            <span className="text-xs font-bold text-[#F5F5F5] tracking-tight">{formatCurrency(accountsBalance)}</span>
+            <span className="text-xs font-bold text-[#F5F5F5] tracking-tight truncate max-w-full">{formatCurrency(accountsBalance)}</span>
           </button>
 
           <button
             onClick={() => navigate('/cartoes')}
-            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group"
+            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group min-w-0"
           >
-            <div className="flex items-center space-x-1.5 mb-1">
-              <CreditCard size={12} className="text-[#8B919B] group-hover:text-[#FF5C5C] transition-colors" />
-              <span className="label-xs">Cartões</span>
+            <div className="flex items-center space-x-1.5 mb-1 max-w-full">
+              <CreditCard size={12} className="text-[#8B919B] group-hover:text-[#FF5C5C] transition-colors shrink-0" />
+              <span className="label-xs truncate">Cartões</span>
             </div>
-            <span className="text-xs font-bold text-[#FF5C5C] tracking-tight">
+            <span className="text-xs font-bold text-[#FF5C5C] tracking-tight truncate max-w-full">
               {totalCardsDebt > 0 ? `−${formatCurrency(totalCardsDebt)}` : formatCurrency(0)}
             </span>
           </button>
 
           <button
             onClick={() => navigate('/investimentos')}
-            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group"
+            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group min-w-0"
           >
-            <div className="flex items-center space-x-1.5 mb-1">
-              <TrendingUp size={12} className="text-[#8B919B] group-hover:text-[#8B7CFF] transition-colors" />
-              <span className="label-xs">Investimentos</span>
+            <div className="flex items-center space-x-1.5 mb-1 max-w-full">
+              <TrendingUp size={12} className="text-[#8B919B] group-hover:text-[#8B7CFF] transition-colors shrink-0" />
+              <span className="label-xs truncate">Investimentos</span>
             </div>
-            <span className="text-xs font-bold text-[#8B7CFF] tracking-tight">{formatCurrency(totalInvested)}</span>
+            <span className="text-xs font-bold text-[#8B7CFF] tracking-tight truncate max-w-full">{formatCurrency(totalInvested)}</span>
           </button>
         </div>
       </div>
@@ -373,15 +373,15 @@ export const DashboardPage: React.FC = () => {
               <button
                 key={qa.label}
                 onClick={qa.action}
-                className="flex flex-col items-center py-3 px-1 rounded-2xl card card-hover gap-2"
+                className="flex flex-col items-center py-3 px-1 rounded-2xl card card-hover gap-2 min-w-0"
               >
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                   style={{ backgroundColor: `${qa.color}15` }}
                 >
                   <Icon size={16} style={{ color: qa.color }} strokeWidth={2} />
                 </div>
-                <span className="text-[11px] font-medium text-[#8B919B] text-center leading-tight">{qa.label}</span>
+                <span className="text-[11px] font-medium text-[#8B919B] text-center leading-tight truncate max-w-full px-0.5">{qa.label}</span>
               </button>
             );
           })}

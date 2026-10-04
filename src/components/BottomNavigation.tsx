@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Home, PieChart, Sparkles, CreditCard, Menu, Plus } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { MoreMenuModal } from './modals/MoreMenuModal';
@@ -7,6 +7,10 @@ import { MoreMenuModal } from './modals/MoreMenuModal';
 export const BottomNavigation: React.FC = () => {
   const { setQuickActionOpen } = useFinance();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Hide FAB on IA chat page to prevent covering the input box and send button
+  const isAIPage = location.pathname === '/ia';
 
   const mainNav = [
     { to: '/', label: 'Início', icon: Home },
@@ -23,22 +27,24 @@ export const BottomNavigation: React.FC = () => {
         bottom = nav height + safe area + gap
         This is the SINGLE source of truth for FAB positioning.
       */}
-      <button
-        onClick={() => setQuickActionOpen(true)}
-        aria-label="Nova Operação Rápida"
-        className="md:hidden fixed z-30 w-13 h-13 rounded-full bg-[#8B7CFF] text-white flex items-center justify-center shadow-lg shadow-[#8B7CFF]/25 hover:scale-105 active:scale-95 transition-transform duration-200"
-        style={{
-          right: 'max(16px, env(safe-area-inset-right))',
-          bottom: 'calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom)) + 12px)',
-          width: '52px',
-          height: '52px',
-          /* Ensure 44px+ touch target */
-          minWidth: '44px',
-          minHeight: '44px',
-        }}
-      >
-        <Plus size={22} strokeWidth={2.5} />
-      </button>
+      {!isAIPage && (
+        <button
+          onClick={() => setQuickActionOpen(true)}
+          aria-label="Nova Operação Rápida"
+          className="md:hidden fixed z-30 w-13 h-13 rounded-full bg-[#8B7CFF] text-white flex items-center justify-center shadow-lg shadow-[#8B7CFF]/25 hover:scale-105 active:scale-95 transition-transform duration-200"
+          style={{
+            right: 'max(16px, env(safe-area-inset-right))',
+            bottom: 'calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom)) + 12px)',
+            width: '52px',
+            height: '52px',
+            /* Ensure 44px+ touch target */
+            minWidth: '44px',
+            minHeight: '44px',
+          }}
+        >
+          <Plus size={22} strokeWidth={2.5} />
+        </button>
+      )}
 
       {/*
         ── Bottom Navigation Bar ────────────────────────────────────────

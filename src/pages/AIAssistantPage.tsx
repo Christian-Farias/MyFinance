@@ -178,11 +178,7 @@ export const AIAssistantPage: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col animate-fade-in"
-      style={{
-        /* Full height minus bottom nav and safe areas */
-        height: 'calc(100dvh - var(--bottom-nav-h) - max(12px, env(safe-area-inset-bottom)) - max(16px, env(safe-area-inset-top)))',
-      }}
+      className="flex flex-col animate-fade-in h-[calc(100dvh-var(--bottom-nav-h)-max(12px,env(safe-area-inset-bottom))-max(16px,env(safe-area-inset-top))-24px)] md:h-[calc(100dvh-80px)]"
     >
       {/* ── HEADER ── */}
       <div className="pt-2 pb-3 px-1 shrink-0">
@@ -393,27 +389,29 @@ export const AIAssistantPage: React.FC = () => {
           </div>
 
           {/* Input Bar */}
-          <div className="pt-2 shrink-0">
+          <div className="pt-2 pb-1 shrink-0">
             <form
               onSubmit={e => {
                 e.preventDefault();
                 handleAsk(inputQuestion);
               }}
-              className="flex items-center space-x-2 p-1.5 rounded-2xl bg-[#14171D] border border-[#222733] focus-within:border-[#8B7CFF] transition-all"
+              className="flex items-center space-x-2 p-1.5 rounded-2xl bg-[#14171D] border border-[#222733] focus-within:border-[#8B7CFF] transition-all min-h-[48px]"
             >
               <input
                 type="text"
                 value={inputQuestion}
                 onChange={e => setInputQuestion(e.target.value)}
                 placeholder="Pergunte algo ou solicite uma ação..."
-                className="flex-1 bg-transparent px-3 py-2 text-xs text-[#F5F5F5] placeholder-[#5F6570] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-[#F5F5F5] placeholder-[#5F6570] focus:outline-none"
+                style={{ fontSize: '16px' }}
               />
               <button
                 type="submit"
                 disabled={!inputQuestion.trim() || isTyping}
-                className="w-8 h-8 rounded-xl bg-[#8B7CFF] disabled:bg-[#1A1F29] disabled:text-[#5F6570] text-white flex items-center justify-center transition-all shrink-0 active:scale-95 shadow-sm"
+                className="w-10 h-10 rounded-xl bg-[#8B7CFF] disabled:bg-[#1A1F29] disabled:text-[#5F6570] text-white flex items-center justify-center transition-all shrink-0 active:scale-95 shadow-sm min-w-[40px] min-h-[40px]"
+                aria-label="Enviar mensagem"
               >
-                <Send size={14} />
+                <Send size={16} />
               </button>
             </form>
           </div>

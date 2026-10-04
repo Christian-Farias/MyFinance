@@ -203,7 +203,7 @@ export const CommitmentsPage: React.FC = () => {
                 return (
                   <div 
                     key={bill.id}
-                    className={`card p-4 flex items-center justify-between transition-all ${
+                    className={`card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
                       isPaid ? 'opacity-60 bg-[#121419]' : 'hover:border-[#333A4D]'
                     }`}
                   >
@@ -214,7 +214,7 @@ export const CommitmentsPage: React.FC = () => {
                         {isPaid ? <Check size={18} /> : <Calendar size={18} />}
                       </div>
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
                           <h4 className={`text-sm font-semibold truncate ${isPaid ? 'line-through text-[#8E95A3]' : 'text-white'}`}>
                             {bill.description}
@@ -229,30 +229,33 @@ export const CommitmentsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 shrink-0">
+                    <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
                       <span className={`text-sm font-bold ${isPaid ? 'text-[#8E95A3]' : 'text-white'}`}>
                         {formatCurrency(bill.amount)}
                       </span>
 
-                      {!isPaid ? (
-                        <button
-                          onClick={() => handlePayBill(bill)}
-                          disabled={processingId === bill.id}
-                          className="py-1.5 px-3 rounded-xl bg-[#39D98A]/15 hover:bg-[#39D98A]/25 text-[#39D98A] text-xs font-semibold flex items-center space-x-1 transition-all"
-                        >
-                          <Check size={13} />
-                          <span>Pagar</span>
-                        </button>
-                      ) : (
-                        <span className="pill pill-positive text-[10px]">Pago</span>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {!isPaid ? (
+                          <button
+                            onClick={() => handlePayBill(bill)}
+                            disabled={processingId === bill.id}
+                            className="py-1.5 px-3 rounded-xl bg-[#39D98A]/15 hover:bg-[#39D98A]/25 text-[#39D98A] text-xs font-semibold flex items-center space-x-1 transition-all min-h-[36px]"
+                          >
+                            <Check size={13} />
+                            <span>Pagar</span>
+                          </button>
+                        ) : (
+                          <span className="pill pill-positive text-[10px]">Pago</span>
+                        )}
 
-                      <button
-                        onClick={() => { setBillToEdit(bill); setIsBillModalOpen(true); }}
-                        className="p-1.5 rounded-lg text-[#8E95A3] hover:text-white"
-                      >
-                        <Edit2 size={14} />
-                      </button>
+                        <button
+                          onClick={() => { setBillToEdit(bill); setIsBillModalOpen(true); }}
+                          className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-white flex items-center justify-center"
+                          aria-label={`Editar conta ${bill.description}`}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -278,7 +281,7 @@ export const CommitmentsPage: React.FC = () => {
                 return (
                   <div 
                     key={rec.id}
-                    className={`card p-4 flex items-center justify-between transition-all ${
+                    className={`card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
                       isReceived ? 'opacity-60 bg-[#121419]' : 'hover:border-[#333A4D]'
                     }`}
                   >
@@ -289,7 +292,7 @@ export const CommitmentsPage: React.FC = () => {
                         <ArrowUpRight size={18} />
                       </div>
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <h4 className={`text-sm font-semibold truncate ${isReceived ? 'line-through text-[#8E95A3]' : 'text-white'}`}>
                           {rec.description}
                         </h4>
@@ -300,30 +303,33 @@ export const CommitmentsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 shrink-0">
+                    <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
                       <span className="text-sm font-bold text-[#39D98A]">
                         +{formatCurrency(rec.amount)}
                       </span>
 
-                      {!isReceived ? (
-                        <button
-                          onClick={() => handleReceive(rec)}
-                          disabled={processingId === rec.id}
-                          className="py-1.5 px-3 rounded-xl bg-[#39D98A] text-[#0D0F12] text-xs font-bold flex items-center space-x-1 shadow-sm transition-all"
-                        >
-                          <Check size={13} />
-                          <span>Receber</span>
-                        </button>
-                      ) : (
-                        <span className="pill pill-positive text-[10px]">Recebido</span>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {!isReceived ? (
+                          <button
+                            onClick={() => handleReceive(rec)}
+                            disabled={processingId === rec.id}
+                            className="py-1.5 px-3 rounded-xl bg-[#39D98A] text-[#0D0F12] text-xs font-bold flex items-center space-x-1 shadow-sm transition-all min-h-[36px]"
+                          >
+                            <Check size={13} />
+                            <span>Receber</span>
+                          </button>
+                        ) : (
+                          <span className="pill pill-positive text-[10px]">Recebido</span>
+                        )}
 
-                      <button
-                        onClick={() => { setReceivableToEdit(rec); setIsRecModalOpen(true); }}
-                        className="p-1.5 rounded-lg text-[#8E95A3] hover:text-white"
-                      >
-                        <Edit2 size={14} />
-                      </button>
+                        <button
+                          onClick={() => { setReceivableToEdit(rec); setIsRecModalOpen(true); }}
+                          className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-white flex items-center justify-center"
+                          aria-label={`Editar recebimento ${rec.description}`}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -349,12 +355,12 @@ export const CommitmentsPage: React.FC = () => {
 
           <div className="space-y-2">
             {subscriptions.map(sub => (
-              <div key={sub.id} className="card p-4 flex items-center justify-between">
+              <div key={sub.id} className="card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center space-x-3 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-[#8B7CFF]/15 text-[#8B7CFF] flex items-center justify-center shrink-0">
                     <Tv size={18} />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <h4 className="text-sm font-semibold text-white truncate">{sub.name}</h4>
                     <p className="text-xs text-[#8E95A3] mt-0.5">
                       Próxima cobrança: {formatDateBR(sub.nextBillingDate)} • {formatCurrency(sub.annualEstimate)}/ano
@@ -362,15 +368,16 @@ export const CommitmentsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 shrink-0">
-                  <div className="text-right">
+                <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
+                  <div className="text-left sm:text-right">
                     <span className="text-sm font-bold text-white block">{formatCurrency(sub.amount)}</span>
                     <span className="text-[10px] text-[#8E95A3] font-medium">{sub.frequency}</span>
                   </div>
 
                   <button
                     onClick={() => deleteSubscription(sub.id)}
-                    className="p-1.5 rounded-lg text-[#8E95A3] hover:text-[#FF5555] transition-colors"
+                    className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-[#FF5555] flex items-center justify-center transition-colors"
+                    aria-label={`Excluir assinatura ${sub.name}`}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -385,14 +392,14 @@ export const CommitmentsPage: React.FC = () => {
       {tab === 'recurring' && (
         <div className="space-y-2">
           {recurringTransactions.map(rule => (
-            <div key={rule.id} className="card p-4 flex items-center justify-between">
+            <div key={rule.id} className="card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-3 min-w-0">
                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
                   rule.type === 'income' ? 'bg-[#39D98A]/15 text-[#39D98A]' : 'bg-[#FF5555]/15 text-[#FF5555]'
                 }`}>
                   <Repeat size={18} />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center space-x-2">
                     <h4 className="text-sm font-semibold text-white truncate">{rule.description}</h4>
                     <span className="pill pill-neutral text-[9px] py-0 px-1.5">{rule.frequency}</span>
@@ -403,24 +410,27 @@ export const CommitmentsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 shrink-0">
+              <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
                 <span className={`text-sm font-bold ${rule.type === 'income' ? 'text-[#39D98A]' : 'text-white'}`}>
                   {rule.type === 'income' ? '+' : '-'}{formatCurrency(rule.amount)}
                 </span>
 
-                <button
-                  onClick={() => skipRecurringOccurrence(rule.id)}
-                  className="py-1 px-2.5 rounded-lg bg-[#1A1F29] hover:bg-[#222733] text-[#8E95A3] text-xs font-semibold"
-                >
-                  Pular
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => skipRecurringOccurrence(rule.id)}
+                    className="py-1 px-2.5 rounded-lg bg-[#1A1F29] hover:bg-[#222733] text-[#8E95A3] text-xs font-semibold min-h-[32px]"
+                  >
+                    Pular
+                  </button>
 
-                <button
-                  onClick={() => { setRecurringToEdit(rule); setIsRecurringModalOpen(true); }}
-                  className="p-1.5 rounded-lg text-[#8E95A3] hover:text-white"
-                >
-                  <Edit2 size={14} />
-                </button>
+                  <button
+                    onClick={() => { setRecurringToEdit(rule); setIsRecurringModalOpen(true); }}
+                    className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-white flex items-center justify-center"
+                    aria-label={`Editar regra ${rule.description}`}
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

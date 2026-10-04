@@ -98,20 +98,22 @@ export const AccountsPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center space-x-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => { setAccountToEdit(acc); setIsAccountModalOpen(true); }}
-                    className="p-1.5 rounded-lg bg-[#121419] text-[#8B919B] hover:text-[#F5F5F5] transition-colors"
+                    className="w-8 h-8 rounded-lg bg-[#121419] text-[#8B919B] hover:text-[#F5F5F5] flex items-center justify-center transition-colors"
                     title="Editar"
+                    aria-label={`Editar conta ${acc.name}`}
                   >
-                    <Edit2 size={13} />
+                    <Edit2 size={14} />
                   </button>
                   <button
                     onClick={() => deleteAccount(acc.id)}
-                    className="p-1.5 rounded-lg bg-[#121419] text-[#FF5C5C]/50 hover:text-[#FF5C5C] transition-colors"
+                    className="w-8 h-8 rounded-lg bg-[#121419] text-[#FF5C5C]/60 hover:text-[#FF5C5C] flex items-center justify-center transition-colors"
                     title="Excluir"
+                    aria-label={`Excluir conta ${acc.name}`}
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>

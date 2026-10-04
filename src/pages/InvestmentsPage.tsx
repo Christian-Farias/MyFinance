@@ -190,18 +190,22 @@ export const InvestmentsPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center space-x-1 ml-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => { setInvestmentToEdit(inv); setIsModalOpen(true); }}
-                      className="p-1.5 rounded-lg bg-[#121419] text-[#8B919B] hover:text-[#F5F5F5] transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[#121419] text-[#8B919B] hover:text-[#F5F5F5] flex items-center justify-center transition-colors"
+                      title="Editar"
+                      aria-label={`Editar investimento ${inv.assetName}`}
                     >
-                      <Edit2 size={13} />
+                      <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => deleteInvestment(inv.id)}
-                      className="p-1.5 rounded-lg bg-[#121419] text-[#FF5C5C]/50 hover:text-[#FF5C5C] transition-colors"
+                      className="w-8 h-8 rounded-lg bg-[#121419] text-[#FF5C5C]/60 hover:text-[#FF5C5C] flex items-center justify-center transition-colors"
+                      title="Excluir"
+                      aria-label={`Excluir investimento ${inv.assetName}`}
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
