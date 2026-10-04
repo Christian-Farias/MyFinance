@@ -13,12 +13,15 @@ import {
   Sparkles,
   CheckCircle2,
   AlertTriangle,
+  LogOut,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { useAuth } from '../context/AuthContext';
 import { backupService } from '../services/backupService';
 
 export const SettingsPage: React.FC = () => {
   const { settings, updateSettings, loadDemoData, resetAllData } = useFinance();
+  const { user, userEmail, userName, signOut } = useAuth();
   const [confirmClear, setConfirmClear] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -109,11 +112,11 @@ export const SettingsPage: React.FC = () => {
       <div className="card p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
           <div className="w-12 h-12 rounded-full bg-[#121419] border border-[#1D2026] flex items-center justify-center text-[#8B7CFF] font-bold text-base">
-            {(settings.name || 'US').substring(0, 2).toUpperCase()}
+            {(userName || settings.name || 'US').substring(0, 2).toUpperCase()}
           </div>
           <div>
-            <h4 className="text-sm font-bold text-[#F5F5F5]">{settings.name || 'Usuário'}</h4>
-            <p className="label-xs">{settings.email || 'seu@email.com'}</p>
+            <h4 className="text-sm font-bold text-[#F5F5F5]">{userName || settings.name || 'Usuário'}</h4>
+            <p className="label-xs">{userEmail || settings.email || 'seu@email.com'}</p>
           </div>
         </div>
         <ChevronRight size={16} className="text-[#5F6570]" />
@@ -188,6 +191,23 @@ export const SettingsPage: React.FC = () => {
             </div>
             <ChevronRight size={14} className="text-[#5F6570]" />
           </div>
+        </div>
+      </div>
+
+      {/* ── SESSION / LOGOUT ── */}
+      <div>
+        <p className="label-section mb-3 px-0.5">Sessão</p>
+        <div className="card overflow-hidden">
+          <button
+            onClick={() => signOut()}
+            className="w-full flex items-center justify-between p-4 hover:bg-[#121419] transition-colors text-left text-xs font-semibold text-[#8B919B] hover:text-[#FF5C5C] group cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <LogOut size={16} className="text-[#8B7CFF] group-hover:text-[#FF5C5C] transition-colors" />
+              <span>Sair da conta</span>
+            </div>
+            <ChevronRight size={14} className="text-[#5F6570]" />
+          </button>
         </div>
       </div>
 
