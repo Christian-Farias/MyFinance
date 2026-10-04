@@ -63,6 +63,15 @@ export async function executeActionPlan(
         };
       }
 
+      case 'CREATE_BUDGET': {
+        const budget = await budgetService.create(data);
+        return {
+          success: true,
+          message: `Orçamento criado com sucesso!`,
+          resultData: budget,
+        };
+      }
+
       case 'DELETE_TRANSACTION': {
         if (data.targetTransactionId) {
           await transactionService.delete(data.targetTransactionId);

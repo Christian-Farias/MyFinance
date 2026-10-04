@@ -289,8 +289,11 @@ export const AIAssistantPage: React.FC = () => {
                         {visual.items.map((item, idx) => (
                           <div key={idx} className="space-y-1">
                             <div className="flex justify-between text-[11px] font-medium text-ink">
-                              <span>{item.label}</span>
-                              <span>{item.formattedValue}</span>
+                              <div>
+                                <span>{item.label}</span>
+                                {item.subtitle && <p className="text-[10px] text-ink-faint">{item.subtitle}</p>}
+                              </div>
+                              <span className="shrink-0 ml-2">{item.formattedValue}</span>
                             </div>
                             {item.percentage !== undefined && (
                               <div className="w-full h-1.5 bg-edge-strong rounded-full overflow-hidden">
@@ -308,6 +311,26 @@ export const AIAssistantPage: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Visual Progress Render */}
+                    {visual && visual.progress && (
+                      <div className="mt-3 pt-3 border-t border-active space-y-2">
+                        {visual.title && <p className="label-xs text-ink-muted mb-1 font-semibold">{visual.title}</p>}
+                        <div className="flex justify-between text-[11px] font-medium text-ink">
+                          <span>{visual.progress.formattedCurrent}</span>
+                          <span className="text-ink-muted">Alvo: {visual.progress.formattedTarget}</span>
+                        </div>
+                        <div className="w-full h-2 bg-edge-strong rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all bg-accent" 
+                            style={{ width: `${Math.min(100, Math.max(0, visual.progress.percentage))}%` }} 
+                          />
+                        </div>
+                        <p className="text-[10px] text-right text-ink-faint font-semibold">
+                          {visual.progress.percentage.toFixed(0)}% concluído
+                        </p>
+                      </div>
+                    )}
+
                     {/* Visual Math Breakdown Render */}
                     {visual && visual.breakdown && visual.breakdown.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-active space-y-1.5">
@@ -322,6 +345,7 @@ export const AIAssistantPage: React.FC = () => {
                         ))}
                       </div>
                     )}
+
 
                     {/* Explanation */}
                     {m.responseObj?.explanation && (

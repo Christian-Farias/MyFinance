@@ -18,13 +18,17 @@ export type AIIntentType =
   | 'GET_BALANCE'
   | 'GET_EXPENSES'
   | 'GET_INCOME'
+  | 'GET_TRANSACTIONS'
   | 'GET_CATEGORY_SPENDING'
+  | 'GET_CATEGORY_COMPARISON'
   | 'GET_MONTHLY_COMPARISON'
+  | 'GET_ACCOUNTS'
   | 'GET_CARD_BILL'
   | 'GET_INSTALLMENTS'
   | 'GET_SUBSCRIPTIONS'
   | 'GET_BILLS'
   | 'GET_RECEIVABLES'
+  | 'GET_RECURRING'
   | 'GET_FORECAST'
   | 'GET_CASH_FLOW'
   | 'GET_BUDGET'
@@ -33,6 +37,8 @@ export type AIIntentType =
   | 'GET_COMMITMENTS'
   | 'GET_FINANCIAL_HEALTH'
   | 'CAN_I_SPEND'
+  | 'SIMULATE_GOAL'
+  | 'HELP_GREETING'
   | 'CREATE_EXPENSE'
   | 'CREATE_INCOME'
   | 'CREATE_TRANSFER'
@@ -55,12 +61,15 @@ export interface DateRange {
   endDate: string;   // YYYY-MM-DD
   monthYear?: string;// YYYY-MM
   label: string;
+  isRollingWindow?: boolean;
 }
 
 export interface IntentParameters {
   amount?: number;
   categoryQuery?: string;
   categoryId?: string;
+  secondCategoryQuery?: string;
+  secondCategoryId?: string;
   description?: string;
   date?: string;
   dateRange?: DateRange;
@@ -82,6 +91,8 @@ export interface IntentParameters {
   isFixed?: boolean;
   notes?: string;
   monthYearComparisonTarget?: 'previous' | 'current';
+  transactionTypeFilter?: 'expense' | 'income' | 'all';
+  limitCount?: number;
 }
 
 export interface ParsedIntent {
@@ -90,6 +101,8 @@ export interface ParsedIntent {
   rawText: string;
   confidence: number;
   ambiguousMatches?: Array<{ id: string; name: string; type: string }>;
+  needsClarification?: boolean;
+  clarificationPrompt?: string;
 }
 
 export interface ActionPayload {
@@ -122,6 +135,7 @@ export interface VisualComponentData {
     formattedValue: string;
     percentage?: number;
     color?: string;
+    subtitle?: string;
   }>;
   breakdown?: Array<{
     label: string;
@@ -135,6 +149,7 @@ export interface VisualComponentData {
     percentage: number;
     formattedCurrent: string;
     formattedTarget: string;
+    label?: string;
   };
 }
 
@@ -163,11 +178,19 @@ export interface AIConversationContext {
   lastIntent?: AIIntentType;
   lastCategoryQuery?: string;
   lastCategoryId?: string;
-  lastMonthYear?: string;
+  secondLastCategoryQuery?: string;
+  secondLastCategoryId?: string;
+  lastDateRange?: DateRange;
+  lastAccountId?: string;
+  lastAccountQuery?: string;
+  lastCardId?: string;
+  lastCardQuery?: string;
   lastAmount?: number;
   lastGoalId?: string;
+  lastTransactionType?: 'expense' | 'income' | 'all';
   pendingActionPlan?: AIActionPlan;
   messagesHistory: AIChatMessage[];
+  lastInteractionTimestamp?: number;
 }
 
 export interface AIProvider {

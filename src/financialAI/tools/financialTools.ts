@@ -188,5 +188,161 @@ export const financialTools = {
 
   getFixedVsVariable(state: FinancialState, monthYear?: string) {
     return calculateFixedVsVariableExpenses(state.transactions, state.recurring, state.bills, monthYear);
+  },
+
+  getCategoryComparison(
+    state: FinancialState,
+    catAIdOrName: string,
+    catBIdOrName: string,
+    monthYear?: string
+  ) {
+    const spendA = this.getCategorySpending(state, catAIdOrName, monthYear);
+    const spendB = this.getCategorySpending(state, catBIdOrName, monthYear);
+
+    const diff = Math.abs(spendA.total - spendB.total);
+    const higher = spendA.total >= spendB.total ? spendA : spendB;
+    const lower = spendA.total >= spendB.total ? spendB : spendA;
+    const ratio = lower.total > 0 ? ((higher.total - lower.total) / lower.total) * 100 : 0;
+
+    return {
+      categoryA: spendA,
+      categoryB: spendB,
+      difference: diff,
+      formattedDifference: formatCurrency(diff),
+      higherCategoryName: higher.categoryName,
+      lowerCategoryName: lower.categoryName,
+      percentageHigher: ratio,
+      isEqual: spendA.total === spendB.total,
+    };
+  },
+
+  getTransactions(
+    state: FinancialState,
+    options?: {
+      monthYear?: string;
+      categoryId?: string;
+      type?: 'expense' | 'income';
+      limit?: number;
+    }
+  ) {
+    let filtered = [...state.transactions];
+    if (options?.monthYear) {
+      filtered = filtered.filter(t => t.date.startsWith(options.monthYear!));
+    }
+    if (options?.categoryId) {
+      filtered = filtered.filter(t => t.categoryId === options.categoryId);
+    }
+    if (options?.type) {
+      filtered = filtered.filter(t => t.type === options.type);
+    }
+
+    filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const limit = options?.limit || 5;
+    const items = filtered.slice(0, limit);
+
+    return {
+      totalFound: filtered.length,
+      items: items.map(t => {
+        const cat = state.categories.find(c => c.id === t.categoryId);
+        return {
+          id: t.id,
+          description: t.description,
+          amount: t.amount,
+          formattedAmount: formatCurrency(t.amount),
+          type: t.type,
+          categoryName: cat?.name || 'Geral',
+          date: t.date,
+        };
+      }),
+    };
+  },
+
+  getInvestments(state: FinancialState) {
+    const totalInvested = state.investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+    const totalCost = state.investments.reduce((sum, inv) => sum + inv.totalInvested, 0);
+    const profitLoss = totalInvested - totalCost;
+    const profitLossPercent = totalCost > 0 ? (profitLoss / totalCost) * 100 : 0;
+
+    // Breakdown by type
+    const byTypeMap: Record<string, number> = {};
+    for (const inv of state.investments) {
+      byTypeMap[inv.type] = (byTypeMap[inv.type] || 0) + inv.currentValue;
+    }
+
+    const typeBreakdown = Object.entries(byTypeMap).map(([type, value]) => ({
+      type,
+      value,
+      formattedValue: formatCurrency(value),
+      percentage: totalInvested > 0 ? (value / totalInvested) * 100 : 0,
+    }));
+
+    return {
+      totalInvested,
+      formattedTotalInvested: formatCurrency(totalInvested),
+      totalCost,
+      formattedTotalCost: formatCurrency(totalCost),
+      profitLoss,
+      formattedProfitLoss: formatCurrency(profitLoss),
+      profitLossPercent,
+      isPositive: profitLoss >= 0,
+      count: state.investments.length,
+      typeBreakdown,
+      items: state.investments.map(inv => ({
+        id: inv.id,
+        name: inv.name,
+        type: inv.type,
+        currentValue: inv.currentValue,
+        formattedValue: formatCurrency(inv.currentValue),
+      })),
+    };
+  },
+
+  getRecurring(state: FinancialState) {
+    const active = state.recurring.filter(r => r.active);
+    const totalMonthly = active.reduce((sum, r) => sum + r.amount, 0);
+    return {
+      activeCount: active.length,
+      totalMonthly,
+      formattedTotalMonthly: formatCurrency(totalMonthly),
+      items: active.map(r => ({
+        id: r.id,
+        description: r.description,
+        amount: r.amount,
+        formattedAmount: formatCurrency(r.amount),
+        type: r.type,
+      })),
+    };
+  },
+
+  simulateGoalSavings(state: FinancialState, goalIdOrName?: string, monthsAhead: number = 6) {
+    const goal = goalIdOrName
+      ? state.goals.find(g => g.id === goalIdOrName || g.name.toLowerCase().includes(goalIdOrName.toLowerCase()))
+      : state.goals[0];
+
+    if (!goal) {
+      return {
+        hasGoal: false,
+        message: 'Nenhuma meta encontrada para simulação.',
+      };
+    }
+
+    const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+    const safeMonths = Math.max(1, monthsAhead);
+    const neededMonthly = remaining / safeMonths;
+
+    return {
+      hasGoal: true,
+      goalName: goal.name,
+      targetAmount: goal.targetAmount,
+      currentAmount: goal.currentAmount,
+      remainingAmount: remaining,
+      months: safeMonths,
+      neededMonthly,
+      formattedNeededMonthly: formatCurrency(neededMonthly),
+      formattedRemaining: formatCurrency(remaining),
+      formattedTarget: formatCurrency(goal.targetAmount),
+      formattedCurrent: formatCurrency(goal.currentAmount),
+    };
   }
 };
+

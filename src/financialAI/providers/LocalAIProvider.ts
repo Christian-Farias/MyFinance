@@ -2,6 +2,7 @@ import type { AIProvider, AIResponse, AIConversationContext } from '../types';
 import { parseUserIntent } from '../parsers/intentParser';
 import { createActionPlan } from '../actionPlanner';
 import { generateResponse } from '../responseGenerator';
+import { resolveConversationContext, updateConversationContext } from '../contextResolver';
 import { FinancialState } from '../tools/financialTools';
 
 export class LocalAIProvider implements AIProvider {
@@ -10,22 +11,20 @@ export class LocalAIProvider implements AIProvider {
     context: AIConversationContext,
     financialState: FinancialState
   ): Promise<AIResponse> {
-    // 1. Parse user intent and extract parameters
-    const parsedIntent = parseUserIntent(query, financialState.categories, financialState.accounts);
+    // 1. Parse raw user intent and extract parameters & entities
+    let parsedIntent = parseUserIntent(
+      query,
+      financialState.categories,
+      financialState.accounts,
+      financialState.cards,
+      financialState.goals
+    );
 
-    // 2. Resolve contextual memory if query relies on previous topic (e.g., "E no mês passado?", "E alimentação?")
-    if (parsedIntent.intent === 'GET_EXPENSES' && context.lastIntent === 'GET_CATEGORY_SPENDING' && context.lastCategoryQuery) {
-      parsedIntent.intent = 'GET_CATEGORY_SPENDING';
-      parsedIntent.parameters.categoryQuery = context.lastCategoryQuery;
-      parsedIntent.parameters.categoryId = context.lastCategoryId;
-    }
+    // 2. Resolve multi-turn contextual memory (e.g. "E no mês passado?", "E transporte?", "Agora compara os dois")
+    parsedIntent = resolveConversationContext(parsedIntent, query, context);
 
-    // 3. Save memory context for multi-turn conversations
-    context.lastIntent = parsedIntent.intent;
-    if (parsedIntent.parameters.categoryQuery) {
-      context.lastCategoryQuery = parsedIntent.parameters.categoryQuery;
-      context.lastCategoryId = parsedIntent.parameters.categoryId;
-    }
+    // 3. Save / update contextual memory for subsequent turns
+    updateConversationContext(parsedIntent, context);
 
     // 4. Create action plan if intent represents a state mutation
     const actionPlan = createActionPlan(
@@ -39,7 +38,7 @@ export class LocalAIProvider implements AIProvider {
       context.pendingActionPlan = actionPlan;
     }
 
-    // 5. Generate response payload with text, visual widgets, and follow-ups
+    // 5. Generate response payload with rich text, visual widgets, and contextual follow-ups
     return generateResponse(
       parsedIntent.intent,
       query,
@@ -49,3 +48,4 @@ export class LocalAIProvider implements AIProvider {
     );
   }
 }
+

@@ -23,6 +23,14 @@ export function generateResponse(
   }
 
   switch (intent) {
+    case 'HELP_GREETING': {
+      return {
+        text: 'E aí! Sou o **Neguin**, seu assistente financeiro local e pessoal. 🐒\n\nAnaliso suas finanças com cálculos 100% determinísticos no seu dispositivo. Veja o que posso fazer:\n\n• **Consultas**: "Qual meu saldo?", "Quanto gastei este mês?", "Quanto foi com comida?"\n• **Comparações**: "Gastei mais que mês passado?", "Compara alimentação com transporte"\n• **Simulações**: "Posso gastar R$ 300 hoje?", "Quanto preciso guardar para a meta?"\n• **Obrigações**: "Quais contas vencem essa semana?", "Fatura do cartão", "Minhas assinaturas"\n• **Lançamentos**: "Gastei 50 no mercado", "Transfira 100 da conta corrente para carteira"',
+        intent,
+        followUpSuggestions: ['Qual é o meu saldo?', 'Quanto gastei este mês?', 'Posso gastar R$ 300?', 'Como estão minhas finanças?'],
+      };
+    }
+
     case 'GET_BALANCE': {
       const balanceInfo = financialTools.getBalance(state);
       const accountsList = balanceInfo.accounts
@@ -45,14 +53,36 @@ export function generateResponse(
       };
     }
 
+    case 'GET_ACCOUNTS': {
+      const balanceInfo = financialTools.getBalance(state);
+      const accountsList = balanceInfo.accounts
+        .map(a => `• **${a.name}**: ${a.formatted}`)
+        .join('\n');
+
+      return {
+        text: `Você possui **${balanceInfo.accounts.length} conta(s)** cadastradas somando **${balanceInfo.formattedBalance}**:\n\n${accountsList}`,
+        intent,
+        visual: {
+          type: 'list',
+          title: 'Contas Cadastradas',
+          items: balanceInfo.accounts.map(a => ({
+            label: a.name,
+            value: a.balance,
+            formattedValue: a.formatted,
+          })),
+        },
+        followUpSuggestions: ['Qual meu saldo total?', 'Faturas de cartão', 'Quanto gastei este mês?'],
+      };
+    }
+
     case 'GET_EXPENSES': {
       const targetMonthYear = params?.dateRange?.monthYear || currentYM;
       const expenses = financialTools.getExpenses(state, targetMonthYear);
       const topCategories = expenses.categoryBreakdown.slice(0, 3);
       
-      const topList = topCategories
-        .map(c => `• **${c.categoryName}**: ${formatCurrency(c.total)} (${c.percentage.toFixed(0)}%)`)
-        .join('\n');
+      const topList = topCategories.length > 0
+        ? topCategories.map(c => `• **${c.categoryName}**: ${formatCurrency(c.total)} (${c.percentage.toFixed(0)}%)`).join('\n')
+        : '• Nenhuma despesa registrada no período.';
 
       return {
         text: `Você gastou **${expenses.formattedTotal}** no período de ${params?.dateRange?.label || 'Este Mês'}.\n\nPrincipais despesas:\n${topList}`,
@@ -72,13 +102,64 @@ export function generateResponse(
       };
     }
 
+    case 'GET_INCOME': {
+      const targetMonthYear = params?.dateRange?.monthYear || currentYM;
+      const income = financialTools.getIncome(state, targetMonthYear);
+
+      return {
+        text: `Suas receitas totalizam **${income.formattedTotal}** no período de ${params?.dateRange?.label || 'Este Mês'}.`,
+        intent,
+        followUpSuggestions: ['Quanto gastei este mês?', 'Qual meu saldo atual?', 'Como estão minhas finanças?'],
+      };
+    }
+
+    case 'GET_TRANSACTIONS': {
+      const txs = financialTools.getTransactions(state, {
+        monthYear: params?.dateRange?.monthYear,
+        categoryId: params?.categoryId,
+        limit: 5,
+      });
+
+      if (txs.items.length === 0) {
+        return {
+          text: `Nenhuma movimentação recente encontrada para o período ${params?.dateRange?.label || 'selecionado'}.`,
+          intent,
+          followUpSuggestions: ['Qual meu saldo?', 'Quanto gastei este mês?'],
+        };
+      }
+
+      const list = txs.items
+        .map(t => `• **${t.description}**: ${t.type === 'income' ? '+' : '-'}${t.formattedAmount} (${t.categoryName})`)
+        .join('\n');
+
+      return {
+        text: `Aqui estão as **últimas ${txs.items.length} movimentações**:\n\n${list}`,
+        intent,
+        visual: {
+          type: 'list',
+          title: 'Últimas Transações',
+          items: txs.items.map(t => ({
+            label: t.description,
+            value: t.amount,
+            formattedValue: `${t.type === 'income' ? '+' : '-'}${t.formattedAmount}`,
+            subtitle: `${t.categoryName} • ${t.date}`,
+          })),
+        },
+        followUpSuggestions: ['Quanto gastei este mês?', 'Qual meu saldo?'],
+      };
+    }
+
     case 'GET_CATEGORY_SPENDING': {
       const catQuery = params?.categoryQuery || 'Alimentação';
       const targetMonthYear = params?.dateRange?.monthYear || currentYM;
       const spending = financialTools.getCategorySpending(state, catQuery, targetMonthYear);
 
+      const txList = spending.transactions.length > 0
+        ? `\n\nÚltimos lançamentos:\n` + spending.transactions.slice(0, 3).map(t => `• ${t.description}: ${formatCurrency(t.amount)}`).join('\n')
+        : '';
+
       return {
-        text: `Você gastou **${spending.formattedTotal}** em **${spending.categoryName}** (${params?.dateRange?.label || 'este mês'}).`,
+        text: `Você gastou **${spending.formattedTotal}** em **${spending.categoryName}** (${params?.dateRange?.label || 'este mês'}).${txList}`,
         intent,
         visual: {
           type: 'list',
@@ -89,7 +170,35 @@ export function generateResponse(
             formattedValue: formatCurrency(t.amount),
           })),
         },
-        followUpSuggestions: ['E no mês passado?', 'Quanto é meu orçamento?', 'Qual meu saldo atual?'],
+        followUpSuggestions: ['E no mês passado?', 'E transporte?', 'Quanto é meu orçamento para esta categoria?'],
+      };
+    }
+
+    case 'GET_CATEGORY_COMPARISON': {
+      const catA = params?.categoryQuery || params?.secondCategoryQuery || 'Alimentação';
+      const catB = params?.secondCategoryQuery || params?.categoryQuery || 'Transporte';
+      const targetMonthYear = params?.dateRange?.monthYear || currentYM;
+      const comp = financialTools.getCategoryComparison(state, catA, catB, targetMonthYear);
+
+      let textDesc = '';
+      if (comp.isEqual) {
+        textDesc = `Seus gastos em **${comp.categoryA.categoryName}** e **${comp.categoryB.categoryName}** foram iguais: **${comp.categoryA.formattedTotal}**.`;
+      } else {
+        textDesc = `Você gastou **${comp.higherCategoryName}** (**${comp.categoryA.categoryName === comp.higherCategoryName ? comp.categoryA.formattedTotal : comp.categoryB.formattedTotal}**), superando **${comp.lowerCategoryName}** (**${comp.categoryA.categoryName === comp.lowerCategoryName ? comp.categoryA.formattedTotal : comp.categoryB.formattedTotal}**) por uma diferença de **${comp.formattedDifference}** (+${comp.percentageHigher.toFixed(1)}%).`;
+      }
+
+      return {
+        text: `${textDesc}\n\n• **${comp.categoryA.categoryName}**: ${comp.categoryA.formattedTotal}\n• **${comp.categoryB.categoryName}**: ${comp.categoryB.formattedTotal}`,
+        intent,
+        visual: {
+          type: 'comparison',
+          title: `Comparativo: ${comp.categoryA.categoryName} vs ${comp.categoryB.categoryName}`,
+          breakdown: [
+            { label: comp.categoryA.categoryName, amount: comp.categoryA.total, formattedAmount: comp.categoryA.formattedTotal },
+            { label: comp.categoryB.categoryName, amount: comp.categoryB.total, formattedAmount: comp.categoryB.formattedTotal },
+          ]
+        },
+        followUpSuggestions: ['Quanto gastei no total este mês?', 'Como estão meus orçamentos?'],
       };
     }
 
@@ -119,6 +228,14 @@ export function generateResponse(
 
     case 'GET_CARD_BILL': {
       const cardsInfo = financialTools.getCardBill(state);
+      if (cardsInfo.cards.length === 0) {
+        return {
+          text: 'Você não possui cartões de crédito cadastrados no momento.',
+          intent,
+          followUpSuggestions: ['Qual é o meu saldo?', 'Quanto gastei este mês?'],
+        };
+      }
+
       const cardsList = cardsInfo.cards
         .map(c => `• **${c.cardName}**: Fatura de ${c.formattedUsed} (Limite livre: ${c.formattedAvailable})`)
         .join('\n');
@@ -133,9 +250,30 @@ export function generateResponse(
             label: c.cardName,
             value: c.usedLimit,
             formattedValue: c.formattedUsed,
+            subtitle: `Limite: ${formatCurrency(c.limit)}`,
           })),
         },
-        followUpSuggestions: ['Quanto tenho de parcelas futuras?', 'Quais contas vencem essa semana?', 'Qual meu saldo?'],
+        followUpSuggestions: ['Quais contas vencem essa semana?', 'Quanto tenho de parcelas futuras?', 'Qual meu saldo?'],
+      };
+    }
+
+    case 'GET_INSTALLMENTS': {
+      const futureCommitments = financialTools.getCommitments(state, 6);
+      const totalFuture = futureCommitments.reduce((sum, c) => sum + c.total, 0);
+
+      return {
+        text: `Você possui compras e compromissos parcelados projetados somando **${formatCurrency(totalFuture)}** nos próximos 6 meses.`,
+        intent,
+        visual: {
+          type: 'list',
+          title: 'Compromissos dos Próximos Meses',
+          items: futureCommitments.map(c => ({
+            label: c.monthLabel,
+            value: c.total,
+            formattedValue: formatCurrency(c.total),
+          })),
+        },
+        followUpSuggestions: ['Fatura do cartão', 'Quais contas vencem essa semana?'],
       };
     }
 
@@ -145,6 +283,7 @@ export function generateResponse(
         return {
           text: 'Você não possui contas a pagar pendentes para os próximos dias.',
           intent,
+          followUpSuggestions: ['Qual meu saldo?', 'Quanto gastei este mês?'],
         };
       }
       const list = bills.pending
@@ -162,9 +301,42 @@ export function generateResponse(
             label: b.description,
             value: b.amount,
             formattedValue: formatCurrency(b.amount),
+            subtitle: `Vencimento: ${b.dueDate}`,
           })),
         },
         followUpSuggestions: ['Quanto vou ter no fim do mês?', 'Qual meu saldo?', 'Quais são minhas assinaturas?'],
+      };
+    }
+
+    case 'GET_RECEIVABLES': {
+      const rec = financialTools.getReceivables(state);
+      if (rec.expected.length === 0) {
+        return {
+          text: 'Você não possui contas a receber registradas no momento.',
+          intent,
+          followUpSuggestions: ['Qual meu saldo?', 'Quais contas vencem essa semana?'],
+        };
+      }
+
+      const list = rec.expected
+        .slice(0, 5)
+        .map(r => `• **${r.description}**: ${formatCurrency(r.amount)} (Previsto para ${r.expectedDate})`)
+        .join('\n');
+
+      return {
+        text: `Você possui **${rec.expected.length} recebimento(s)** previsto(s) somando **${rec.formattedTotalExpected}**.\n\n${list}`,
+        intent,
+        visual: {
+          type: 'list',
+          title: 'Contas a Receber',
+          items: rec.expected.map(r => ({
+            label: r.description,
+            value: r.amount,
+            formattedValue: formatCurrency(r.amount),
+            subtitle: `Previsão: ${r.expectedDate}`,
+          })),
+        },
+        followUpSuggestions: ['Previsão de saldo no fim do mês', 'Qual meu saldo atual?'],
       };
     }
 
@@ -182,6 +354,24 @@ export function generateResponse(
           ]
         },
         followUpSuggestions: ['Quais contas vencem essa semana?', 'Quanto gastei este mês?'],
+      };
+    }
+
+    case 'GET_RECURRING': {
+      const rec = financialTools.getRecurring(state);
+      return {
+        text: `Você possui **${rec.activeCount} despesa(s) recorrente(s)** ativas totalizando **${rec.formattedTotalMonthly}/mês** fixos.`,
+        intent,
+        visual: {
+          type: 'list',
+          title: 'Despesas Recorrentes',
+          items: rec.items.map(r => ({
+            label: r.description,
+            value: r.amount,
+            formattedValue: r.formattedAmount,
+          })),
+        },
+        followUpSuggestions: ['Quais contas vencem essa semana?', 'Minhas assinaturas', 'Qual meu saldo?'],
       };
     }
 
@@ -229,6 +419,135 @@ export function generateResponse(
       };
     }
 
+    case 'GET_BUDGET': {
+      const budgets = financialTools.getBudgets(state, currentYM);
+      if (budgets.length === 0) {
+        return {
+          text: 'Você ainda não definiu limites de orçamento para as suas categorias este mês.',
+          intent,
+          followUpSuggestions: ['Definir orçamento de 1000 para alimentação', 'Quanto gastei este mês?'],
+        };
+      }
+
+      const hasExceeded = budgets.some(b => b.isExceeded);
+      const budgetSuffix = hasExceeded ? '\n\nKatrovou 🐒' : '';
+
+      const list = budgets
+        .map(b => `• **${b.categoryName}**: ${formatCurrency(b.spent)} de ${formatCurrency(b.budget.limitAmount)} (${b.percentage.toFixed(0)}%)${b.isExceeded ? ' ⚠️ ESTOURADO' : ''}`)
+        .join('\n');
+
+      return {
+        text: `Seus orçamentos deste mês:\n\n${list}${budgetSuffix}`,
+        intent,
+        visual: {
+          type: 'category_ranking',
+          title: 'Orçamentos por Categoria',
+          items: budgets.map(b => ({
+            label: b.categoryName,
+            value: b.spent,
+            formattedValue: `${formatCurrency(b.spent)} / ${formatCurrency(b.budget.limitAmount)}`,
+            percentage: Math.min(100, b.percentage),
+            color: b.isExceeded ? '#FF5C5C' : b.isWarning ? '#FFB800' : '#39D98A',
+          })),
+        },
+        followUpSuggestions: ['Quanto gastei este mês?', 'Qual meu saldo?'],
+      };
+    }
+
+    case 'GET_GOAL': {
+      const goals = financialTools.getGoals(state);
+      if (goals.length === 0) {
+        return {
+          text: 'Você não possui metas cadastradas. Que tal criar uma? Exemplo: "Quero juntar 5 mil para viagem".',
+          intent,
+          followUpSuggestions: ['Criar meta de 5000 para reserva', 'Qual meu saldo?'],
+        };
+      }
+
+      const list = goals
+        .map(g => `• **${g.goal.name}**: ${formatCurrency(g.goal.currentAmount)} de ${formatCurrency(g.goal.targetAmount)} (${g.progress.percentage.toFixed(0)}%) - Falta ${formatCurrency(g.progress.remainingAmount)}`)
+        .join('\n');
+
+      const primary = goals[0];
+      return {
+        text: `Suas metas financeiras:\n\n${list}`,
+        intent,
+        visual: {
+          type: 'progress_bar',
+          title: primary.goal.name,
+          progress: {
+            current: primary.goal.currentAmount,
+            target: primary.goal.targetAmount,
+            percentage: primary.progress.percentage,
+            formattedCurrent: formatCurrency(primary.goal.currentAmount),
+            formattedTarget: formatCurrency(primary.goal.targetAmount),
+            label: primary.goal.name,
+          }
+        },
+        followUpSuggestions: ['Simule quanto preciso guardar por mês', 'Qual meu saldo?'],
+      };
+    }
+
+    case 'SIMULATE_GOAL': {
+      const sim = financialTools.simulateGoalSavings(state, params?.goalId || params?.description, 6);
+      if (!sim.hasGoal) {
+        return {
+          text: 'Você ainda não possui metas criadas para simulação. Digite por exemplo: "Criar meta de viagem 5000 reais".',
+          intent,
+          followUpSuggestions: ['Criar meta de 5000 para viagem', 'Qual meu saldo?'],
+        };
+      }
+
+      return {
+        text: `Para atingir a meta **${sim.goalName}** (${sim.formattedTarget}) em **${sim.months} meses**, você precisa guardar:\n\n**${sim.formattedNeededMonthly} por mês**\n\n• Já acumulado: ${sim.formattedCurrent}\n• Restante: ${sim.formattedRemaining}`,
+        intent,
+        visual: {
+          type: 'progress_bar',
+          title: `Simulação: ${sim.goalName}`,
+          progress: {
+            current: sim.currentAmount || 0,
+            target: sim.targetAmount || 1,
+            percentage: ((sim.currentAmount || 0) / (sim.targetAmount || 1)) * 100,
+            formattedCurrent: sim.formattedCurrent || 'R$ 0',
+            formattedTarget: sim.formattedTarget || 'R$ 0',
+            label: sim.goalName,
+          }
+        },
+        followUpSuggestions: ['Posso gastar R$ 200?', 'Como estão minhas finanças?'],
+      };
+    }
+
+    case 'GET_INVESTMENTS': {
+      const inv = financialTools.getInvestments(state);
+      if (inv.count === 0) {
+        return {
+          text: 'Você ainda não possui investimentos cadastrados no MyFinance.',
+          intent,
+          followUpSuggestions: ['Qual meu saldo?', 'Quanto gastei este mês?'],
+        };
+      }
+
+      const rentabilitySuffix = inv.isPositive
+        ? `Lucro de **+${inv.formattedProfitLoss}** (+${inv.profitLossPercent.toFixed(1)}%) 💪`
+        : `Prejuízo de **${inv.formattedProfitLoss}** (${inv.profitLossPercent.toFixed(1)}%) Katrovou 🐒`;
+
+      return {
+        text: `Seu patrimônio em investimentos é de **${inv.formattedTotalInvested}**.\n\n• **Valor Aplicado**: ${inv.formattedTotalCost}\n• **Rentabilidade Acumulada**: ${rentabilitySuffix}`,
+        intent,
+        visual: {
+          type: 'category_ranking',
+          title: 'Investimentos por Tipo',
+          items: inv.typeBreakdown.map(t => ({
+            label: t.type.toUpperCase(),
+            value: t.value,
+            formattedValue: t.formattedValue,
+            percentage: t.percentage,
+          })),
+        },
+        followUpSuggestions: ['Qual meu saldo em contas?', 'Quanto gastei este mês?'],
+      };
+    }
+
     case 'GET_FINANCIAL_HEALTH': {
       const health = diagnoseFinancialHealth(state);
       const pointsText = health.pointsOfInterest.map(p => `• ${p}`).join('\n');
@@ -243,7 +562,7 @@ export function generateResponse(
 
     default: {
       return {
-        text: 'Não consegui entender exatamente a sua dúvida. Você pode perguntar por exemplo:\n\n• "Quanto gastei este mês?"\n• "Qual é o meu saldo?"\n• "Quais contas vencem esta semana?"\n• "Posso gastar R$ 300 hoje?"\n• "Registre uma despesa de 50 reais no supermercado"',
+        text: 'Não consegui entender com certeza o que você deseja. Experimente perguntar:\n\n• "Quanto gastei este mês?"\n• "Qual é o meu saldo?"\n• "Quais contas vencem esta semana?"\n• "Posso gastar R$ 300 hoje?"\n• "Registre uma despesa de 50 reais no supermercado"',
         intent: 'UNKNOWN',
         needsClarification: true,
         followUpSuggestions: ['Quanto gastei este mês?', 'Qual meu saldo?', 'Quais contas vencem essa semana?', 'Posso gastar R$ 300?'],
@@ -251,3 +570,4 @@ export function generateResponse(
     }
   }
 }
+

@@ -213,7 +213,35 @@ export function createActionPlan(
       };
     }
 
+    case 'CREATE_BUDGET': {
+      const riskLevel: AIRiskLevel = 'MEDIUM';
+      const limitAmount = params.limitAmount || amount;
+      return {
+        id: planId,
+        intent,
+        riskLevel,
+        title: 'Criar Orçamento',
+        summary: `Definir limite de ${formatCurrency(limitAmount)} para ${categoryName}`,
+        details: {
+          'Categoria': categoryName,
+          'Limite Mensal': formatCurrency(limitAmount),
+        },
+        payload: {
+          type: intent,
+          data: {
+            categoryId,
+            limitAmount,
+            period: 'monthly',
+          }
+        },
+        requiresConfirmation: true,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+    }
+
     default:
       return undefined;
   }
 }
+
