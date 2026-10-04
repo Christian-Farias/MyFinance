@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { RecurringTransaction, RecurrenceFrequency } from '../../types';
+import { AmountField, CheckboxField, Modal, SegmentedControl, SelectField, TextAreaField, TextField } from '../ui';
 
 interface RecurringModalProps {
   isOpen: boolean;
@@ -27,8 +28,6 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({ isOpen, onClose,
   const [notes, setNotes] = useState(recurringToEdit?.notes || '');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,178 +90,134 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="modal-overlay">
-      <div 
-        className="modal-panel w-full sm:max-w-md px-5 sm:px-6 pt-5 sm:pt-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
-          <h3 className="text-base font-bold text-white">
-            {recurringToEdit ? 'Editar Recorrência' : 'Nova Regra Recorrente'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1A1F29] text-[#8E95A3] hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={recurringToEdit ? 'Editar Recorrência' : 'Nova Regra Recorrente'}
+      size="md"
+      footer={
+        <button
+          type="submit"
+          form="recurring-form"
+          disabled={isSubmitting}
+          className={`btn btn-block ${type === 'expense' ? 'btn-primary' : 'btn-positive'}`}
+        >
+          <Check size={16} aria-hidden="true" />
+          <span>{isSubmitting ? 'Salvando…' : (recurringToEdit ? 'Atualizar Recorrência' : 'Salvar Recorrência')}</span>
+        </button>
+      }
+    >
+      <form id="recurring-form" onSubmit={handleSubmit} className="space-y-4">
+        <SegmentedControl
+          label="Tipo de recorrência"
+          value={type}
+          onChange={(v) => {
+            const next = v === 'expense';
+            setType(next ? 'expense' : 'income');
+            if (next) setIsFixedExpense(true);
+            else setIsRecurringIncome(true);
+          }}
+          options={[
+            { value: 'expense', label: 'Despesa Recorrente' },
+            { value: 'income', label: 'Receita Recorrente' },
+          ]}
+        />
+
+        <TextField
+          label="Descrição"
+          placeholder="Ex: Salário, Aluguel, Internet, Academia..."
+          value={description}
+          onChange={setDescription}
+          autoFocus
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <AmountField label="Valor" value={amountStr} onChange={setAmountStr} placeholder="100,00" />
+          <SelectField
+            label="Frequência"
+            value={frequency}
+            onChange={(v) => setFrequency(v as RecurrenceFrequency)}
+            options={[
+              { value: 'weekly', label: 'Semanal' },
+              { value: 'biweekly', label: 'Quinzenal' },
+              { value: 'monthly', label: 'Mensal' },
+              { value: 'bimonthly', label: 'Bimestral' },
+              { value: 'quarterly', label: 'Trimestral' },
+              { value: 'semiannual', label: 'Semestral' },
+              { value: 'annual', label: 'Anual' },
+            ]}
+          />
         </div>
 
-        {/* Type selector */}
-        <div className="grid grid-cols-2 gap-2 my-4 p-1 bg-[#0D0F12] rounded-2xl border border-[#222733]">
-          <button
-            type="button"
-            onClick={() => { setType('expense'); setIsFixedExpense(true); }}
-            className={`py-2 text-xs font-semibold rounded-xl transition-all ${
-              type === 'expense' ? 'bg-[#FF5555] text-white' : 'text-[#8E95A3]'
-            }`}
-          >
-            Despesa Recorrente
-          </button>
-          <button
-            type="button"
-            onClick={() => { setType('income'); setIsRecurringIncome(true); }}
-            className={`py-2 text-xs font-semibold rounded-xl transition-all ${
-              type === 'income' ? 'bg-[#39D98A] text-[#0D0F12] font-bold' : 'text-[#8E95A3]'
-            }`}
-          >
-            Receita Recorrente
-          </button>
+        <div className="grid grid-cols-2 gap-3">
+          <TextField label="Data Inicial" type="date" value={startDate} onChange={setStartDate} />
+          <TextField label="Data Final (Opcional)" type="date" value={endDate} onChange={setEndDate} />
         </div>
 
-        {errorMsg && (
-          <div className="my-3 p-3 rounded-xl bg-[#2A1215] border border-[#FF5555]/30 text-[#FF5555] text-xs">
-            {errorMsg}
-          </div>
+        <SelectField
+          label="Categoria"
+          value={categoryId}
+          onChange={setCategoryId}
+          options={categories.map((c) => ({ value: c.id, label: c.name }))}
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Conta"
+            value={accountId}
+            onChange={setAccountId}
+            options={[
+              { value: '', label: 'Sem conta vinculada' },
+              ...accounts.map((a) => ({ value: a.id, label: a.name })),
+            ]}
+          />
+          <SelectField
+            label="Cartão"
+            value={cardId}
+            onChange={setCardId}
+            options={[
+              { value: '', label: 'Sem cartão vinculado' },
+              ...cards.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+        </div>
+
+        {type === 'expense' ? (
+          <fieldset className="flex items-center gap-5">
+            <legend className="sr-only">Classificação da despesa</legend>
+            <CheckboxField
+              label="Despesa Fixa"
+              checked={isFixedExpense}
+              onChange={setIsFixedExpense}
+            />
+            <CheckboxField
+              label="Assinatura (Streaming/SaaS)"
+              checked={isSubscription}
+              onChange={setIsSubscription}
+            />
+          </fieldset>
+        ) : (
+          <CheckboxField
+            label="Renda Recorrente"
+            checked={isRecurringIncome}
+            onChange={setIsRecurringIncome}
+          />
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Descrição</label>
-            <input
-              type="text"
-              placeholder="Ex: Salário, Aluguel, Internet, Academia..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] text-sm text-white placeholder-[#5F6570]"
-            />
-          </div>
+        <TextAreaField
+          label="Observações (opcional)"
+          placeholder="Ex: Contrato de 12 meses..."
+          value={notes}
+          onChange={setNotes}
+          rows={2}
+        />
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Valor (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="100,00"
-                value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white font-medium placeholder-[#5F6570]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Frequência</label>
-              <select
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value as RecurrenceFrequency)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              >
-                <option value="weekly">Semanal</option>
-                <option value="biweekly">Quinzenal</option>
-                <option value="monthly">Mensal</option>
-                <option value="bimonthly">Bimestral</option>
-                <option value="quarterly">Trimestral</option>
-                <option value="semiannual">Semestral</option>
-                <option value="annual">Anual</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Data Inicial</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Data Final (Opcional)</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Categoria</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-            >
-              {categories.map(c => (
-                <option key={c.id} value={c.id} className="bg-[#1A1F29] text-white">
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {type === 'expense' && (
-            <div className="flex items-center space-x-4 pt-1">
-              <label className="flex items-center space-x-2 text-xs text-[#8E95A3] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isFixedExpense}
-                  onChange={(e) => setIsFixedExpense(e.target.checked)}
-                  className="w-4 h-4 accent-[#8B7CFF] rounded"
-                />
-                <span className="text-white">Despesa Fixa</span>
-              </label>
-
-              <label className="flex items-center space-x-2 text-xs text-[#8E95A3] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isSubscription}
-                  onChange={(e) => setIsSubscription(e.target.checked)}
-                  className="w-4 h-4 accent-[#8B7CFF] rounded"
-                />
-                <span className="text-white">Assinatura (Streaming/SaaS)</span>
-              </label>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Observações (opcional)</label>
-            <input
-              type="text"
-              placeholder="Ex: Contrato de 12 meses..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-[#8B7CFF] hover:bg-[#7a6aeb] text-white font-semibold text-xs sm:text-sm shadow-lg shadow-[#8B7CFF]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              <Check size={16} />
-              <span>{isSubmitting ? 'Salvando...' : (recurringToEdit ? 'Atualizar Recorrência' : 'Salvar Recorrência')}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {errorMsg && (
+          <p role="alert" className="text-xs text-negative-strong">
+            {errorMsg}
+          </p>
+        )}
+      </form>
+    </Modal>
   );
 };

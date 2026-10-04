@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  X, 
+import {
   Wallet, 
   ArrowLeftRight, 
   Sliders, 
@@ -18,6 +17,7 @@ import {
   Bot
 } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
+import { Modal } from '../ui';
 
 interface MoreMenuModalProps {
   isOpen: boolean;
@@ -29,8 +29,6 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
   const { alerts, bills } = useFinance();
   const unreadAlerts = alerts.filter(a => !a.isRead).length;
   const pendingBills = bills.filter(b => b.status === 'pending' || b.status === 'overdue').length;
-
-  if (!isOpen) return null;
 
   const handleNavigate = (path: string) => {
     onClose();
@@ -80,73 +78,61 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
   ];
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={onClose}
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title="Mais opções"
+      subtitle="Todos os módulos e ferramentas"
+      variant="sheet"
+      size="md"
     >
-      <div
-        className="modal-panel w-full sm:max-w-md px-5 sm:px-6 pt-5 sm:pt-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="bottom-sheet-handle md:hidden" />
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
-          <div>
-            <h3 className="text-base font-bold text-white tracking-tight">Mais opções</h3>
-            <p className="text-xs text-[#8E95A3]">Todos os módulos e ferramentas</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1A1F29] text-[#8E95A3] hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Menu items list */}
-        <div className="space-y-5 my-4">
-          {menuSections.map((sec, idx) => (
-            <div key={idx}>
-              <span className="text-[11px] font-bold text-[#5F6570] uppercase tracking-wider block mb-2 px-1">
-                {sec.title}
-              </span>
-              <div className="space-y-1.5">
-                {sec.items.map((item, itemIdx) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={itemIdx}
-                      onClick={() => handleNavigate(item.path)}
-                      className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#0D0F12] hover:bg-[#1A1F29] border border-[#222733] hover:border-[#8B7CFF]/40 transition-all text-left group"
-                    >
-                      <div className="flex items-center space-x-3.5 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-[#1A1F29] group-hover:bg-[#8B7CFF]/15 text-[#8B7CFF] flex items-center justify-center shrink-0 transition-colors">
-                          <Icon size={18} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs font-semibold text-white group-hover:text-[#8B7CFF] transition-colors">
-                              {item.label}
+      <div className="space-y-5">
+        {menuSections.map((sec) => (
+          <div key={sec.title}>
+            <h3 className="text-[11px] font-bold text-ink-faint uppercase tracking-wider block mb-2 px-1">
+              {sec.title}
+            </h3>
+            <div className="space-y-1.5">
+              {sec.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => handleNavigate(item.path)}
+                    className="w-full flex items-center justify-between p-3 rounded-2xl bg-surface hover:bg-field border border-active hover:border-accent/40 transition-all text-left group"
+                  >
+                    <span className="flex items-center space-x-3.5 min-w-0">
+                      <span className="w-9 h-9 rounded-xl bg-field group-hover:bg-accent/15 text-accent flex items-center justify-center shrink-0 transition-colors">
+                        <Icon size={18} aria-hidden="true" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="flex items-center space-x-2">
+                          <span className="text-xs font-semibold text-ink group-hover:text-accent transition-colors">
+                            {item.label}
+                          </span>
+                          {item.badge && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-negative-strong/20 text-negative-strong">
+                              {item.badge}
                             </span>
-                            {item.badge && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#FF5555]/20 text-[#FF5555]">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-[#8E95A3] truncate">{item.desc}</p>
-                        </div>
-                      </div>
+                          )}
+                        </span>
+                        <span className="block text-[11px] text-ink-muted truncate">{item.desc}</span>
+                      </span>
+                    </span>
 
-                      <ChevronRight size={15} className="text-[#5F6570] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-                    </button>
-                  );
-                })}
-              </div>
+                    <ChevronRight
+                      size={15}
+                      aria-hidden="true"
+                      className="text-ink-faint group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0 ml-2"
+                    />
+                  </button>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    </div>
+    </Modal>
   );
 };

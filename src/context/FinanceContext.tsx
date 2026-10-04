@@ -51,6 +51,10 @@ interface FinanceContextType {
   selectedPeriod: string;
   setSelectedPeriod: (period: string) => void;
   isLoading: boolean;
+  /** Set when IndexedDB could not be read. Null when healthy. */
+  error: string | null;
+  /** Re-runs the full read from IndexedDB. */
+  retry: () => Promise<void>;
   isOffline: boolean;
   isFirstRun: boolean;
 
@@ -165,6 +169,9 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // A failed read used to land in console.error and leave every array
+  // empty, which is indistinguishable from "you have no data yet".
+  const [error, setError] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
   const [isFirstRun, setIsFirstRun] = useState<boolean>(false);
 
@@ -192,6 +199,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const refreshAll = useCallback(async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const db = await getDB();
 
       // Ensure categories exist
@@ -257,6 +265,11 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
     } catch (err) {
       console.error('Erro ao carregar dados do IndexedDB:', err);
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Não foi possível ler o armazenamento local do navegador.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -569,6 +582,8 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
         selectedPeriod,
         setSelectedPeriod,
         isLoading,
+        error,
+        retry: refreshAll,
         isOffline,
         isFirstRun,
 

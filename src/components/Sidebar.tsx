@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  Home, 
-  PieChart, 
-  Sparkles, 
-  CreditCard, 
-  Menu, 
-  Settings, 
-  User, 
-  Plus, 
+import {
+  Home,
+  PieChart,
+  Sparkles,
+  CreditCard,
+  Settings,
+  User,
+  Plus,
   WifiOff,
   Wallet,
   ArrowLeftRight,
@@ -17,21 +16,37 @@ import {
   LineChart,
   Bell,
   Upload,
-  ChevronDown,
+  Search,
   Clock,
   Calendar,
   TrendingUp,
-  FileSpreadsheet
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 
-export const Sidebar: React.FC = () => {
-  const { openNewTxModal, alerts, settings, isOffline } = useFinance();
-  const unreadAlerts = alerts.filter(a => !a.isRead).length;
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
+/**
+ * Desktop navigation.
+ *
+ * The nav item styles were written out three times, the unread badge had no
+ * accessible text, and the brand was an <h1> that competed with the page
+ * heading on all 17 routes.
+ */
 
-  const primaryNav = [
-    { to: '/', label: 'Início', icon: Home },
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
+  badge?: string;
+  count?: number;
+  end?: boolean;
+}
+
+export const Sidebar: React.FC = () => {
+  const { openNewTxModal, alerts, isOffline, setGlobalSearchOpen } = useFinance();
+  const unreadAlerts = alerts.filter((alert) => !alert.isRead).length;
+
+  const primaryNav: NavItem[] = [
+    { to: '/', label: 'Início', icon: Home, end: true },
     { to: '/compromissos', label: 'Compromissos', icon: Clock },
     { to: '/calendario', label: 'Calendário', icon: Calendar },
     { to: '/fluxo-caixa', label: 'Fluxo de Caixa', icon: TrendingUp },
@@ -40,7 +55,7 @@ export const Sidebar: React.FC = () => {
     { to: '/cartoes', label: 'Cartões', icon: CreditCard },
   ];
 
-  const secondaryNav = [
+  const secondaryNav: NavItem[] = [
     { to: '/fechamento', label: 'Fechamento Mensal', icon: FileSpreadsheet },
     { to: '/contas', label: 'Contas', icon: Wallet },
     { to: '/transacoes', label: 'Transações', icon: ArrowLeftRight },
@@ -51,120 +66,92 @@ export const Sidebar: React.FC = () => {
     { to: '/importar', label: 'Importar Extrato', icon: Upload },
   ];
 
+  const renderItem = (item: NavItem) => {
+    const Icon = item.icon;
+    return (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        end={item.end}
+        className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
+      >
+        <Icon size={17} aria-hidden={true} />
+        <span className="min-w-0 truncate">{item.label}</span>
+        {item.badge && <span className="pill pill-accent text-[10px] py-0 px-1.5">{item.badge}</span>}
+        {Boolean(item.count && item.count > 0) && (
+          <span className="badge-count" aria-label={`${item.count} não lidas`}>
+            {item.count}
+          </span>
+        )}
+      </NavLink>
+    );
+  };
+
   return (
-    <aside 
-      aria-label="Navegação desktop"
-      className="hidden md:flex flex-col w-64 sticky top-0 bg-[#08090B] border-r border-[#1D2026] p-5 shrink-0 z-10 select-none overflow-y-auto"
-      style={{ height: '100dvh' }}
-    >
-      {/* Brand Header */}
-      <div className="flex items-center space-x-3 mb-7 px-2">
-        <img 
-          src="/logo.png" 
-          alt="MyFinance Logo" 
-          className="w-10 h-10 rounded-xl object-contain bg-black border border-[#222733] shadow-md shadow-[#8B7CFF]/15" 
+    <aside aria-label="Navegação principal" className="sidebar">
+      {/* Brand — not an <h1>: each route owns the page heading. */}
+      <div className="sidebar-brand">
+        <img
+          src="/logo.png"
+          alt=""
+          width={40}
+          height={40}
+          className="w-10 h-10 rounded-xl object-contain bg-black border border-active"
         />
-        <div>
-          <h1 className="text-white font-bold text-base tracking-tight leading-none">MyFinance</h1>
-          <span className="text-[#8B919B] text-[11px] font-medium">Assistente Pessoal</span>
+        <div className="min-w-0">
+          <p className="text-ink font-bold text-base tracking-tight leading-none">
+            MyFinance
+          </p>
+          <span className="text-ink-muted text-[11px] font-medium">
+            Assistente Pessoal
+          </span>
         </div>
       </div>
 
-      {/* Quick Action Button */}
       <button
-        onClick={() => openNewTxModal('expense')}
-        className="w-full mb-6 py-2.5 px-4 rounded-xl bg-[#8B7CFF] hover:bg-[#7a6aee] text-white text-xs font-semibold flex items-center justify-center space-x-2 shadow-md shadow-[#8B7CFF]/15 transition-all active:scale-[0.98]"
+        type="button"
+        onClick={() => setGlobalSearchOpen(true)}
+        className="btn btn-secondary btn-sm w-full justify-start gap-2 mb-2"
       >
-        <Plus size={15} />
+        <Search size={15} aria-hidden="true" />
+        <span>Buscar</span>
+        <kbd className="ml-auto text-[10px] text-ink-faint">⌘K</kbd>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => openNewTxModal('expense')}
+        className="btn btn-primary w-full mb-5"
+      >
+        <Plus size={15} aria-hidden="true" />
         <span>Nova Transação</span>
       </button>
 
-      {/* Primary Navigation */}
-      <nav className="space-y-1 flex-1">
-        <p className="label-xs px-3 mb-2 text-[#5F6570]">Principal</p>
-        {primaryNav.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-[#14171D] text-white border border-[#222733] shadow-sm'
-                    : 'text-[#8B919B] hover:text-[#F5F5F5] hover:bg-[#0D0F12]'
-                }`
-              }
-            >
-              <div className="flex items-center space-x-3">
-                <Icon size={17} />
-                <span>{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className="pill pill-purple text-[10px] py-0 px-1.5">{item.badge}</span>
-              )}
-            </NavLink>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto">
+        <p className="label-section">Principal</p>
+        <div className="space-y-1">{primaryNav.map(renderItem)}</div>
 
-        <div className="pt-4">
-          <p className="label-xs px-3 mb-2 text-[#5F6570]">Mais Opções</p>
-          <div className="space-y-1">
-            {secondaryNav.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      isActive
-                        ? 'bg-[#14171D] text-white border border-[#222733] shadow-sm'
-                        : 'text-[#8B919B] hover:text-[#F5F5F5] hover:bg-[#0D0F12]'
-                    }`
-                  }
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon size={17} />
-                    <span>{item.label}</span>
-                  </div>
-                  {Boolean(item.count && item.count > 0) && (
-                    <span className="w-5 h-5 rounded-full bg-[#FF5555] text-white text-[10px] font-bold flex items-center justify-center">
-                      {item.count}
-                    </span>
-                  )}
-                </NavLink>
-              );
-            })}
-          </div>
+        <div className="pt-5">
+          <p className="label-section">Mais Opções</p>
+          <div className="space-y-1">{secondaryNav.map(renderItem)}</div>
         </div>
       </nav>
 
-      {/* Footer / Offline / Settings */}
-      <div className="pt-4 border-t border-[#1D2026] space-y-2">
+      <div className="pt-4 border-t border-edge space-y-2">
         {isOffline && (
-          <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/20 text-[#F59E0B] text-xs font-medium">
-            <WifiOff size={14} />
+          <p className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[rgb(245_158_11/0.10)] border border-[rgb(245_158_11/0.20)] text-warning text-xs font-medium">
+            <WifiOff size={14} aria-hidden="true" />
             <span>Modo Offline</span>
-          </div>
+          </p>
         )}
 
         <NavLink
           to="/configuracoes"
-          className={({ isActive }) =>
-            `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              isActive
-                ? 'bg-[#14171D] text-white border border-[#222733]'
-                : 'text-[#8B919B] hover:text-[#F5F5F5] hover:bg-[#0D0F12]'
-            }`
-          }
+          className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
         >
-          <div className="flex items-center space-x-3">
-            <Settings size={17} />
-            <span>Configurações</span>
-          </div>
-          <User size={14} className="text-[#5F6570]" />
+          <Settings size={17} aria-hidden={true} />
+          <span className="min-w-0 truncate">Configurações</span>
+          <User size={14} className="ml-auto text-ink-faint" aria-hidden="true" />
         </NavLink>
       </div>
     </aside>

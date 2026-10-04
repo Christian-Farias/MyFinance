@@ -46,26 +46,26 @@ export const PWAInstallPrompt: React.FC = () => {
         bottom: 'calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom)) + 70px)',
       }}
     >
-      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white shrink-0 shadow-md">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent flex items-center justify-center text-ink shrink-0 shadow-md">
         <Smartphone size={20} />
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="text-xs font-bold text-white leading-tight">Instale o aplicativo</h4>
-        <p className="text-[11px] text-[#8A8F98] mt-0.5 leading-snug">
+        <h4 className="text-xs font-bold text-ink leading-tight">Instale o aplicativo</h4>
+        <p className="text-[11px] text-ink-faint mt-0.5 leading-snug">
           Tenha acesso rápido às suas finanças mesmo offline.
         </p>
         <div className="flex items-center space-x-2 mt-2.5">
           <button
             onClick={handleInstallClick}
-            className="py-1.5 px-3 rounded-lg bg-[#8B5CF6] hover:bg-[#7c4df0] text-white text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm"
+            className="py-1.5 px-3 rounded-lg bg-accent hover:bg-[#7c4df0] text-on-accent text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm"
           >
             <Download size={13} />
             <span>Instalar app</span>
           </button>
           <button
             onClick={() => setIsDismissed(true)}
-            className="py-1.5 px-2.5 rounded-lg text-xs font-medium text-[#8A8F98] hover:text-white transition-colors"
+            className="py-1.5 px-2.5 rounded-lg text-xs font-medium text-ink-faint hover:text-ink transition-colors"
           >
             Depois
           </button>
@@ -74,7 +74,7 @@ export const PWAInstallPrompt: React.FC = () => {
 
       <button
         onClick={() => setIsDismissed(true)}
-        className="text-[#8A8F98] hover:text-white p-1"
+        className="text-ink-faint hover:text-ink p-1"
       >
         <X size={15} />
       </button>

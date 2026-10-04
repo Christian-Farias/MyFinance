@@ -17,7 +17,9 @@ import {
   Layers,
   ChevronRight
 } from 'lucide-react';
+import { ErrorState, LoadingState } from '../components/ui';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { formatCurrency, formatDateBR, formatRelativeDate, calculateSubscriptionsSummary, calculateFixedVsVariableExpenses } from '../calculations/financialCalculations';
 import { BillModal } from '../components/modals/BillModal';
 import { ReceivableModal } from '../components/modals/ReceivableModal';
@@ -25,6 +27,7 @@ import { RecurringModal } from '../components/modals/RecurringModal';
 import type { Bill, Receivable, RecurringTransaction, Subscription } from '../types';
 
 export const CommitmentsPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { 
     bills, 
     receivables, 
@@ -89,13 +92,23 @@ export const CommitmentsPage: React.FC = () => {
     }
   };
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Compromissos Financeiros</h1>
-          <p className="label-xs text-[#8E95A3] mt-0.5">Contas a pagar, receitas previstas e assinaturas</p>
+          <h1 className="text-xl font-bold text-ink tracking-tight">Compromissos Financeiros</h1>
+          <p className="label-xs text-ink-muted mt-0.5">Contas a pagar, receitas previstas e assinaturas</p>
         </div>
 
         <button
@@ -115,51 +128,51 @@ export const CommitmentsPage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <div className="card p-3.5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="label-xs text-[#FF5555]">A Pagar</span>
-            <Clock size={14} className="text-[#FF5555]" />
+            <span className="label-xs text-negative-strong">A Pagar</span>
+            <Clock size={14} className="text-negative-strong" />
           </div>
           <div>
-            <div className="text-base font-bold text-white">{formatCurrency(totalPendingBills)}</div>
-            <span className="text-[11px] text-[#8E95A3]">{pendingBills.length} pendente(s)</span>
+            <div className="text-base font-bold text-ink">{formatCurrency(totalPendingBills)}</div>
+            <span className="text-[11px] text-ink-muted">{pendingBills.length} pendente(s)</span>
           </div>
         </div>
 
         <div className="card p-3.5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="label-xs text-[#39D98A]">A Receber</span>
-            <ArrowUpRight size={14} className="text-[#39D98A]" />
+            <span className="label-xs text-positive">A Receber</span>
+            <ArrowUpRight size={14} className="text-positive" />
           </div>
           <div>
-            <div className="text-base font-bold text-white">{formatCurrency(totalExpectedReceivables)}</div>
-            <span className="text-[11px] text-[#8E95A3]">{expectedReceivables.length} previsto(s)</span>
+            <div className="text-base font-bold text-ink">{formatCurrency(totalExpectedReceivables)}</div>
+            <span className="text-[11px] text-ink-muted">{expectedReceivables.length} previsto(s)</span>
           </div>
         </div>
 
         <div className="card p-3.5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="label-xs text-[#8B7CFF]">Assinaturas</span>
-            <Tv size={14} className="text-[#8B7CFF]" />
+            <span className="label-xs text-accent">Assinaturas</span>
+            <Tv size={14} className="text-accent" />
           </div>
           <div>
-            <div className="text-base font-bold text-white">{formatCurrency(subSummary.totalMonthlyEstimate)}</div>
-            <span className="text-[11px] text-[#8E95A3]">/mês ({subSummary.activeCount} ativas)</span>
+            <div className="text-base font-bold text-ink">{formatCurrency(subSummary.totalMonthlyEstimate)}</div>
+            <span className="text-[11px] text-ink-muted">/mês ({subSummary.activeCount} ativas)</span>
           </div>
         </div>
 
         <div className="card p-3.5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="label-xs text-[#38BDF8]">Despesas Fixas</span>
-            <Repeat size={14} className="text-[#38BDF8]" />
+            <span className="label-xs text-info">Despesas Fixas</span>
+            <Repeat size={14} className="text-info" />
           </div>
           <div>
-            <div className="text-base font-bold text-white">{formatCurrency(fixedReport.fixedExpensesTotal)}</div>
-            <span className="text-[11px] text-[#8E95A3]">{fixedReport.fixedPercentage.toFixed(0)}% dos gastos</span>
+            <div className="text-base font-bold text-ink">{formatCurrency(fixedReport.fixedExpensesTotal)}</div>
+            <span className="text-[11px] text-ink-muted">{fixedReport.fixedPercentage.toFixed(0)}% dos gastos</span>
           </div>
         </div>
       </div>
 
       {/* ── TABS ── */}
-      <div className="grid grid-cols-4 gap-1 p-1 bg-[#0D0F12] border border-[#222733] rounded-2xl">
+      <div className="grid grid-cols-4 gap-1 p-1 bg-surface border border-active rounded-2xl">
         {[
           { key: 'bills', label: 'Contas', count: pendingBills.length },
           { key: 'receivables', label: 'Receber', count: expectedReceivables.length },
@@ -171,13 +184,13 @@ export const CommitmentsPage: React.FC = () => {
             onClick={() => setTab(key as any)}
             className={`py-2 px-1 text-center rounded-xl text-xs font-semibold transition-all ${
               tab === key 
-                ? 'bg-[#14171D] text-white shadow-sm border border-[#222733]' 
-                : 'text-[#8E95A3] hover:text-white'
+                ? 'bg-panel text-ink shadow-sm border border-active' 
+                : 'text-ink-muted hover:text-ink'
             }`}
           >
             <span>{label}</span>
             {count > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-[#222733] text-white">
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-active text-ink">
                 {count}
               </span>
             )}
@@ -189,9 +202,9 @@ export const CommitmentsPage: React.FC = () => {
       {tab === 'bills' && (
         <div className="space-y-3">
           {bills.length === 0 ? (
-            <div className="card p-8 text-center text-[#8E95A3]">
-              <CheckCircle2 size={36} className="mx-auto mb-2 text-[#39D98A]/50" />
-              <p className="text-sm font-semibold text-white">Nenhuma conta cadastrada</p>
+            <div className="card p-8 text-center text-ink-muted">
+              <CheckCircle2 size={36} className="mx-auto mb-2 text-positive/50" />
+              <p className="text-sm font-semibold text-ink">Nenhuma conta cadastrada</p>
               <p className="text-xs mt-1">Cadastre seus boletos e pagamentos periódicos.</p>
             </div>
           ) : (
@@ -204,33 +217,33 @@ export const CommitmentsPage: React.FC = () => {
                   <div 
                     key={bill.id}
                     className={`card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                      isPaid ? 'opacity-60 bg-[#121419]' : 'hover:border-[#333A4D]'
+                      isPaid ? 'opacity-60 bg-surface-raised' : 'hover:border-edge-strong'
                     }`}
                   >
                     <div className="flex items-center space-x-3.5 min-w-0">
                       <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                        isPaid ? 'bg-[#39D98A]/15 text-[#39D98A]' : isOverdue ? 'bg-[#FF5555]/15 text-[#FF5555]' : 'bg-[#1A1F29] text-[#8E95A3]'
+                        isPaid ? 'bg-positive/15 text-positive' : isOverdue ? 'bg-negative-strong/15 text-negative-strong' : 'bg-field text-ink-muted'
                       }`}>
                         {isPaid ? <Check size={18} /> : <Calendar size={18} />}
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
-                          <h4 className={`text-sm font-semibold truncate ${isPaid ? 'line-through text-[#8E95A3]' : 'text-white'}`}>
+                          <h4 className={`text-sm font-semibold truncate ${isPaid ? 'line-through text-ink-muted' : 'text-ink'}`}>
                             {bill.description}
                           </h4>
                           {bill.isFixedExpense && (
                             <span className="pill pill-neutral text-[9px] py-0 px-1.5">Fixo</span>
                           )}
                         </div>
-                        <div className="flex items-center space-x-2 mt-0.5 text-xs text-[#8E95A3]">
+                        <div className="flex items-center space-x-2 mt-0.5 text-xs text-ink-muted">
                           <span>Vencimento: {formatDateBR(bill.dueDate)} ({formatRelativeDate(bill.dueDate)})</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
-                      <span className={`text-sm font-bold ${isPaid ? 'text-[#8E95A3]' : 'text-white'}`}>
+                    <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-edge">
+                      <span className={`text-sm font-bold ${isPaid ? 'text-ink-muted' : 'text-ink'}`}>
                         {formatCurrency(bill.amount)}
                       </span>
 
@@ -239,7 +252,7 @@ export const CommitmentsPage: React.FC = () => {
                           <button
                             onClick={() => handlePayBill(bill)}
                             disabled={processingId === bill.id}
-                            className="py-1.5 px-3 rounded-xl bg-[#39D98A]/15 hover:bg-[#39D98A]/25 text-[#39D98A] text-xs font-semibold flex items-center space-x-1 transition-all min-h-[36px]"
+                            className="py-1.5 px-3 rounded-xl bg-positive/15 hover:bg-positive/25 text-positive text-xs font-semibold flex items-center space-x-1 transition-all min-h-[36px]"
                           >
                             <Check size={13} />
                             <span>Pagar</span>
@@ -250,7 +263,7 @@ export const CommitmentsPage: React.FC = () => {
 
                         <button
                           onClick={() => { setBillToEdit(bill); setIsBillModalOpen(true); }}
-                          className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-white flex items-center justify-center"
+                          className="w-8 h-8 rounded-lg text-ink-muted hover:text-ink flex items-center justify-center"
                           aria-label={`Editar conta ${bill.description}`}
                         >
                           <Edit2 size={14} />
@@ -269,9 +282,9 @@ export const CommitmentsPage: React.FC = () => {
       {tab === 'receivables' && (
         <div className="space-y-3">
           {receivables.length === 0 ? (
-            <div className="card p-8 text-center text-[#8E95A3]">
-              <ArrowUpRight size={36} className="mx-auto mb-2 text-[#39D98A]/50" />
-              <p className="text-sm font-semibold text-white">Nenhum recebimento previsto</p>
+            <div className="card p-8 text-center text-ink-muted">
+              <ArrowUpRight size={36} className="mx-auto mb-2 text-positive/50" />
+              <p className="text-sm font-semibold text-ink">Nenhum recebimento previsto</p>
               <p className="text-xs mt-1">Adicione salários, reembolsos e receitas futuras.</p>
             </div>
           ) : (
@@ -282,29 +295,29 @@ export const CommitmentsPage: React.FC = () => {
                   <div 
                     key={rec.id}
                     className={`card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                      isReceived ? 'opacity-60 bg-[#121419]' : 'hover:border-[#333A4D]'
+                      isReceived ? 'opacity-60 bg-surface-raised' : 'hover:border-edge-strong'
                     }`}
                   >
                     <div className="flex items-center space-x-3.5 min-w-0">
                       <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                        isReceived ? 'bg-[#39D98A]/15 text-[#39D98A]' : 'bg-[#1A1F29] text-[#39D98A]'
+                        isReceived ? 'bg-positive/15 text-positive' : 'bg-field text-positive'
                       }`}>
                         <ArrowUpRight size={18} />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <h4 className={`text-sm font-semibold truncate ${isReceived ? 'line-through text-[#8E95A3]' : 'text-white'}`}>
+                        <h4 className={`text-sm font-semibold truncate ${isReceived ? 'line-through text-ink-muted' : 'text-ink'}`}>
                           {rec.description}
                         </h4>
-                        <p className="text-xs text-[#8E95A3] mt-0.5">
+                        <p className="text-xs text-ink-muted mt-0.5">
                           Previsto: {formatDateBR(rec.expectedDate)} ({formatRelativeDate(rec.expectedDate)})
                           {rec.origin && ` • ${rec.origin}`}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
-                      <span className="text-sm font-bold text-[#39D98A]">
+                    <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-edge">
+                      <span className="text-sm font-bold text-positive">
                         +{formatCurrency(rec.amount)}
                       </span>
 
@@ -313,7 +326,7 @@ export const CommitmentsPage: React.FC = () => {
                           <button
                             onClick={() => handleReceive(rec)}
                             disabled={processingId === rec.id}
-                            className="py-1.5 px-3 rounded-xl bg-[#39D98A] text-[#0D0F12] text-xs font-bold flex items-center space-x-1 shadow-sm transition-all min-h-[36px]"
+                            className="py-1.5 px-3 rounded-xl bg-positive text-surface text-xs font-bold flex items-center space-x-1 shadow-sm transition-all min-h-[36px]"
                           >
                             <Check size={13} />
                             <span>Receber</span>
@@ -324,7 +337,7 @@ export const CommitmentsPage: React.FC = () => {
 
                         <button
                           onClick={() => { setReceivableToEdit(rec); setIsRecModalOpen(true); }}
-                          className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-white flex items-center justify-center"
+                          className="w-8 h-8 rounded-lg text-ink-muted hover:text-ink flex items-center justify-center"
                           aria-label={`Editar recebimento ${rec.description}`}
                         >
                           <Edit2 size={14} />
@@ -342,41 +355,41 @@ export const CommitmentsPage: React.FC = () => {
       {/* ── TAB CONTENT: ASSINATURAS ── */}
       {tab === 'subscriptions' && (
         <div className="space-y-3">
-          <div className="card p-4 flex items-center justify-between border-[#8B7CFF]/20 bg-[#8B7CFF]/5">
+          <div className="card p-4 flex items-center justify-between border-accent/20 bg-accent/5">
             <div className="flex items-center space-x-3">
-              <Tv size={20} className="text-[#8B7CFF]" />
+              <Tv size={20} className="text-accent" />
               <div>
-                <h4 className="text-xs font-bold text-white">Impacto Anual das Assinaturas</h4>
-                <p className="text-[11px] text-[#8E95A3]">Economizar cancelando serviços ociosos</p>
+                <h4 className="text-xs font-bold text-ink">Impacto Anual das Assinaturas</h4>
+                <p className="text-[11px] text-ink-muted">Economizar cancelando serviços ociosos</p>
               </div>
             </div>
-            <span className="text-sm font-bold text-[#8B7CFF]">{formatCurrency(subSummary.totalAnnualEstimate)}/ano</span>
+            <span className="text-sm font-bold text-accent">{formatCurrency(subSummary.totalAnnualEstimate)}/ano</span>
           </div>
 
           <div className="space-y-2">
             {subscriptions.map(sub => (
               <div key={sub.id} className="card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div className="w-10 h-10 rounded-2xl bg-[#8B7CFF]/15 text-[#8B7CFF] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
                     <Tv size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-semibold text-white truncate">{sub.name}</h4>
-                    <p className="text-xs text-[#8E95A3] mt-0.5">
+                    <h4 className="text-sm font-semibold text-ink truncate">{sub.name}</h4>
+                    <p className="text-xs text-ink-muted mt-0.5">
                       Próxima cobrança: {formatDateBR(sub.nextBillingDate)} • {formatCurrency(sub.annualEstimate)}/ano
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
+                <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-edge">
                   <div className="text-left sm:text-right">
-                    <span className="text-sm font-bold text-white block">{formatCurrency(sub.amount)}</span>
-                    <span className="text-[10px] text-[#8E95A3] font-medium">{sub.frequency}</span>
+                    <span className="text-sm font-bold text-ink block">{formatCurrency(sub.amount)}</span>
+                    <span className="text-[10px] text-ink-muted font-medium">{sub.frequency}</span>
                   </div>
 
                   <button
                     onClick={() => deleteSubscription(sub.id)}
-                    className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-[#FF5555] flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-lg text-ink-muted hover:text-negative-strong flex items-center justify-center transition-colors"
                     aria-label={`Excluir assinatura ${sub.name}`}
                   >
                     <Trash2 size={14} />
@@ -395,37 +408,37 @@ export const CommitmentsPage: React.FC = () => {
             <div key={rule.id} className="card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-3 min-w-0">
                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                  rule.type === 'income' ? 'bg-[#39D98A]/15 text-[#39D98A]' : 'bg-[#FF5555]/15 text-[#FF5555]'
+                  rule.type === 'income' ? 'bg-positive/15 text-positive' : 'bg-negative-strong/15 text-negative-strong'
                 }`}>
                   <Repeat size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center space-x-2">
-                    <h4 className="text-sm font-semibold text-white truncate">{rule.description}</h4>
+                    <h4 className="text-sm font-semibold text-ink truncate">{rule.description}</h4>
                     <span className="pill pill-neutral text-[9px] py-0 px-1.5">{rule.frequency}</span>
                   </div>
-                  <p className="text-xs text-[#8E95A3] mt-0.5">
+                  <p className="text-xs text-ink-muted mt-0.5">
                     Próxima ocorrência: {formatDateBR(rule.nextOccurrence)}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1D2026]">
-                <span className={`text-sm font-bold ${rule.type === 'income' ? 'text-[#39D98A]' : 'text-white'}`}>
+              <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-edge">
+                <span className={`text-sm font-bold ${rule.type === 'income' ? 'text-positive' : 'text-ink'}`}>
                   {rule.type === 'income' ? '+' : '-'}{formatCurrency(rule.amount)}
                 </span>
 
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => skipRecurringOccurrence(rule.id)}
-                    className="py-1 px-2.5 rounded-lg bg-[#1A1F29] hover:bg-[#222733] text-[#8E95A3] text-xs font-semibold min-h-[32px]"
+                    className="py-1 px-2.5 rounded-lg bg-field hover:bg-active text-ink-muted text-xs font-semibold min-h-[32px]"
                   >
                     Pular
                   </button>
 
                   <button
                     onClick={() => { setRecurringToEdit(rule); setIsRecurringModalOpen(true); }}
-                    className="w-8 h-8 rounded-lg text-[#8E95A3] hover:text-white flex items-center justify-center"
+                    className="w-8 h-8 rounded-lg text-ink-muted hover:text-ink flex items-center justify-center"
                     aria-label={`Editar regra ${rule.description}`}
                   >
                     <Edit2 size={14} />

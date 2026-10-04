@@ -11,7 +11,9 @@ import {
   Tv, 
   Layers 
 } from 'lucide-react';
+import { ErrorState, LoadingState } from '../components/ui';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { formatCurrency, formatDateBR, getPreviousMonthYear, getNextMonthYear } from '../calculations/financialCalculations';
 
 interface CalendarEventItem {
@@ -24,6 +26,7 @@ interface CalendarEventItem {
 }
 
 export const CalendarPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { 
     bills, 
     receivables, 
@@ -142,29 +145,39 @@ export const CalendarPage: React.FC = () => {
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ];
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
       {/* ── HEADER & MONTH PICKER ── */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Calendário Financeiro</h1>
-          <p className="label-xs text-[#8E95A3] mt-0.5">Visão cronológica de vencimentos e receitas</p>
+          <h1 className="text-xl font-bold text-ink tracking-tight">Calendário Financeiro</h1>
+          <p className="label-xs text-ink-muted mt-0.5">Visão cronológica de vencimentos e receitas</p>
         </div>
 
         {/* Month Selector */}
-        <div className="flex items-center space-x-1.5 p-1 bg-[#14171D] border border-[#222733] rounded-2xl">
+        <div className="flex items-center space-x-1.5 p-1 bg-panel border border-active rounded-2xl">
           <button
             onClick={handlePrevMonth}
-            className="p-1.5 rounded-xl hover:bg-[#1A1F29] text-[#8E95A3] hover:text-white transition-colors"
+            className="p-1.5 rounded-xl hover:bg-field text-ink-muted hover:text-ink transition-colors"
           >
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs font-bold text-white px-2">
+          <span className="text-xs font-bold text-ink px-2">
             {monthNames[month - 1]} {year}
           </span>
           <button
             onClick={handleNextMonth}
-            className="p-1.5 rounded-xl hover:bg-[#1A1F29] text-[#8E95A3] hover:text-white transition-colors"
+            className="p-1.5 rounded-xl hover:bg-field text-ink-muted hover:text-ink transition-colors"
           >
             <ChevronRight size={16} />
           </button>
@@ -175,20 +188,20 @@ export const CalendarPage: React.FC = () => {
       <div className="grid grid-cols-2 gap-3">
         <div className="card p-3.5 flex items-center justify-between">
           <div>
-            <span className="label-xs text-[#39D98A]">Entradas no Mês</span>
-            <div className="text-base font-bold text-white mt-0.5">+{formatCurrency(monthTotalInflows)}</div>
+            <span className="label-xs text-positive">Entradas no Mês</span>
+            <div className="text-base font-bold text-ink mt-0.5">+{formatCurrency(monthTotalInflows)}</div>
           </div>
-          <div className="w-9 h-9 rounded-2xl bg-[#39D98A]/15 text-[#39D98A] flex items-center justify-center">
+          <div className="w-9 h-9 rounded-2xl bg-positive/15 text-positive flex items-center justify-center">
             <ArrowUpRight size={18} />
           </div>
         </div>
 
         <div className="card p-3.5 flex items-center justify-between">
           <div>
-            <span className="label-xs text-[#FF5555]">Saídas / Contas</span>
-            <div className="text-base font-bold text-white mt-0.5">-{formatCurrency(monthTotalOutflows)}</div>
+            <span className="label-xs text-negative-strong">Saídas / Contas</span>
+            <div className="text-base font-bold text-ink mt-0.5">-{formatCurrency(monthTotalOutflows)}</div>
           </div>
-          <div className="w-9 h-9 rounded-2xl bg-[#FF5555]/15 text-[#FF5555] flex items-center justify-center">
+          <div className="w-9 h-9 rounded-2xl bg-negative-strong/15 text-negative-strong flex items-center justify-center">
             <ArrowDownLeft size={18} />
           </div>
         </div>
@@ -196,7 +209,7 @@ export const CalendarPage: React.FC = () => {
 
       {/* ── DESKTOP & TABLET MONTHLY GRID / MOBILE DATE SELECTOR ── */}
       <div className="card p-4 sm:p-5">
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[11px] font-semibold text-[#8E95A3]">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[11px] font-semibold text-ink-muted">
           <span>Dom</span>
           <span>Seg</span>
           <span>Ter</span>
@@ -224,20 +237,20 @@ export const CalendarPage: React.FC = () => {
                 onClick={() => setSelectedDayStr(cd.dateStr)}
                 className={`h-12 sm:h-16 rounded-xl p-1 sm:p-1.5 flex flex-col justify-between items-center transition-all border ${
                   isSelected
-                    ? 'border-[#8B7CFF] bg-[#8B7CFF]/15 text-white shadow-md'
+                    ? 'border-accent bg-accent/15 text-ink shadow-md'
                     : isToday
-                    ? 'border-[#39D98A]/40 bg-[#1A1F29] text-white'
-                    : 'border-[#222733]/60 bg-[#0D0F12]/60 hover:bg-[#1A1F29] text-[#8E95A3]'
+                    ? 'border-positive/40 bg-field text-ink'
+                    : 'border-active/60 bg-surface/60 hover:bg-field text-ink-muted'
                 }`}
               >
-                <span className={`text-xs font-bold ${isSelected ? 'text-white' : isToday ? 'text-[#39D98A]' : ''}`}>
+                <span className={`text-xs font-bold ${isSelected ? 'text-ink' : isToday ? 'text-positive' : ''}`}>
                   {cd.dayNum}
                 </span>
 
                 {/* Event indicators */}
                 <div className="flex items-center space-x-1">
-                  {hasInflow && <span className="w-1.5 h-1.5 rounded-full bg-[#39D98A]" />}
-                  {hasOutflow && <span className="w-1.5 h-1.5 rounded-full bg-[#FF5555]" />}
+                  {hasInflow && <span className="w-1.5 h-1.5 rounded-full bg-positive" />}
+                  {hasOutflow && <span className="w-1.5 h-1.5 rounded-full bg-negative-strong" />}
                 </div>
               </button>
             );
@@ -248,17 +261,17 @@ export const CalendarPage: React.FC = () => {
       {/* ── EVENTS OF SELECTED DAY (LIST VIEW) ── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-sm font-bold text-white">
+          <h3 className="text-sm font-bold text-ink">
             Compromissos de {formatDateBR(selectedDayStr)}
           </h3>
-          <span className="label-xs text-[#8E95A3]">
+          <span className="label-xs text-ink-muted">
             {selectedDateEvents.length} registro(s)
           </span>
         </div>
 
         {selectedDateEvents.length === 0 ? (
-          <div className="card p-6 text-center text-[#8E95A3]">
-            <CalendarIcon size={32} className="mx-auto mb-2 opacity-30 text-[#8B7CFF]" />
+          <div className="card p-6 text-center text-ink-muted">
+            <CalendarIcon size={32} className="mx-auto mb-2 opacity-30 text-accent" />
             <p className="text-xs">Nenhum vencimento ou pagamento registrado para este dia.</p>
           </div>
         ) : (
@@ -270,21 +283,21 @@ export const CalendarPage: React.FC = () => {
                 <div key={event.id} className="card p-3.5 flex items-center justify-between">
                   <div className="flex items-center space-x-3 min-w-0">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isIncome ? 'bg-[#39D98A]/15 text-[#39D98A]' : 'bg-[#FF5555]/15 text-[#FF5555]'
+                      isIncome ? 'bg-positive/15 text-positive' : 'bg-negative-strong/15 text-negative-strong'
                     }`}>
                       {isIncome ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                     </div>
 
                     <div className="min-w-0">
-                      <h4 className="text-xs font-semibold text-white truncate">{event.description}</h4>
-                      <span className="text-[11px] text-[#8E95A3] capitalize">
+                      <h4 className="text-xs font-semibold text-ink truncate">{event.description}</h4>
+                      <span className="text-[11px] text-ink-muted capitalize">
                         {event.type.replace('_', ' ')}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <span className={`text-xs font-bold ${isIncome ? 'text-[#39D98A]' : 'text-white'}`}>
+                    <span className={`text-xs font-bold ${isIncome ? 'text-positive' : 'text-ink'}`}>
                       {isIncome ? '+' : '-'}{formatCurrency(event.amount)}
                     </span>
                     {event.isPaid && (

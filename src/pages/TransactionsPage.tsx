@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, ArrowDownLeft, ArrowUpRight, Calendar } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { TransactionItem } from '../components/TransactionItem';
 import { formatRelativeDate } from '../calculations/financialCalculations';
+import { ErrorState, LoadingState } from '../components/ui';
 
 export const TransactionsPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const {
     transactions,
     categories,
@@ -47,15 +50,25 @@ export const TransactionsPage: React.FC = () => {
     (a, b) => new Date(b).getTime() - new Date(a).getTime(),
   );
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Transações</h1>
+        <h1 className="text-xl font-bold text-ink tracking-tight">Transações</h1>
         <button
           onClick={() => openNewTxModal('expense')}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/20 text-[#8B7CFF] text-xs font-semibold hover:bg-[#8B7CFF]/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Nova</span>
@@ -63,7 +76,7 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* ── FILTER TABS ── */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-[#0D0F12] border border-[#1D2026] rounded-2xl">
+      <div className="grid grid-cols-3 gap-1 p-1 bg-surface border border-edge rounded-2xl">
         {[
           { key: 'all' as const, label: 'Todas' },
           { key: 'income' as const, label: 'Receitas' },
@@ -75,11 +88,11 @@ export const TransactionsPage: React.FC = () => {
             className={`py-2 text-xs font-semibold rounded-xl transition-all ${
               activeTab === key
                 ? key === 'income'
-                  ? 'bg-[#39D98A]/15 text-[#39D98A] shadow-sm'
+                  ? 'bg-positive/15 text-positive shadow-sm'
                   : key === 'expense'
-                    ? 'bg-[#FF5C5C]/15 text-[#FF5C5C] shadow-sm'
-                    : 'bg-[#121419] text-[#F5F5F5] shadow-sm'
-                : 'text-[#8B919B] hover:text-[#F5F5F5]'
+                    ? 'bg-negative/15 text-negative shadow-sm'
+                    : 'bg-surface-raised text-ink shadow-sm'
+                : 'text-ink-muted hover:text-ink'
             }`}
           >
             {label}
@@ -89,27 +102,27 @@ export const TransactionsPage: React.FC = () => {
 
       {/* ── SEARCH ── */}
       <div className="relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5F6570]" />
+        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint" />
         <input
           type="text"
           placeholder="Buscar transações..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 rounded-2xl bg-[#0D0F12] border border-[#1D2026] focus:border-[#8B7CFF] text-xs text-[#F5F5F5] placeholder-[#5F6570] outline-none transition-colors"
+          className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface border border-edge focus:border-accent text-xs text-ink placeholder-ink-faint outline-none transition-colors"
         />
       </div>
 
       {/* ── TRANSACTION LIST ── */}
       {sortedDates.length === 0 ? (
         <div className="card p-12 text-center">
-          <div className="w-14 h-14 rounded-3xl bg-[#8B7CFF]/10 flex items-center justify-center mx-auto mb-4">
-            <Calendar size={28} className="text-[#8B7CFF]" />
+          <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
+            <Calendar size={28} className="text-accent" />
           </div>
-          <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Nenhuma movimentação encontrada</h3>
+          <h3 className="text-sm font-semibold text-ink mb-2">Nenhuma movimentação encontrada</h3>
           <p className="label-xs leading-relaxed mb-5">Adicione uma nova receita ou despesa.</p>
           <button
             onClick={() => openNewTxModal('expense')}
-            className="px-5 py-2.5 rounded-xl bg-[#8B7CFF] text-white text-xs font-semibold hover:bg-[#7B6CEF] transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
           >
             Nova transação
           </button>
@@ -129,7 +142,7 @@ export const TransactionsPage: React.FC = () => {
                     const account = accounts.find(a => a.id === tx.accountId);
                     const card = cards.find(c => c.id === tx.cardId);
                     return (
-                      <div key={tx.id} className={idx < txsForDate.length - 1 ? 'border-b border-[#1D2026]' : ''}>
+                      <div key={tx.id} className={idx < txsForDate.length - 1 ? 'border-b border-edge' : ''}>
                         <TransactionItem
                           transaction={tx}
                           category={category}

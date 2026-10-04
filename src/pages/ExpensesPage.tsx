@@ -2,12 +2,14 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import {
   formatCurrency,
   calculateTotalExpenses,
   calculateCategoryBreakdown,
   calculateMonthlyComparison,
 } from '../calculations/financialCalculations';
+import { ErrorState, LoadingState } from '../components/ui';
 
 type CategoryWithBreakdown = ReturnType<typeof calculateCategoryBreakdown>[number];
 
@@ -29,21 +31,23 @@ const CategoryDetailDrawer: React.FC<{
       <div className="bottom-sheet-overlay" onClick={onClose} />
       <div className="bottom-sheet-panel p-5 safe-bottom">
         {/* Drag handle */}
-        <div className="w-9 h-1 rounded-full bg-[#1D2026] mx-auto mb-5" />
+        <div className="w-9 h-1 rounded-full bg-edge mx-auto mb-5" />
 
         <div className="flex items-center space-x-3 mb-4">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: `${cat.categoryColor}20` }}
+            style={{
+              backgroundColor: `color-mix(in oklab, ${cat.categoryColor} 12%, transparent)`,
+            }}
           >
             <span className="text-lg">{cat.categoryIcon || '📦'}</span>
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#F5F5F5]">{cat.categoryName}</h3>
+            <h3 className="text-base font-bold text-ink">{cat.categoryName}</h3>
             <p className="label-xs">{cat.percentage.toFixed(0)}% do total gasto</p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-lg font-bold text-[#F5F5F5]">{formatCurrency(cat.total)}</p>
+            <p className="text-lg font-bold text-ink">{formatCurrency(cat.total)}</p>
           </div>
         </div>
 
@@ -56,16 +60,16 @@ const CategoryDetailDrawer: React.FC<{
 
         <p className="label-section mb-3">Transações do mês</p>
         {catTxs.length === 0 ? (
-          <p className="text-xs text-[#5F6570] py-4 text-center">Nenhuma transação encontrada.</p>
+          <p className="text-xs text-ink-faint py-4 text-center">Nenhuma transação encontrada.</p>
         ) : (
           <div className="space-y-0 max-h-72 overflow-y-auto">
             {catTxs.map(tx => (
-              <div key={tx.id} className="flex items-center justify-between py-3 border-b border-[#1D2026] last:border-0">
+              <div key={tx.id} className="flex items-center justify-between py-3 border-b border-edge last:border-b-0">
                 <div>
-                  <p className="text-xs font-semibold text-[#F5F5F5]">{tx.description}</p>
+                  <p className="text-xs font-semibold text-ink">{tx.description}</p>
                   <p className="label-xs mt-0.5">{tx.date?.substring(0, 10)}</p>
                 </div>
-                <span className="text-xs font-bold text-[#FF5C5C]">−{formatCurrency(tx.amount)}</span>
+                <span className="text-xs font-bold text-negative">−{formatCurrency(tx.amount)}</span>
               </div>
             ))}
           </div>
@@ -76,6 +80,7 @@ const CategoryDetailDrawer: React.FC<{
 };
 
 export const ExpensesPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const navigate = useNavigate();
   const { transactions, categories, selectedPeriod, setSelectedPeriod } = useFinance();
   const [selectedCat, setSelectedCat] = useState<CategoryWithBreakdown | null>(null);
@@ -113,20 +118,30 @@ export const ExpensesPage: React.FC = () => {
   const variationPct = comparison.expenseVariationPercent;
   const isDown = variationPct <= 0;
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Seus gastos</h1>
-        <div className="flex items-center space-x-1 bg-[#0D0F12] border border-[#1D2026] rounded-2xl px-3 py-2">
-          <button onClick={handlePrevMonth} className="p-0.5 text-[#8B919B] hover:text-[#F5F5F5] transition-colors">
+        <h1 className="text-xl font-bold text-ink tracking-tight">Seus gastos</h1>
+        <div className="flex items-center space-x-1 bg-surface border border-edge rounded-2xl px-3 py-2">
+          <button onClick={handlePrevMonth} className="p-0.5 text-ink-muted hover:text-ink transition-colors">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs font-semibold text-[#F5F5F5] px-1">
+          <span className="text-xs font-semibold text-ink px-1">
             {comparison.currentMonth.label}
           </span>
-          <button onClick={handleNextMonth} className="p-0.5 text-[#8B919B] hover:text-[#F5F5F5] transition-colors">
+          <button onClick={handleNextMonth} className="p-0.5 text-ink-muted hover:text-ink transition-colors">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -158,7 +173,7 @@ export const ExpensesPage: React.FC = () => {
           <p className="label-section">Para onde vai seu dinheiro</p>
           <button
             onClick={() => navigate('/comparacao')}
-            className="flex items-center space-x-1 text-xs text-[#8B7CFF] hover:underline"
+            className="flex items-center space-x-1 text-xs text-accent hover:underline"
           >
             <span>Ver comparativo</span>
             <ArrowUpRight size={12} />
@@ -167,7 +182,7 @@ export const ExpensesPage: React.FC = () => {
 
         {categoryBreakdown.length === 0 ? (
           <div className="py-10 text-center">
-            <p className="text-sm text-[#5F6570]">Nenhuma despesa registrada neste período.</p>
+            <p className="text-sm text-ink-faint">Nenhuma despesa registrada neste período.</p>
           </div>
         ) : (
           <div className="space-y-3 stagger">
@@ -180,13 +195,13 @@ export const ExpensesPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2.5">
                     <span className="text-sm">{cat.categoryIcon || '📦'}</span>
-                    <span className="text-xs font-semibold text-[#F5F5F5] group-hover:text-[#8B7CFF] transition-colors">
+                    <span className="text-xs font-semibold text-ink group-hover:text-accent transition-colors">
                       {cat.categoryName}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-[11px] text-[#5F6570]">{cat.percentage.toFixed(0)}%</span>
-                    <span className="text-xs font-bold text-[#F5F5F5]">{formatCurrency(cat.total)}</span>
+                    <span className="text-[11px] text-ink-faint">{cat.percentage.toFixed(0)}%</span>
+                    <span className="text-xs font-bold text-ink">{formatCurrency(cat.total)}</span>
                   </div>
                 </div>
                 <div className="progress-track">
@@ -211,14 +226,14 @@ export const ExpensesPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="text-center">
               <p className="label-xs mb-1">{comparison.previousMonth.label}</p>
-              <p className="text-sm font-bold text-[#F5F5F5]">{formatCurrency(comparison.previousMonth.expenses)}</p>
+              <p className="text-sm font-bold text-ink">{formatCurrency(comparison.previousMonth.expenses)}</p>
             </div>
             <div className={`pill ${isDown ? 'pill-positive' : 'pill-negative'}`}>
               {isDown ? '↓' : '↑'} {Math.abs(variationPct).toFixed(1)}%
             </div>
             <div className="text-center">
               <p className="label-xs mb-1">{comparison.currentMonth.label}</p>
-              <p className="text-sm font-bold text-[#F5F5F5]">{formatCurrency(comparison.currentMonth.expenses)}</p>
+              <p className="text-sm font-bold text-ink">{formatCurrency(comparison.currentMonth.expenses)}</p>
             </div>
           </div>
         </div>

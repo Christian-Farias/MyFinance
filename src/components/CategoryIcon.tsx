@@ -30,7 +30,7 @@ interface CategoryIconProps {
 
 export const CategoryIcon: React.FC<CategoryIconProps> = ({ 
   iconName, 
-  color = '#8A8F98', 
+  color = 'var(--color-ink-faint)', 
   size = 18, 
   className = '' 
 }) => {
@@ -91,7 +91,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
     <div 
       className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-95 ${className}`}
       style={{ 
-        backgroundColor: `${color}20`, 
+        backgroundColor: `color-mix(in oklab, ${color} 12%, transparent)`, 
         color: color 
       }}
     >

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Calendar, Check, AlertCircle } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { Bill } from '../../types';
+import { AmountField, CheckboxField, Modal, SelectField, TextField } from '../ui';
 
 interface BillModalProps {
   isOpen: boolean;
@@ -23,8 +24,6 @@ export const BillModal: React.FC<BillModalProps> = ({ isOpen, onClose, billToEdi
   const [notes, setNotes] = useState(billToEdit?.notes || '');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,125 +76,94 @@ export const BillModal: React.FC<BillModalProps> = ({ isOpen, onClose, billToEdi
   };
 
   return (
-    <div className="modal-overlay">
-      <div 
-        className="modal-panel w-full sm:max-w-md px-5 sm:px-6 pt-5 sm:pt-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
-          <h3 className="text-base font-bold text-white">
-            {billToEdit ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1A1F29] text-[#8E95A3] hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={billToEdit ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar'}
+      size="md"
+      footer={
+        <button
+          type="submit"
+          form="bill-form"
+          disabled={isSubmitting}
+          className="btn btn-primary btn-block"
+        >
+          <Check size={16} aria-hidden="true" />
+          <span>{isSubmitting ? 'Salvando…' : (billToEdit ? 'Atualizar Conta' : 'Salvar Conta')}</span>
+        </button>
+      }
+    >
+      <form id="bill-form" onSubmit={handleSubmit} className="space-y-4">
+        <TextField
+          label="Descrição"
+          placeholder="Ex: Aluguel, Internet, Luz..."
+          value={description}
+          onChange={setDescription}
+          autoFocus
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <AmountField label="Valor" value={amountStr} onChange={setAmountStr} placeholder="100,00" />
+          <TextField label="Vencimento" type="date" value={dueDate} onChange={setDueDate} />
         </div>
 
+        <SelectField
+          label="Categoria"
+          value={categoryId}
+          onChange={setCategoryId}
+          options={categories.map((c) => ({ value: c.id, label: c.name }))}
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Conta"
+            value={accountId}
+            onChange={setAccountId}
+            options={[
+              { value: '', label: 'Sem conta vinculada' },
+              ...accounts.map((a) => ({ value: a.id, label: a.name })),
+            ]}
+          />
+          <SelectField
+            label="Cartão"
+            value={cardId}
+            onChange={setCardId}
+            options={[
+              { value: '', label: 'Sem cartão vinculado' },
+              ...cards.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+        </div>
+
+        <fieldset>
+          <legend className="field-label">Classificação</legend>
+          <div className="flex items-center gap-5">
+            <CheckboxField
+              label="Despesa Fixa"
+              checked={isFixedExpense}
+              onChange={setIsFixedExpense}
+            />
+            <CheckboxField
+              label="Assinatura"
+              checked={isSubscription}
+              onChange={setIsSubscription}
+            />
+          </div>
+        </fieldset>
+
+        <TextField
+          label="Observações (opcional)"
+          placeholder="Ex: Código de barras, boleto..."
+          value={notes}
+          onChange={setNotes}
+        />
+
         {errorMsg && (
-          <div className="my-3 p-3 rounded-xl bg-[#2A1215] border border-[#FF5555]/30 text-[#FF5555] text-xs">
+          <p role="alert" className="text-xs text-negative-strong">
             {errorMsg}
-          </div>
+          </p>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 my-4">
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Descrição</label>
-            <input
-              type="text"
-              placeholder="Ex: Aluguel, Internet, Luz..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] text-sm text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Valor (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="100,00"
-                value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white font-medium placeholder-[#5F6570]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Vencimento</label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Categoria</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] text-xs text-white"
-            >
-              {categories.map(c => (
-                <option key={c.id} value={c.id} className="bg-[#1A1F29] text-white">
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center space-x-4 pt-2">
-            <label className="flex items-center space-x-2 text-xs text-[#8E95A3] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isFixedExpense}
-                onChange={(e) => setIsFixedExpense(e.target.checked)}
-                className="w-4 h-4 accent-[#8B7CFF] rounded"
-              />
-              <span className="text-white">Despesa Fixa</span>
-            </label>
-
-            <label className="flex items-center space-x-2 text-xs text-[#8E95A3] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isSubscription}
-                onChange={(e) => setIsSubscription(e.target.checked)}
-                className="w-4 h-4 accent-[#8B7CFF] rounded"
-              />
-              <span className="text-white">Assinatura</span>
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Observações (opcional)</label>
-            <input
-              type="text"
-              placeholder="Ex: Código de barras, boleto..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-[#8B7CFF] hover:bg-[#7a6aeb] text-white font-semibold text-xs sm:text-sm shadow-lg shadow-[#8B7CFF]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              <Check size={16} />
-              <span>{isSubmitting ? 'Salvando...' : (billToEdit ? 'Atualizar Conta' : 'Salvar Conta')}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

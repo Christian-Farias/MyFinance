@@ -32,6 +32,8 @@ import {
   calculateBudgetUsage,
 } from '../calculations/financialCalculations';
 import { TransactionItem } from '../components/TransactionItem';
+import { EmptyState, ErrorState, LoadingState } from '../components/ui';
+import { usePageData } from '../hooks/usePageData';
 
 /* ─── Greeting helper ─── */
 function getGreeting(): string {
@@ -58,6 +60,7 @@ const MiniSparkline: React.FC<{ data: { v: number }[]; color: string }> = ({ dat
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoading, loadFailed, retry } = usePageData();
   const {
     accounts,
     transactions,
@@ -158,7 +161,7 @@ export const DashboardPage: React.FC = () => {
     if (criticalBudget) {
       items.push({
         icon: AlertTriangle,
-        iconColor: '#F59E0B',
+        iconColor: 'var(--color-warning)',
         title: 'Orçamento próximo do limite',
         desc: `Você já usou ${criticalBudget.percentage.toFixed(0)}% do orçamento de ${criticalBudget.category?.name ?? 'uma categoria'}.`,
         href: '/orcamentos',
@@ -176,7 +179,7 @@ export const DashboardPage: React.FC = () => {
       const diff = (cardsDueSoon.dueDay ?? 0) - new Date().getDate();
       items.push({
         icon: CreditCard,
-        iconColor: '#8B7CFF',
+        iconColor: 'var(--color-accent)',
         title: 'Fatura próxima do vencimento',
         desc: `Sua fatura do ${cardsDueSoon.name} vence em ${diff === 0 ? 'hoje' : `${diff} dia${diff > 1 ? 's' : ''}`}.`,
         href: '/cartoes',
@@ -188,7 +191,7 @@ export const DashboardPage: React.FC = () => {
     if (unread.length > 0 && items.length < 3) {
       items.push({
         icon: Bell,
-        iconColor: '#FF5C5C',
+        iconColor: 'var(--color-negative)',
         title: unread[0].title,
         desc: unread[0].message,
         href: '/alertas',
@@ -200,7 +203,7 @@ export const DashboardPage: React.FC = () => {
       const topCat = categoryBreakdown[0];
       items.push({
         icon: TrendingUp,
-        iconColor: '#FF5C5C',
+        iconColor: 'var(--color-negative)',
         title: 'Gasto incomum detectado',
         desc: `Seus gastos com ${topCat?.categoryName?.toLowerCase() ?? 'despesas'} aumentaram ${comparison.expenseVariationPercent.toFixed(0)}% este mês.`,
         href: '/gastos',
@@ -212,8 +215,19 @@ export const DashboardPage: React.FC = () => {
 
   /* ─── Recent 5 transactions ─── */
   const recent = transactions.slice(0, 5);
+  const unreadAlertCount = alerts.filter((a) => !a.isRead).length;
 
-  const insightBorderColor = insight.type === 'positive' ? '#39D98A' : insight.type === 'negative' ? '#FF5C5C' : '#8B7CFF';
+  const insightBorderColor = insight.type === 'positive' ? 'var(--color-positive)' : insight.type === 'negative' ? 'var(--color-negative)' : 'var(--color-accent)';
+
+  /* O IndexedDB não respondeu. Sem esta guarda a página desenhava o estado
+     vazio, indistinguível de "você não tem lançamentos". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={5} />;
+  }
 
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
@@ -221,26 +235,38 @@ export const DashboardPage: React.FC = () => {
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center space-x-3">
-          <img 
-            src="/logo.png" 
-            alt="MyFinance" 
-            className="w-10 h-10 rounded-2xl object-contain bg-black border border-[#222733] shadow-sm cursor-pointer md:hidden"
+          <button
+            type="button"
             onClick={() => navigate('/configuracoes')}
-          />
+            aria-label="Abrir configurações"
+            className="md:hidden shrink-0"
+          >
+            <img
+              src="/logo.png"
+              alt=""
+              className="w-10 h-10 rounded-2xl object-contain bg-black border border-active"
+            />
+          </button>
           <div>
             <p className="label-xs mb-0.5">{getGreeting()},</p>
-            <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">
+            <h1 className="text-xl font-bold text-ink tracking-tight">
               {settings.name || 'Você'} 👋
             </h1>
           </div>
         </div>
         <button
+          type="button"
           onClick={() => navigate('/alertas')}
-          className="relative w-10 h-10 rounded-full flex items-center justify-center bg-[#0D0F12] border border-[#1D2026] hover:border-[#272B34] transition-colors"
+          aria-label={
+            unreadAlertCount > 0
+              ? `Notificações (${unreadAlertCount} não lidas)`
+              : 'Notificações'
+          }
+          className="relative btn btn-icon btn-ghost shrink-0"
         >
-          <Bell size={17} className="text-[#8B919B]" />
-          {alerts.filter(a => !a.isRead).length > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF5C5C]" />
+          <Bell size={17} aria-hidden="true" />
+          {unreadAlertCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-negative" />
           )}
         </button>
       </div>
@@ -261,71 +287,72 @@ export const DashboardPage: React.FC = () => {
 
         {/* Mini sparkline */}
         <div className="h-10 w-full mb-4">
-          <MiniSparkline data={sparklineData} color="#39D98A" />
+          <MiniSparkline data={sparklineData} color="var(--color-positive)" />
         </div>
 
         {/* Sub-row: contas / cartões / investimentos */}
-        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#1D2026]">
+        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-edge">
           <button
             onClick={() => navigate('/contas')}
-            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group min-w-0"
+            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-surface-raised transition-colors group min-w-0"
           >
             <div className="flex items-center space-x-1.5 mb-1 max-w-full">
-              <Wallet size={12} className="text-[#8B919B] group-hover:text-[#39D98A] transition-colors shrink-0" />
+              <Wallet size={12} className="text-ink-muted group-hover:text-positive transition-colors shrink-0" />
               <span className="label-xs truncate">Contas</span>
             </div>
-            <span className="text-xs font-bold text-[#F5F5F5] tracking-tight truncate max-w-full">{formatCurrency(accountsBalance)}</span>
+            <span className="text-xs font-bold text-ink tracking-tight truncate max-w-full">{formatCurrency(accountsBalance)}</span>
           </button>
 
           <button
             onClick={() => navigate('/cartoes')}
-            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group min-w-0"
+            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-surface-raised transition-colors group min-w-0"
           >
             <div className="flex items-center space-x-1.5 mb-1 max-w-full">
-              <CreditCard size={12} className="text-[#8B919B] group-hover:text-[#FF5C5C] transition-colors shrink-0" />
+              <CreditCard size={12} className="text-ink-muted group-hover:text-negative transition-colors shrink-0" />
               <span className="label-xs truncate">Cartões</span>
             </div>
-            <span className="text-xs font-bold text-[#FF5C5C] tracking-tight truncate max-w-full">
+            <span className="text-xs font-bold text-negative tracking-tight truncate max-w-full">
               {totalCardsDebt > 0 ? `−${formatCurrency(totalCardsDebt)}` : formatCurrency(0)}
             </span>
           </button>
 
           <button
             onClick={() => navigate('/investimentos')}
-            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-[#121419] transition-colors group min-w-0"
+            className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-surface-raised transition-colors group min-w-0"
           >
             <div className="flex items-center space-x-1.5 mb-1 max-w-full">
-              <TrendingUp size={12} className="text-[#8B919B] group-hover:text-[#8B7CFF] transition-colors shrink-0" />
+              <TrendingUp size={12} className="text-ink-muted group-hover:text-accent transition-colors shrink-0" />
               <span className="label-xs truncate">Investimentos</span>
             </div>
-            <span className="text-xs font-bold text-[#8B7CFF] tracking-tight truncate max-w-full">{formatCurrency(totalInvested)}</span>
+            <span className="text-xs font-bold text-accent tracking-tight truncate max-w-full">{formatCurrency(totalInvested)}</span>
           </button>
         </div>
       </div>
 
       {/* ── INSIGHT PRINCIPAL ── */}
-      <div
-        className="card p-4 cursor-pointer card-hover"
-        style={{ borderLeft: `3px solid ${insightBorderColor}` }}
+      <button
+        type="button"
         onClick={() => navigate('/gastos')}
+        className="card p-4 text-left w-full card-hover"
+        style={{ borderLeft: `3px solid ${insightBorderColor}` }}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1 pr-3">
             <div className="flex items-center space-x-1.5 mb-1.5">
-              <Sparkles size={13} className="text-[#8B7CFF]" />
+              <Sparkles size={13} className="text-accent" />
               <span className="label-section">Insight do mês</span>
             </div>
-            <p className="text-sm font-semibold text-[#F5F5F5] leading-snug mb-1">
+            <p className="text-sm font-semibold text-ink leading-snug mb-1">
               {insight.emoji} {insight.headline}
             </p>
-            <p className="text-xs text-[#8B919B] leading-relaxed">{insight.sub}</p>
+            <p className="text-xs text-ink-muted leading-relaxed">{insight.sub}</p>
           </div>
-          <ChevronRight size={16} className="text-[#5F6570] shrink-0 mt-0.5" />
+          <ChevronRight size={16} className="text-ink-faint shrink-0 mt-0.5" aria-hidden="true" />
         </div>
-        <button className="mt-3 text-xs font-semibold text-[#8B7CFF] hover:underline">
+        <span className="mt-3 inline-block text-xs font-semibold text-accent">
           Ver análise →
-        </button>
-      </div>
+        </span>
+      </button>
 
       {/* ── O QUE MERECE SUA ATENÇÃO ── */}
       {attentionItems.length > 0 && (
@@ -342,15 +369,18 @@ export const DashboardPage: React.FC = () => {
                 >
                   <div
                     className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ backgroundColor: `${item.iconColor}15`, color: item.iconColor }}
+                    style={{
+              backgroundColor: `color-mix(in oklab, ${item.iconColor} 10%, transparent)`,
+              color: item.iconColor,
+            }}
                   >
                     <Icon size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#F5F5F5] mb-0.5">{item.title}</p>
-                    <p className="text-xs text-[#8B919B] leading-relaxed line-clamp-2">{item.desc}</p>
+                    <p className="text-xs font-semibold text-ink mb-0.5">{item.title}</p>
+                    <p className="text-xs text-ink-muted leading-relaxed line-clamp-2">{item.desc}</p>
                   </div>
-                  <ChevronRight size={14} className="text-[#5F6570] shrink-0 mt-1" />
+                  <ChevronRight size={14} className="text-ink-faint shrink-0 mt-1" />
                 </button>
               );
             })}
@@ -363,10 +393,10 @@ export const DashboardPage: React.FC = () => {
         <p className="label-section mb-3 px-0.5">Ações rápidas</p>
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Despesa',  icon: ArrowDownLeft,  color: '#FF5C5C', action: () => openNewTxModal('expense') },
-            { label: 'Receita',  icon: ArrowUpRight,   color: '#39D98A', action: () => openNewTxModal('income') },
-            { label: 'Transferir', icon: ArrowLeftRight, color: '#8B7CFF', action: () => openNewTxModal('transfer') },
-            { label: 'Gastos',   icon: Target,         color: '#F59E0B', action: () => navigate('/gastos') },
+            { label: 'Despesa',  icon: ArrowDownLeft,  color: 'var(--color-negative)', action: () => openNewTxModal('expense') },
+            { label: 'Receita',  icon: ArrowUpRight,   color: 'var(--color-positive)', action: () => openNewTxModal('income') },
+            { label: 'Transferir', icon: ArrowLeftRight, color: 'var(--color-accent)', action: () => openNewTxModal('transfer') },
+            { label: 'Gastos',   icon: Target,         color: 'var(--color-warning)', action: () => navigate('/gastos') },
           ].map((qa) => {
             const Icon = qa.icon;
             return (
@@ -377,11 +407,13 @@ export const DashboardPage: React.FC = () => {
               >
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${qa.color}15` }}
+                  style={{
+                    backgroundColor: `color-mix(in oklab, ${qa.color} 12%, transparent)`,
+                  }}
                 >
                   <Icon size={16} style={{ color: qa.color }} strokeWidth={2} />
                 </div>
-                <span className="text-[11px] font-medium text-[#8B919B] text-center leading-tight truncate max-w-full px-0.5">{qa.label}</span>
+                <span className="text-[11px] font-medium text-ink-muted text-center leading-tight truncate max-w-full px-0.5">{qa.label}</span>
               </button>
             );
           })}
@@ -394,7 +426,7 @@ export const DashboardPage: React.FC = () => {
           <p className="label-section">Movimentações recentes</p>
           <button
             onClick={() => navigate('/transacoes')}
-            className="text-xs font-semibold text-[#8B7CFF] flex items-center space-x-0.5 hover:underline"
+            className="text-xs font-semibold text-accent flex items-center space-x-0.5 hover:underline"
           >
             <span>Ver tudo</span>
             <ChevronRight size={13} />
@@ -402,15 +434,22 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {recent.length === 0 ? (
-          <div className="card p-10 text-center">
-            <p className="text-sm text-[#5F6570] mb-3">Seu histórico financeiro aparecerá aqui.</p>
-            <button
-              onClick={() => openNewTxModal('expense')}
-              className="text-xs font-semibold text-[#8B7CFF] hover:underline"
-            >
-              + Adicionar primeira transação
-            </button>
-          </div>
+          <EmptyState
+            compact
+            icon={ArrowLeftRight}
+            title="Nenhuma movimentação ainda"
+            description="Seu histórico financeiro aparecerá aqui."
+            action={
+              <button
+                type="button"
+                onClick={() => openNewTxModal('expense')}
+                className="btn btn-primary btn-sm"
+              >
+                <Plus size={14} aria-hidden="true" />
+                Adicionar primeira transação
+              </button>
+            }
+          />
         ) : (
           <div className="card overflow-hidden stagger">
             {recent.map((tx, idx) => {
@@ -418,7 +457,7 @@ export const DashboardPage: React.FC = () => {
               const account  = accounts.find(a => a.id === tx.accountId);
               const card     = cards.find(c => c.id === tx.cardId);
               return (
-                <div key={tx.id} className={`animate-fade-in ${idx < recent.length - 1 ? 'border-b border-[#1D2026]' : ''}`}>
+                <div key={tx.id} className={`animate-fade-in ${idx < recent.length - 1 ? 'border-b border-edge' : ''}`}>
                   <TransactionItem
                     transaction={tx}
                     category={category}
@@ -440,11 +479,11 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="label-xs mb-1">Receitas</p>
-            <p className="text-base font-bold text-[#39D98A] tracking-tight">{formatCurrency(monthIncome)}</p>
+            <p className="text-base font-bold text-positive tracking-tight">{formatCurrency(monthIncome)}</p>
           </div>
           <div>
             <p className="label-xs mb-1">Despesas</p>
-            <p className="text-base font-bold text-[#FF5C5C] tracking-tight">{formatCurrency(monthExpenses)}</p>
+            <p className="text-base font-bold text-negative tracking-tight">{formatCurrency(monthExpenses)}</p>
           </div>
         </div>
         {monthIncome > 0 && (
@@ -454,7 +493,7 @@ export const DashboardPage: React.FC = () => {
                 className="progress-fill"
                 style={{
                   width: `${Math.min(100, (monthExpenses / monthIncome) * 100)}%`,
-                  backgroundColor: monthExpenses > monthIncome ? '#FF5C5C' : '#39D98A',
+                  backgroundColor: monthExpenses > monthIncome ? 'var(--color-negative)' : 'var(--color-positive)',
                 }}
               />
             </div>

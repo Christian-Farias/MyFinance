@@ -1,10 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, CheckCircle2, AlertCircle, FileText, Table } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { importService, type ColumnMapping, type PreviewTransaction, type ParsedRawRow } from '../services/importService';
 import { formatCurrency, formatDateBR } from '../calculations/financialCalculations';
+import { ErrorState, LoadingState } from '../components/ui';
 
 export const ImportPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { accounts, cards, refreshAll } = useFinance();
   const [activeFormat, setActiveFormat] = useState<'csv' | 'ofx'>('csv');
   const [file, setFile] = useState<File | null>(null);
@@ -106,25 +109,35 @@ export const ImportPage: React.FC = () => {
     setErrorMsg('');
   };
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Importar extrato</h1>
+        <h1 className="text-xl font-bold text-ink tracking-tight">Importar extrato</h1>
         <p className="label-xs mt-0.5">Traga seus dados de bancos e cartões sem pagar nada.</p>
       </div>
 
       {/* ── FORMAT SELECTOR ── */}
-      <div className="grid grid-cols-2 gap-1 p-1 bg-[#0D0F12] border border-[#1D2026] rounded-2xl max-w-xs">
+      <div className="grid grid-cols-2 gap-1 p-1 bg-surface border border-edge rounded-2xl max-w-xs">
         {(['csv', 'ofx'] as const).map(fmt => (
           <button
             key={fmt}
             onClick={() => setActiveFormat(fmt)}
             className={`py-2 text-xs font-semibold rounded-xl transition-all ${
               activeFormat === fmt
-                ? 'bg-[#121419] text-[#F5F5F5] shadow-sm'
-                : 'text-[#8B919B] hover:text-[#F5F5F5]'
+                ? 'bg-surface-raised text-ink shadow-sm'
+                : 'text-ink-muted hover:text-ink'
             }`}
           >
             {fmt.toUpperCase()}
@@ -134,7 +147,7 @@ export const ImportPage: React.FC = () => {
 
       {/* ── ERROR ── */}
       {errorMsg && (
-        <div className="p-3.5 rounded-2xl bg-[#FF5C5C]/8 border border-[#FF5C5C]/20 text-[#FF5C5C] text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-2xl bg-negative/8 border border-negative/20 text-negative text-xs flex items-center space-x-2">
           <AlertCircle size={16} />
           <span>{errorMsg}</span>
         </div>
@@ -145,7 +158,7 @@ export const ImportPage: React.FC = () => {
         <div className="space-y-5">
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-[#1D2026] hover:border-[#8B7CFF]/50 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all bg-[#0A0B0E] hover:bg-[#0D0F12] group"
+            className="border-2 border-dashed border-edge hover:border-accent/50 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all bg-on-accent hover:bg-surface group"
           >
             <input
               ref={fileInputRef}
@@ -154,11 +167,11 @@ export const ImportPage: React.FC = () => {
               onChange={handleFileChange}
               className="hidden"
             />
-            <div className="w-16 h-16 rounded-full bg-[#121419] text-[#8B7CFF] group-hover:scale-110 flex items-center justify-center mx-auto mb-4 transition-transform">
+            <div className="w-16 h-16 rounded-full bg-surface-raised text-accent group-hover:scale-110 flex items-center justify-center mx-auto mb-4 transition-transform">
               <UploadCloud size={30} />
             </div>
-            <h3 className="text-base font-bold text-[#F5F5F5] mb-1">Arraste o arquivo aqui</h3>
-            <p className="text-xs text-[#8B919B] mb-4">ou selecione no seu dispositivo</p>
+            <h3 className="text-base font-bold text-ink mb-1">Arraste o arquivo aqui</h3>
+            <p className="text-xs text-ink-muted mb-4">ou selecione no seu dispositivo</p>
             <div className="label-xs space-y-0.5 font-mono">
               <p>Formatos aceitos: .{activeFormat}</p>
               <p>Tamanho máximo: 10MB</p>
@@ -167,10 +180,10 @@ export const ImportPage: React.FC = () => {
 
           <div className="card p-5">
             <p className="label-section mb-3">Como funciona?</p>
-            <div className="space-y-2.5 text-xs text-[#8B919B]">
+            <div className="space-y-2.5 text-xs text-ink-muted">
               {['Selecione o arquivo exportado pelo seu banco', 'O sistema identifica e categoriza as transações', 'Você confere e confirma a importação'].map((text, i) => (
                 <div key={i} className="flex items-center space-x-3">
-                  <span className="w-5 h-5 rounded-full bg-[#1D2026] text-[#F5F5F5] flex items-center justify-center font-bold text-[10px] shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-edge text-ink flex items-center justify-center font-bold text-[10px] shrink-0">
                     {i + 1}
                   </span>
                   <span>{text}</span>
@@ -184,7 +197,7 @@ export const ImportPage: React.FC = () => {
       {/* ── STEP 2: MAPPING ── */}
       {step === 'mapping' && (
         <div className="card p-5 space-y-4">
-          <h3 className="text-base font-bold text-[#F5F5F5]">Mapeamento de colunas</h3>
+          <h3 className="text-base font-bold text-ink">Mapeamento de colunas</h3>
           <p className="label-xs">Confirme as colunas do seu arquivo para importação correta:</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -194,22 +207,22 @@ export const ImportPage: React.FC = () => {
               { label: 'Coluna de Valor', key: 'amountCol' as const },
             ].map(({ label, key }) => (
               <div key={key}>
-                <label className="block text-xs font-medium text-[#8B919B] mb-1">{label}</label>
+                <label className="block text-xs font-medium text-ink-muted mb-1">{label}</label>
                 <select
                   value={mapping[key]}
                   onChange={e => setMapping({ ...mapping, [key]: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0D0F12] border border-[#1D2026] text-xs text-[#F5F5F5] focus:border-[#8B7CFF] outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-surface border border-edge text-xs text-ink focus:border-accent outline-none"
                 >
                   {headers.map(h => <option key={h} value={h}>{h}</option>)}
                 </select>
               </div>
             ))}
             <div>
-              <label className="block text-xs font-medium text-[#8B919B] mb-1">Coluna de Tipo (Opcional)</label>
+              <label className="block text-xs font-medium text-ink-muted mb-1">Coluna de Tipo (Opcional)</label>
               <select
                 value={mapping.typeCol || ''}
                 onChange={e => setMapping({ ...mapping, typeCol: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-[#0D0F12] border border-[#1D2026] text-xs text-[#F5F5F5] focus:border-[#8B7CFF] outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-surface border border-edge text-xs text-ink focus:border-accent outline-none"
               >
                 <option value="">Não mapear</option>
                 {headers.map(h => <option key={h} value={h}>{h}</option>)}
@@ -220,14 +233,14 @@ export const ImportPage: React.FC = () => {
           <div className="flex items-center space-x-3 pt-4">
             <button
               onClick={resetAll}
-              className="py-2.5 px-4 rounded-xl bg-[#121419] text-xs font-semibold text-[#8B919B] hover:text-[#F5F5F5] transition-colors"
+              className="py-2.5 px-4 rounded-xl bg-surface-raised text-xs font-semibold text-ink-muted hover:text-ink transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleGeneratePreview}
               disabled={isProcessing}
-              className="flex-1 py-2.5 px-5 rounded-xl bg-[#8B7CFF] text-white text-xs font-semibold hover:bg-[#7B6CEF] transition-colors"
+              className="flex-1 py-2.5 px-5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
             >
               Visualizar transações →
             </button>
@@ -240,7 +253,7 @@ export const ImportPage: React.FC = () => {
         <div className="card p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-[#F5F5F5]">{previews.length} transações identificadas</h3>
+              <h3 className="text-sm font-bold text-ink">{previews.length} transações identificadas</h3>
               <p className="label-xs">Selecione onde lançar estas movimentações:</p>
             </div>
             <select
@@ -249,7 +262,7 @@ export const ImportPage: React.FC = () => {
                 const [t, id] = e.target.value.split(':');
                 setSelectedDestination({ type: t as any, id });
               }}
-              className="px-3 py-2 rounded-xl bg-[#0D0F12] border border-[#1D2026] text-xs text-[#F5F5F5] focus:border-[#8B7CFF] outline-none"
+              className="px-3 py-2 rounded-xl bg-surface border border-edge text-xs text-ink focus:border-accent outline-none"
             >
               <optgroup label="Contas Bancárias">
                 {accounts.map(a => <option key={a.id} value={`account:${a.id}`}>{a.name}</option>)}
@@ -266,35 +279,35 @@ export const ImportPage: React.FC = () => {
                 key={idx}
                 className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
                   item.isDuplicate
-                    ? 'bg-[#F59E0B]/5 border-[#F59E0B]/20'
-                    : 'bg-[#0D0F12] border-[#1D2026]'
+                    ? 'bg-warning/5 border-warning/20'
+                    : 'bg-surface border-edge'
                 }`}
               >
                 <div className="min-w-0 flex-1 pr-3">
-                  <h5 className="font-semibold text-[#F5F5F5] truncate">{item.description}</h5>
+                  <h5 className="font-semibold text-ink truncate">{item.description}</h5>
                   <span className="label-xs">{formatDateBR(item.date)}</span>
                   {item.isDuplicate && (
-                    <span className="ml-2 text-[10px] text-[#F59E0B] font-semibold">(Possível duplicidade)</span>
+                    <span className="ml-2 text-[10px] text-warning font-semibold">(Possível duplicidade)</span>
                   )}
                 </div>
-                <span className={`font-bold ${item.type === 'income' ? 'text-[#39D98A]' : 'text-[#F5F5F5]'}`}>
+                <span className={`font-bold ${item.type === 'income' ? 'text-positive' : 'text-ink'}`}>
                   {item.type === 'income' ? '+' : '-'} {formatCurrency(item.amount)}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="flex items-center space-x-3 pt-4 border-t border-[#1D2026]">
+          <div className="flex items-center space-x-3 pt-4 border-t border-edge">
             <button
               onClick={resetAll}
-              className="py-2.5 px-4 rounded-xl bg-[#121419] text-xs font-semibold text-[#8B919B] hover:text-[#F5F5F5] transition-colors"
+              className="py-2.5 px-4 rounded-xl bg-surface-raised text-xs font-semibold text-ink-muted hover:text-ink transition-colors"
             >
               Voltar
             </button>
             <button
               onClick={handleConfirmImport}
               disabled={isProcessing}
-              className="flex-1 py-2.5 px-5 rounded-xl bg-[#8B7CFF] text-white text-xs font-bold hover:bg-[#7B6CEF] transition-colors"
+              className="flex-1 py-2.5 px-5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent transition-colors"
             >
               {isProcessing ? 'Importando...' : `Confirmar importação de ${previews.length} itens`}
             </button>
@@ -305,16 +318,16 @@ export const ImportPage: React.FC = () => {
       {/* ── STEP 4: SUCCESS ── */}
       {step === 'success' && (
         <div className="card p-10 text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-[#39D98A]/15 text-[#39D98A] flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-full bg-positive/15 text-positive flex items-center justify-center mx-auto">
             <CheckCircle2 size={32} />
           </div>
-          <h3 className="text-lg font-bold text-[#F5F5F5]">Importação concluída!</h3>
+          <h3 className="text-lg font-bold text-ink">Importação concluída!</h3>
           <p className="label-xs leading-relaxed">
             {importedCount} transações foram adicionadas com sucesso aos seus registros locais.
           </p>
           <button
             onClick={resetAll}
-            className="py-2.5 px-6 rounded-xl bg-[#121419] hover:bg-[#1D2026] text-[#F5F5F5] text-xs font-semibold transition-colors"
+            className="py-2.5 px-6 rounded-xl bg-surface-raised hover:bg-edge text-ink text-xs font-semibold transition-colors"
           >
             Importar outro arquivo
           </button>

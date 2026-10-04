@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { Receivable } from '../../types';
+import { AmountField, CheckboxField, Modal, SelectField, TextField } from '../ui';
 
 interface ReceivableModalProps {
   isOpen: boolean;
@@ -22,8 +23,6 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({ isOpen, onClos
   const [notes, setNotes] = useState(receivableToEdit?.notes || '');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,128 +73,71 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="modal-overlay">
-      <div 
-        className="modal-panel w-full sm:max-w-md px-5 sm:px-6 pt-5 sm:pt-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
-          <h3 className="text-base font-bold text-white">
-            {receivableToEdit ? 'Editar Conta a Receber' : 'Nova Conta a Receber'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1A1F29] text-[#8E95A3] hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={receivableToEdit ? 'Editar Conta a Receber' : 'Nova Conta a Receber'}
+      size="md"
+      footer={
+        <button
+          type="submit"
+          form="receivable-form"
+          disabled={isSubmitting}
+          className="btn btn-positive btn-block"
+        >
+          <Check size={16} aria-hidden="true" />
+          <span>{isSubmitting ? 'Salvando…' : (receivableToEdit ? 'Atualizar Recebimento' : 'Salvar Recebimento')}</span>
+        </button>
+      }
+    >
+      <form id="receivable-form" onSubmit={handleSubmit} className="space-y-4">
+        <TextField
+          label="Descrição"
+          placeholder="Ex: Salário, Freelance, Reembolso..."
+          value={description}
+          onChange={setDescription}
+          autoFocus
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <AmountField label="Valor Previsto" value={amountStr} onChange={setAmountStr} placeholder="1000,00" />
+          <TextField label="Data Prevista" type="date" value={expectedDate} onChange={setExpectedDate} />
         </div>
 
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Receber na Conta"
+            value={accountId}
+            onChange={setAccountId}
+            options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+          />
+          <TextField
+            label="Origem / Pagador"
+            placeholder="Ex: Empresa, Cliente"
+            value={origin}
+            onChange={setOrigin}
+          />
+        </div>
+
+        <CheckboxField
+          label="Renda Recorrente (mensal/fixa)"
+          checked={isRecurringIncome}
+          onChange={setIsRecurringIncome}
+        />
+
+        <TextField
+          label="Observações (opcional)"
+          placeholder="Ex: Parcela do projeto, nota fiscal..."
+          value={notes}
+          onChange={setNotes}
+        />
+
         {errorMsg && (
-          <div className="my-3 p-3 rounded-xl bg-[#2A1215] border border-[#FF5555]/30 text-[#FF5555] text-xs">
+          <p role="alert" className="text-xs text-negative-strong">
             {errorMsg}
-          </div>
+          </p>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 my-4">
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Descrição</label>
-            <input
-              type="text"
-              placeholder="Ex: Salário, Freelance, Reembolso..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#39D98A] text-sm text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Valor Previsto (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="1000,00"
-                value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white font-medium placeholder-[#5F6570]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Data Prevista</label>
-              <input
-                type="date"
-                value={expectedDate}
-                onChange={(e) => setExpectedDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Receber na Conta</label>
-              <select
-                value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              >
-                {accounts.map(a => (
-                  <option key={a.id} value={a.id} className="bg-[#1A1F29] text-white">
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Origem / Pagador</label>
-              <input
-                type="text"
-                placeholder="Ex: Empresa, Cliente"
-                value={origin}
-                onChange={(e) => setOrigin(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white placeholder-[#5F6570]"
-              />
-            </div>
-          </div>
-
-          <div className="pt-1">
-            <label className="flex items-center space-x-2 text-xs text-[#8E95A3] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isRecurringIncome}
-                onChange={(e) => setIsRecurringIncome(e.target.checked)}
-                className="w-4 h-4 accent-[#39D98A] rounded"
-              />
-              <span className="text-white">Renda Recorrente (mensal/fixa)</span>
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Observações (opcional)</label>
-            <input
-              type="text"
-              placeholder="Ex: Parcela do projeto, nota fiscal..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-[#39D98A] hover:bg-[#32c57c] text-[#0D0F12] font-bold text-xs sm:text-sm shadow-lg shadow-[#39D98A]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              <Check size={16} />
-              <span>{isSubmitting ? 'Salvando...' : (receivableToEdit ? 'Atualizar Recebimento' : 'Salvar Recebimento')}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

@@ -1,52 +1,71 @@
-import React, { useState, useMemo } from 'react';
-import { X, Search, Tag, CreditCard, Wallet, Target, LineChart } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Search, Tag, CreditCard, Wallet, Target, LineChart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useFinance } from '../../context/FinanceContext';
 import { formatCurrency, formatDateBR } from '../../calculations/financialCalculations';
-import { useNavigate } from 'react-router-dom';
+import { Modal } from '../ui';
 
+/**
+ * Global search (⌘K).
+ *
+ * Every result row was a `<div onClick>`, so search results were unreachable
+ * by keyboard entirely. Rows are now real buttons.
+ */
 export const GlobalSearchModal: React.FC = () => {
-  const { 
-    isGlobalSearchOpen, 
-    setGlobalSearchOpen, 
-    transactions, 
-    accounts, 
-    cards, 
-    goals, 
+  const {
+    isGlobalSearchOpen,
+    setGlobalSearchOpen,
+    transactions,
+    accounts,
+    cards,
+    goals,
     investments,
-    openTxDetail 
+    openTxDetail,
   } = useFinance();
 
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
+  // The search had no trigger anywhere in the shell until now.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setGlobalSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [setGlobalSearchOpen]);
+
   const results = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return null;
 
-    const matchedTxs = transactions.filter(t => 
+    const matchedTxs = transactions.filter(t =>
       t.description.toLowerCase().includes(q) ||
       t.amount.toString().includes(q) ||
       (t.notes && t.notes.toLowerCase().includes(q)) ||
       t.date.includes(q)
     ).slice(0, 8);
 
-    const matchedAccounts = accounts.filter(a => 
-      a.name.toLowerCase().includes(q) || 
+    const matchedAccounts = accounts.filter(a =>
+      a.name.toLowerCase().includes(q) ||
       a.institution.toLowerCase().includes(q)
     );
 
-    const matchedCards = cards.filter(c => 
-      c.name.toLowerCase().includes(q) || 
+    const matchedCards = cards.filter(c =>
+      c.name.toLowerCase().includes(q) ||
       c.institution.toLowerCase().includes(q) ||
       c.lastDigits?.includes(q)
     );
 
-    const matchedGoals = goals.filter(g => 
+    const matchedGoals = goals.filter(g =>
       g.name.toLowerCase().includes(q)
     );
 
-    const matchedInvestments = investments.filter(i => 
-      i.assetName.toLowerCase().includes(q) || 
+    const matchedInvestments = investments.filter(i =>
+      i.assetName.toLowerCase().includes(q) ||
       (i.ticker && i.ticker.toLowerCase().includes(q))
     );
 
@@ -56,225 +75,223 @@ export const GlobalSearchModal: React.FC = () => {
       cards: matchedCards,
       goals: matchedGoals,
       investments: matchedInvestments,
-      totalCount: matchedTxs.length + matchedAccounts.length + matchedCards.length + matchedGoals.length + matchedInvestments.length
+      totalCount: matchedTxs.length + matchedAccounts.length + matchedCards.length + matchedGoals.length + matchedInvestments.length,
     };
   }, [query, transactions, accounts, cards, goals, investments]);
 
-  if (!isGlobalSearchOpen) return null;
+  const close = useCallback(() => {
+    setGlobalSearchOpen(false);
+    setQuery('');
+  }, [setGlobalSearchOpen]);
+
+  const go = useCallback((path: string) => {
+    close();
+    navigate(path);
+  }, [close, navigate]);
+
+  const ResultRow = ({
+    icon: Icon,
+    iconClass,
+    primary,
+    secondary,
+    trailing,
+    onClick,
+  }: {
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    iconClass: string;
+    primary: string;
+    secondary?: string;
+    trailing: React.ReactNode;
+    onClick: () => void;
+  }) => (
+    <button type="button" onClick={onClick} className="search-result">
+      <Icon size={16} className={iconClass} />
+      <span className="min-w-0 flex-1 text-left">
+        <span className="block truncate text-xs font-semibold text-ink">
+          {primary}
+        </span>
+        {secondary && (
+          <span className="block truncate text-[11px] text-ink-muted">
+            {secondary}
+          </span>
+        )}
+      </span>
+      <span className="shrink-0 text-xs font-semibold">{trailing}</span>
+    </button>
+  );
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-start justify-center px-4 bg-black/85 backdrop-blur-md animate-fade-in"
-      style={{ paddingTop: 'max(64px, calc(env(safe-area-inset-top) + 48px))' }}
-      onClick={() => setGlobalSearchOpen(false)}
+    <Modal
+      open={isGlobalSearchOpen}
+      onClose={close}
+      title="Busca global"
+      variant="command"
+      hideTitle
+      closeOnBackdrop
     >
-      <div
-        className="w-full max-w-xl bg-[#14171D] border border-[#222733] rounded-3xl p-5 shadow-2xl flex flex-col"
-        style={{ maxHeight: '80dvh' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Search Input Bar */}
-        <div className="relative flex items-center mb-4 pb-3 border-b border-[#222733]">
-          <Search size={20} className="text-[#8B7CFF] mr-3 shrink-0" />
-          <input
-            type="text"
-            placeholder="Buscar por mercado, uber, cartão, viagem..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            autoFocus
-            className="w-full bg-transparent text-white font-medium text-base placeholder-[#5F6570] focus:outline-none"
-          />
-          {query && (
-            <button 
-              onClick={() => setQuery('')}
-              className="p-1 rounded-full text-[#8E95A3] hover:text-white mr-2"
-            >
-              <X size={16} />
-            </button>
-          )}
-          <button
-            onClick={() => setGlobalSearchOpen(false)}
-            className="p-1 rounded-lg text-xs font-mono text-[#8E95A3] hover:text-white bg-[#1A1F29] px-2 py-1"
-          >
-            ESC
-          </button>
-        </div>
+      <div className="relative flex items-center pb-3 border-b border-active">
+        <Search size={20} className="text-accent mr-3 shrink-0" aria-hidden="true" />
+        <input
+          type="search"
+          placeholder="Buscar por mercado, uber, cartão, viagem..."
+          aria-label="Buscar em todas as finanças"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          data-autofocus
+          className="w-full bg-transparent text-ink font-medium text-base placeholder-ink-faint focus:outline-none"
+        />
+      </div>
 
-        {/* Content / Results */}
-        <div className="flex-1 overflow-y-auto space-y-5 pr-1">
-          {!query && (
-            <div className="py-8 text-center text-[#8E95A3]">
-              <Search size={32} className="mx-auto mb-3 opacity-30 text-[#8B7CFF]" />
-              <p className="text-sm">Digite o que procura em finanças...</p>
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-                {['Uber', 'Mercado', 'Nubank', 'Salário', 'PC'].map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => setQuery(tag)}
-                    className="px-3 py-1 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-[#8E95A3] hover:text-white transition-colors"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+      <div className="pt-4 flex-1 min-h-0 overflow-y-auto space-y-5">
+        {!query && (
+          <div className="py-8 text-center">
+            <Search
+              size={32}
+              className="mx-auto mb-3 opacity-30 text-accent"
+              aria-hidden="true"
+            />
+            <p className="text-sm text-ink-muted">
+              Digite o que procura em finanças...
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+              {['Uber', 'Mercado', 'Nubank', 'Salário', 'PC'].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setQuery(tag)}
+                  className="px-3 py-1 rounded-xl bg-field border border-active text-xs text-ink-muted hover:text-ink transition-colors"
+                >
+                  {tag}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {results && results.totalCount === 0 && (
-            <div className="py-8 text-center text-[#8E95A3]">
-              <p className="text-sm">Nenhum resultado encontrado para &quot;{query}&quot;.</p>
-            </div>
-          )}
+        {results && results.totalCount === 0 && (
+          <div className="py-8 text-center">
+            <p className="text-sm text-ink-muted">
+              Nenhum resultado encontrado para &quot;{query}&quot;.
+            </p>
+          </div>
+        )}
 
-          {/* Transactions section */}
-          {results && results.transactions.length > 0 && (
-            <div>
-              <span className="text-[11px] font-bold text-[#5F6570] uppercase tracking-wider block mb-2">
-                Transações ({results.transactions.length})
-              </span>
-              <div className="space-y-1.5">
-                {results.transactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    onClick={() => {
-                      setGlobalSearchOpen(false);
-                      openTxDetail(tx);
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A1F29] hover:bg-[#222733] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Tag size={16} className="text-[#8E95A3]" />
-                      <div>
-                        <h5 className="text-xs font-semibold text-white">{tx.description}</h5>
-                        <span className="text-[11px] text-[#8E95A3]">{formatDateBR(tx.date)}</span>
-                      </div>
-                    </div>
-                    <span className={`text-xs font-semibold ${tx.type === 'income' ? 'text-[#39D98A]' : 'text-white'}`}>
+        {results && results.transactions.length > 0 && (
+          <div>
+            <p className="label-section">Transações ({results.transactions.length})</p>
+            <div className="space-y-1.5">
+              {results.transactions.map((tx) => (
+                <ResultRow
+                  key={tx.id}
+                  icon={Tag}
+                  iconClass="text-ink-muted"
+                  primary={tx.description}
+                  secondary={formatDateBR(tx.date)}
+                  trailing={
+                    <span className={tx.type === 'income' ? 'text-positive' : 'text-ink'}>
                       {tx.type === 'income' ? '+' : '-'} {formatCurrency(tx.amount)}
                     </span>
-                  </div>
-                ))}
-              </div>
+                  }
+                  onClick={() => {
+                    close();
+                    openTxDetail(tx);
+                  }}
+                />
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Accounts section */}
-          {results && results.accounts.length > 0 && (
-            <div>
-              <span className="text-[11px] font-bold text-[#5F6570] uppercase tracking-wider block mb-2">
-                Contas ({results.accounts.length})
-              </span>
-              <div className="space-y-1.5">
-                {results.accounts.map((acc) => (
-                  <div
-                    key={acc.id}
-                    onClick={() => {
-                      setGlobalSearchOpen(false);
-                      navigate('/contas');
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A1F29] hover:bg-[#222733] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Wallet size={16} className="text-[#3B82F6]" />
-                      <span className="text-xs font-semibold text-white">{acc.name} ({acc.institution})</span>
-                    </div>
-                    <span className="text-xs font-semibold text-[#39D98A]">
+        {results && results.accounts.length > 0 && (
+          <div>
+            <p className="label-section">Contas ({results.accounts.length})</p>
+            <div className="space-y-1.5">
+              {results.accounts.map((acc) => (
+                <ResultRow
+                  key={acc.id}
+                  icon={Wallet}
+                  iconClass="text-info"
+                  primary={acc.name}
+                  secondary={acc.institution}
+                  trailing={
+                    <span className="text-positive">
                       {formatCurrency(acc.currentBalance)}
                     </span>
-                  </div>
-                ))}
-              </div>
+                  }
+                  onClick={() => go('/contas')}
+                />
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Cards section */}
-          {results && results.cards.length > 0 && (
-            <div>
-              <span className="text-[11px] font-bold text-[#5F6570] uppercase tracking-wider block mb-2">
-                Cartões ({results.cards.length})
-              </span>
-              <div className="space-y-1.5">
-                {results.cards.map((c) => (
-                  <div
-                    key={c.id}
-                    onClick={() => {
-                      setGlobalSearchOpen(false);
-                      navigate('/cartoes');
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A1F29] hover:bg-[#222733] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <CreditCard size={16} className="text-[#8B7CFF]" />
-                      <span className="text-xs font-semibold text-white">{c.name} (•••• {c.lastDigits})</span>
-                    </div>
-                    <span className="text-xs text-[#8E95A3]">
+        {results && results.cards.length > 0 && (
+          <div>
+            <p className="label-section">Cartões ({results.cards.length})</p>
+            <div className="space-y-1.5">
+              {results.cards.map((c) => (
+                <ResultRow
+                  key={c.id}
+                  icon={CreditCard}
+                  iconClass="text-accent"
+                  primary={c.name}
+                  secondary={`•••• ${c.lastDigits}`}
+                  trailing={
+                    <span className="text-ink-muted">
                       Disp: {formatCurrency(c.availableLimit)}
                     </span>
-                  </div>
-                ))}
-              </div>
+                  }
+                  onClick={() => go('/cartoes')}
+                />
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Goals section */}
-          {results && results.goals.length > 0 && (
-            <div>
-              <span className="text-[11px] font-bold text-[#5F6570] uppercase tracking-wider block mb-2">
-                Metas ({results.goals.length})
-              </span>
-              <div className="space-y-1.5">
-                {results.goals.map((g) => (
-                  <div
-                    key={g.id}
-                    onClick={() => {
-                      setGlobalSearchOpen(false);
-                      navigate('/metas');
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A1F29] hover:bg-[#222733] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Target size={16} className="text-[#38BDF8]" />
-                      <span className="text-xs font-semibold text-white">{g.name}</span>
-                    </div>
-                    <span className="text-xs text-[#8E95A3]">
+        {results && results.goals.length > 0 && (
+          <div>
+            <p className="label-section">Metas ({results.goals.length})</p>
+            <div className="space-y-1.5">
+              {results.goals.map((g) => (
+                <ResultRow
+                  key={g.id}
+                  icon={Target}
+                  iconClass="text-info"
+                  primary={g.name}
+                  trailing={
+                    <span className="text-ink-muted">
                       {formatCurrency(g.currentAmount)} / {formatCurrency(g.targetAmount)}
                     </span>
-                  </div>
-                ))}
-              </div>
+                  }
+                  onClick={() => go('/metas')}
+                />
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Investments section */}
-          {results && results.investments.length > 0 && (
-            <div>
-              <span className="text-[11px] font-bold text-[#5F6570] uppercase tracking-wider block mb-2">
-                Investimentos ({results.investments.length})
-              </span>
-              <div className="space-y-1.5">
-                {results.investments.map((inv) => (
-                  <div
-                    key={inv.id}
-                    onClick={() => {
-                      setGlobalSearchOpen(false);
-                      navigate('/investimentos');
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A1F29] hover:bg-[#222733] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <LineChart size={16} className="text-[#39D98A]" />
-                      <span className="text-xs font-semibold text-white">{inv.assetName} {inv.ticker ? `(${inv.ticker})` : ''}</span>
-                    </div>
-                    <span className="text-xs font-semibold text-white">
+        {results && results.investments.length > 0 && (
+          <div>
+            <p className="label-section">Investimentos ({results.investments.length})</p>
+            <div className="space-y-1.5">
+              {results.investments.map((inv) => (
+                <ResultRow
+                  key={inv.id}
+                  icon={LineChart}
+                  iconClass="text-positive"
+                  primary={inv.assetName + (inv.ticker ? ` (${inv.ticker})` : '')}
+                  trailing={
+                    <span className="text-ink">
                       {formatCurrency(inv.currentValue)}
                     </span>
-                  </div>
-                ))}
-              </div>
+                  }
+                  onClick={() => go('/investimentos')}
+                />
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 };

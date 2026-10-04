@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { BottomNavigation } from '../components/BottomNavigation';
@@ -8,48 +8,48 @@ import { TransactionDetailModal } from '../components/modals/TransactionDetailMo
 import { GlobalSearchModal } from '../components/modals/GlobalSearchModal';
 import { OnboardingModal } from '../components/modals/OnboardingModal';
 import { PWAInstallPrompt } from '../components/PWAInstallPrompt';
+import { ToastProvider, LoadingState } from '../components/ui';
 
+/**
+ * App shell.
+ *
+ * The viewport is locked to 100dvh and the inner container scrolls, which is
+ * correct for a mobile app but wrong on desktop: the sidebar scrolled with the
+ * page and the browser chrome never resized the layout. The lock is now
+ * mobile-only, and desktop scrolls the document normally.
+ */
 export const AppLayout: React.FC = () => {
   return (
-    <div
-      className="bg-[#050505] text-[#F5F5F5] flex flex-col md:flex-row"
-      style={{ minHeight: '100dvh', height: '100dvh', maxHeight: '100dvh' }}
-    >
-      {/* ── Desktop Sidebar (hidden on mobile) ── */}
-      <Sidebar />
+    <ToastProvider>
+      <div className="app-shell">
+        {/* First focusable element: lets keyboard users bypass the nav. */}
+        <a href="#main-content" className="skip-link">
+          Pular para o conteúdo
+        </a>
 
-      {/* ── Main Content Area ── */}
-      <main
-        className="flex-1 min-w-0 w-full flex flex-col min-h-0 overflow-hidden"
-      >
-        {/* Safe area top padding — pushes content below Dynamic Island/notch */}
-        <div
-          className="md:hidden shrink-0"
-          style={{ height: 'max(16px, env(safe-area-inset-top))' }}
-        />
+        <Sidebar />
 
-        {/* Scrollable content area — each page controls its own layout */}
-        <div
-          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-          id="page-scroll-container"
-        >
-          {/* Width constraint applied here, not on main */}
-          <div className="max-w-2xl mx-auto md:max-w-4xl px-4 sm:px-5 md:px-8 md:pt-6 h-full flex flex-col">
-            <Outlet />
-          </div>
+        <div className="app-main">
+          <main id="main-content" className="app-scroll" tabIndex={-1}>
+            <div className="page-width">
+              {/* Routes are lazy; the fallback is the same skeleton the
+                  pages use while IndexedDB answers. */}
+              <Suspense fallback={<LoadingState rows={4} label="Abrindo página" />}>
+                <Outlet />
+              </Suspense>
+            </div>
+          </main>
         </div>
-      </main>
 
-      {/* ── Mobile Bottom Navigation Bar ── */}
-      <BottomNavigation />
+        <BottomNavigation />
 
-      {/* ── Global Modals (z-index 60+) ── */}
-      <NewTransactionModal />
-      <QuickActionSheet />
-      <TransactionDetailModal />
-      <GlobalSearchModal />
-      <OnboardingModal />
-      <PWAInstallPrompt />
-    </div>
+        <NewTransactionModal />
+        <QuickActionSheet />
+        <TransactionDetailModal />
+        <GlobalSearchModal />
+        <OnboardingModal />
+        <PWAInstallPrompt />
+      </div>
+    </ToastProvider>
   );
 };

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { calculateMonthlyComparison, formatCurrency } from '../calculations/financialCalculations';
+import { ErrorState, LoadingState } from '../components/ui';
 
 export const MonthlyComparisonPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { transactions, categories, selectedPeriod } = useFinance();
   const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'balance'>('expenses');
 
@@ -35,19 +38,29 @@ export const MonthlyComparisonPage: React.FC = () => {
       ? comparison.expenseVariationPercent
       : comparison.incomeVariationPercent;
 
-  const barColor = activeTab === 'expenses' ? '#FF5C5C' : activeTab === 'income' ? '#39D98A' : '#8B7CFF';
+  const barColor = activeTab === 'expenses' ? 'var(--color-negative)' : activeTab === 'income' ? 'var(--color-positive)' : 'var(--color-accent)';
+
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
 
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Comparação mensal</h1>
+        <h1 className="text-xl font-bold text-ink tracking-tight">Comparação mensal</h1>
         <p className="label-xs mt-0.5">Acompanhe as diferenças de fluxo mês a mês.</p>
       </div>
 
       {/* ── TABS ── */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-[#0D0F12] border border-[#1D2026] rounded-2xl">
+      <div className="grid grid-cols-3 gap-1 p-1 bg-surface border border-edge rounded-2xl">
         {[
           { key: 'expenses' as const, label: 'Despesas' },
           { key: 'income' as const, label: 'Receitas' },
@@ -58,8 +71,8 @@ export const MonthlyComparisonPage: React.FC = () => {
             onClick={() => setActiveTab(key)}
             className={`py-2 text-xs font-semibold rounded-xl transition-all ${
               activeTab === key
-                ? 'bg-[#121419] text-[#F5F5F5] shadow-sm'
-                : 'text-[#8B919B] hover:text-[#F5F5F5]'
+                ? 'bg-surface-raised text-ink shadow-sm'
+                : 'text-ink-muted hover:text-ink'
             }`}
           >
             {label}
@@ -88,14 +101,14 @@ export const MonthlyComparisonPage: React.FC = () => {
         <div className="h-48 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="month" stroke="#5F6570" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="#5F6570" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <XAxis dataKey="month" stroke="var(--color-ink-faint)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="var(--color-ink-faint)" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0A0B0E',
-                  borderColor: '#1D2026',
+                  backgroundColor: 'var(--color-on-accent)',
+                  borderColor: 'var(--color-edge)',
                   borderRadius: '12px',
-                  color: '#F5F5F5',
+                  color: 'var(--color-ink)',
                   fontSize: '12px',
                 }}
                 formatter={(val: any) => [formatCurrency(Number(val) || 0)]}
@@ -111,7 +124,7 @@ export const MonthlyComparisonPage: React.FC = () => {
         <p className="label-section mb-4">Principais variações de categorias</p>
 
         {comparison.categoryComparisons.length === 0 ? (
-          <p className="text-xs text-[#5F6570] py-4 text-center">Nenhuma variação registrada entre os períodos.</p>
+          <p className="text-xs text-ink-faint py-4 text-center">Nenhuma variação registrada entre os períodos.</p>
         ) : (
           <div className="space-y-2 stagger">
             {comparison.categoryComparisons.slice(0, 6).map(cv => {
@@ -119,14 +132,14 @@ export const MonthlyComparisonPage: React.FC = () => {
               return (
                 <div
                   key={cv.categoryId}
-                  className="animate-fade-in flex items-center justify-between text-xs p-3 rounded-xl hover:bg-[#121419] transition-colors"
+                  className="animate-fade-in flex items-center justify-between text-xs p-3 rounded-xl hover:bg-surface-raised transition-colors"
                 >
                   <div className="flex items-center space-x-2.5">
-                    <span className={`w-2 h-2 rounded-full ${isIncrease ? 'bg-[#FF5C5C]' : 'bg-[#39D98A]'}`} />
-                    <span className="font-semibold text-[#F5F5F5]">{cv.categoryName}</span>
+                    <span className={`w-2 h-2 rounded-full ${isIncrease ? 'bg-negative' : 'bg-positive'}`} />
+                    <span className="font-semibold text-ink">{cv.categoryName}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-[#8B919B]">{isIncrease ? '+' : ''}{formatCurrency(cv.difference)}</span>
+                    <span className="text-ink-muted">{isIncrease ? '+' : ''}{formatCurrency(cv.difference)}</span>
                     <span
                       className={`pill ${isIncrease ? 'pill-negative' : 'pill-positive'} text-[10px]`}
                     >

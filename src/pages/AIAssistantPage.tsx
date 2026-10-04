@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Send, ArrowRight, RefreshCw, MessageCircle, Bot, Check, X, ShieldAlert, BarChart2, Plus } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { aiService } from '../financialAI/aiService';
 import { executeActionPlan } from '../financialAI/actionExecutor';
 import type { AIResponse, AIActionPlan } from '../financialAI/types';
 import { useNavigate } from 'react-router-dom';
+import { ErrorState, LoadingState } from '../components/ui';
 
 interface ChatMessage {
   id: string;
@@ -22,14 +24,14 @@ const AgentCard: React.FC<{
   status: 'active' | 'idle';
 }> = ({ emoji, title, desc, status }) => (
   <div className="card p-4 flex items-start space-x-3.5">
-    <div className="w-10 h-10 rounded-2xl bg-[#121419] flex items-center justify-center text-lg shrink-0">
+    <div className="w-10 h-10 rounded-2xl bg-surface-raised flex items-center justify-center text-lg shrink-0">
       {emoji}
     </div>
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between mb-0.5">
-        <p className="text-xs font-semibold text-[#F5F5F5]">{title}</p>
+        <p className="text-xs font-semibold text-ink">{title}</p>
         <span className={`pill ${status === 'active' ? 'pill-positive' : 'pill-neutral'} text-[10px]`}>
-          <span className={`w-1.5 h-1.5 rounded-full inline-block ${status === 'active' ? 'bg-[#39D98A]' : 'bg-[#5F6570]'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full inline-block ${status === 'active' ? 'bg-positive' : 'bg-ink-faint'}`} />
           {status === 'active' ? 'Ativo' : 'Em pausa'}
         </span>
       </div>
@@ -39,6 +41,7 @@ const AgentCard: React.FC<{
 );
 
 export const AIAssistantPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const navigate = useNavigate();
   const { 
     transactions, 
@@ -177,6 +180,16 @@ export const AIAssistantPage: React.FC = () => {
     { emoji: '🏆', title: 'Progresso das metas', desc: 'Acompanha o progresso das suas metas e sugere aportes.', status: 'idle' as const },
   ];
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div
       className="flex flex-col animate-fade-in flex-1 min-h-0 overflow-hidden pb-[calc(var(--bottom-nav-h)+max(12px,env(safe-area-inset-bottom)))] md:pb-4"
@@ -187,19 +200,19 @@ export const AIAssistantPage: React.FC = () => {
           <img 
             src="/logo.png" 
             alt="MyFinance AI" 
-            className="w-10 h-10 rounded-2xl object-contain bg-black border border-[#222733] shadow-md shadow-[#8B7CFF]/15" 
+            className="w-10 h-10 rounded-2xl object-contain bg-black border border-active shadow-md shadow-accent/15" 
           />
           <div>
-            <h1 className="text-base font-bold text-[#F5F5F5] tracking-tight">IA Financeira Local</h1>
+            <h1 className="text-base font-bold text-ink tracking-tight">IA Financeira Local</h1>
             <div className="flex items-center space-x-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#39D98A]" />
-              <span className="label-xs text-[#39D98A]">Modo Privado / Offline</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-positive" />
+              <span className="label-xs text-positive">Modo Privado / Offline</span>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-[#0D0F12] border border-[#1D2026] rounded-2xl">
+        <div className="grid grid-cols-2 gap-1 p-1 bg-surface border border-edge rounded-2xl">
           {[
             { key: 'chat', label: 'Conversar', icon: MessageCircle },
             { key: 'agents', label: 'Assistentes', icon: Bot },
@@ -208,7 +221,7 @@ export const AIAssistantPage: React.FC = () => {
               key={key}
               onClick={() => setTab(key as 'chat' | 'agents')}
               className={`flex items-center justify-center space-x-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                tab === key ? 'bg-[#121419] text-[#F5F5F5] shadow-sm' : 'text-[#8B919B] hover:text-[#F5F5F5]'
+                tab === key ? 'bg-surface-raised text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
               }`}
             >
               <Icon size={14} />
@@ -230,8 +243,8 @@ export const AIAssistantPage: React.FC = () => {
                   onClick={() => handleAsk(s)}
                   className="card card-hover p-3 text-left flex items-center justify-between group"
                 >
-                  <span className="text-xs font-medium text-[#F5F5F5] leading-snug">{s}</span>
-                  <ArrowRight size={12} className="text-[#5F6570] group-hover:text-[#8B7CFF] shrink-0 ml-2 transition-colors" />
+                  <span className="text-xs font-medium text-ink leading-snug">{s}</span>
+                  <ArrowRight size={12} className="text-ink-faint group-hover:text-accent shrink-0 ml-2 transition-colors" />
                 </button>
               ))}
             </div>
@@ -251,7 +264,7 @@ export const AIAssistantPage: React.FC = () => {
                     <img 
                       src="/logo.png" 
                       alt="MyFinance Bot" 
-                      className="w-7 h-7 rounded-full object-contain bg-black border border-[#222733] shrink-0 mb-1" 
+                      className="w-7 h-7 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
                     />
                   )}
 
@@ -259,35 +272,35 @@ export const AIAssistantPage: React.FC = () => {
                   <div
                     className={`max-w-[88%] px-4 py-3 rounded-3xl text-xs leading-relaxed ${
                       isUser
-                        ? 'bg-[#8B7CFF] text-white rounded-br-sm'
-                        : 'bg-[#14171D] border border-[#222733] text-[#F5F5F5] rounded-bl-sm'
+                        ? 'bg-accent text-on-accent rounded-br-sm'
+                        : 'bg-panel border border-active text-ink rounded-bl-sm'
                     }`}
                   >
                     <div className="whitespace-pre-line">
                       {m.text.split('**').map((part, idx) =>
                         idx % 2 === 1
-                          ? <strong key={idx} className="font-bold text-white">{part}</strong>
+                          ? <strong key={idx} className="font-bold text-ink">{part}</strong>
                           : part,
                       )}
                     </div>
 
                     {/* Visual Component Render */}
                     {visual && visual.items && visual.items.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-[#222733] space-y-2">
-                        {visual.title && <p className="label-xs text-[#8E95A3] mb-2">{visual.title}</p>}
+                      <div className="mt-3 pt-3 border-t border-active space-y-2">
+                        {visual.title && <p className="label-xs text-ink-muted mb-2">{visual.title}</p>}
                         {visual.items.map((item, idx) => (
                           <div key={idx} className="space-y-1">
-                            <div className="flex justify-between text-[11px] font-medium text-white">
+                            <div className="flex justify-between text-[11px] font-medium text-ink">
                               <span>{item.label}</span>
                               <span>{item.formattedValue}</span>
                             </div>
                             {item.percentage !== undefined && (
-                              <div className="w-full h-1.5 bg-[#1F2430] rounded-full overflow-hidden">
+                              <div className="w-full h-1.5 bg-edge-strong rounded-full overflow-hidden">
                                 <div 
                                   className="h-full rounded-full transition-all" 
                                   style={{ 
                                     width: `${Math.min(100, item.percentage)}%`, 
-                                    backgroundColor: item.color || '#8B7CFF' 
+                                    backgroundColor: item.color || 'var(--color-accent)' 
                                   }} 
                                 />
                               </div>
@@ -299,12 +312,12 @@ export const AIAssistantPage: React.FC = () => {
 
                     {/* Visual Math Breakdown Render */}
                     {visual && visual.breakdown && visual.breakdown.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-[#222733] space-y-1.5">
-                        {visual.title && <p className="label-xs text-[#8E95A3] mb-2">{visual.title}</p>}
+                      <div className="mt-3 pt-3 border-t border-active space-y-1.5">
+                        {visual.title && <p className="label-xs text-ink-muted mb-2">{visual.title}</p>}
                         {visual.breakdown.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-[11px] py-1 border-b border-[#222733]/50 last:border-none">
-                            <span className="text-[#8E95A3]">{item.label}</span>
-                            <span className={`font-bold ${item.isPositive === false ? 'text-[#FF5C5C]' : item.isPositive === true ? 'text-[#39D98A]' : 'text-white'}`}>
+                          <div key={idx} className="flex justify-between text-[11px] py-1 border-b border-active/50 last:border-b-0">
+                            <span className="text-ink-muted">{item.label}</span>
+                            <span className={`font-bold ${item.isPositive === false ? 'text-negative' : item.isPositive === true ? 'text-positive' : 'text-ink'}`}>
                               {item.formattedAmount}
                             </span>
                           </div>
@@ -314,37 +327,37 @@ export const AIAssistantPage: React.FC = () => {
 
                     {/* Explanation */}
                     {m.responseObj?.explanation && (
-                      <p className="mt-2 text-[10px] text-[#5F6570] italic border-l-2 border-[#8B7CFF] pl-2">
+                      <p className="mt-2 text-[10px] text-ink-faint italic border-l-2 border-accent pl-2">
                         {m.responseObj.explanation}
                       </p>
                     )}
 
                     {/* Action Plan Confirmation Box */}
                     {plan && plan.status === 'pending' && (
-                      <div className="mt-3 pt-3 border-t border-[#222733] space-y-2">
-                        <div className="flex items-center space-x-1.5 text-[#F59E0B] text-[11px] font-bold">
+                      <div className="mt-3 pt-3 border-t border-active space-y-2">
+                        <div className="flex items-center space-x-1.5 text-warning text-[11px] font-bold">
                           <ShieldAlert size={14} />
                           <span>Confirmação Exigida ({plan.riskLevel})</span>
                         </div>
-                        <div className="bg-[#121419] p-3 rounded-2xl border border-[#222733] space-y-1 text-[11px]">
+                        <div className="bg-surface-raised p-3 rounded-2xl border border-active space-y-1 text-[11px]">
                           {Object.entries(plan.details).map(([k, v]) => (
                             <div key={k} className="flex justify-between">
-                              <span className="text-[#8E95A3]">{k}:</span>
-                              <span className="font-semibold text-white">{v}</span>
+                              <span className="text-ink-muted">{k}:</span>
+                              <span className="font-semibold text-ink">{v}</span>
                             </div>
                           ))}
                         </div>
                         <div className="flex items-center space-x-2 pt-1">
                           <button
                             onClick={() => handleConfirmPlan(plan)}
-                            className="flex-1 py-2 px-3 rounded-xl bg-[#39D98A] text-[#0D0F12] font-bold text-xs flex items-center justify-center space-x-1 hover:bg-[#32c57c] transition-all"
+                            className="flex-1 py-2 px-3 rounded-xl bg-positive text-surface font-bold text-xs flex items-center justify-center space-x-1 hover:bg-positive transition-all"
                           >
                             <Check size={14} />
                             <span>Confirmar</span>
                           </button>
                           <button
                             onClick={() => handleCancelPlan(plan)}
-                            className="py-2 px-3 rounded-xl bg-[#1A1F29] hover:bg-[#222733] text-[#8E95A3] hover:text-white text-xs font-semibold"
+                            className="py-2 px-3 rounded-xl bg-field hover:bg-active text-ink-muted hover:text-ink text-xs font-semibold"
                           >
                             Cancelar
                           </button>
@@ -359,7 +372,7 @@ export const AIAssistantPage: React.FC = () => {
                           <button
                             key={i}
                             onClick={() => handleAsk(sug)}
-                            className="px-2.5 py-1 rounded-lg bg-[#1A1F29] hover:bg-[#222733] text-[#8B7CFF] text-[11px] font-semibold transition-colors flex items-center space-x-1 border border-[#262C3A]"
+                            className="px-2.5 py-1 rounded-lg bg-field hover:bg-active text-accent text-[11px] font-semibold transition-colors flex items-center space-x-1 border border-edge-strong"
                           >
                             <span>{sug}</span>
                             <ArrowRight size={10} />
@@ -377,12 +390,12 @@ export const AIAssistantPage: React.FC = () => {
                 <img 
                   src="/logo.png" 
                   alt="MyFinance Bot" 
-                  className="w-7 h-7 rounded-full object-contain bg-black border border-[#222733] shrink-0 mb-1" 
+                  className="w-7 h-7 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
                 />
-                <div className="bg-[#14171D] border border-[#222733] px-4 py-3 rounded-3xl rounded-bl-sm flex items-center space-x-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#8B7CFF] animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#8B7CFF] animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#8B7CFF] animate-bounce [animation-delay:0.4s]" />
+                <div className="bg-panel border border-active px-4 py-3 rounded-3xl rounded-bl-sm flex items-center space-x-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:0.2s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:0.4s]" />
                 </div>
               </div>
             )}
@@ -396,12 +409,12 @@ export const AIAssistantPage: React.FC = () => {
                 e.preventDefault();
                 handleAsk(inputQuestion);
               }}
-              className="flex items-center space-x-1.5 p-1.5 rounded-2xl bg-[#14171D] border border-[#222733] focus-within:border-[#8B7CFF] transition-all min-h-[48px]"
+              className="flex items-center space-x-1.5 p-1.5 rounded-2xl bg-panel border border-active focus-within:border-accent transition-all min-h-[48px]"
             >
               <button
                 type="button"
                 onClick={() => setQuickActionOpen(true)}
-                className="w-9 h-9 rounded-xl bg-[#1A1F29] hover:bg-[#222733] text-[#8B7CFF] flex items-center justify-center transition-all shrink-0 active:scale-95 min-w-[36px] min-h-[36px]"
+                className="w-9 h-9 rounded-xl bg-field hover:bg-active text-accent flex items-center justify-center transition-all shrink-0 active:scale-95 min-w-[36px] min-h-[36px]"
                 title="Ação Rápida"
                 aria-label="Nova Operação Rápida"
               >
@@ -413,13 +426,13 @@ export const AIAssistantPage: React.FC = () => {
                 value={inputQuestion}
                 onChange={e => setInputQuestion(e.target.value)}
                 placeholder="Pergunte algo ou solicite uma ação..."
-                className="flex-1 bg-transparent px-2.5 py-2 text-sm text-[#F5F5F5] placeholder-[#5F6570] focus:outline-none"
+                className="flex-1 bg-transparent px-2.5 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none"
                 style={{ fontSize: '16px' }}
               />
               <button
                 type="submit"
                 disabled={!inputQuestion.trim() || isTyping}
-                className="w-10 h-10 rounded-xl bg-[#8B7CFF] disabled:bg-[#1A1F29] disabled:text-[#5F6570] text-white flex items-center justify-center transition-all shrink-0 active:scale-95 shadow-sm min-w-[40px] min-h-[40px]"
+                className="w-10 h-10 rounded-xl bg-accent disabled:bg-field disabled:text-ink-faint text-on-accent flex items-center justify-center transition-all shrink-0 active:scale-95 shadow-sm min-w-[40px] min-h-[40px]"
                 aria-label="Enviar mensagem"
               >
                 <Send size={16} />

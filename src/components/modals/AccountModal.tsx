@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Building2, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import type { Account, AccountType } from '../../types';
+import { AmountField, ColorSwatchRow, Modal, SelectField, TextField } from '../ui';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -20,11 +21,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   const [institution, setInstitution] = useState(accountToEdit?.institution || '');
   const [type, setType] = useState<AccountType>(accountToEdit?.type || 'checking');
   const [initialBalanceStr, setInitialBalanceStr] = useState(accountToEdit ? accountToEdit.currentBalance.toString() : '');
-  const [color, setColor] = useState(accountToEdit?.color || '#8B7CFF');
+  const [color, setColor] = useState(accountToEdit?.color || 'var(--color-accent)');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,114 +63,75 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     }
   };
 
-  const accountColors = ['#8B7CFF', '#39D98A', '#3B82F6', '#FFB74D', '#EC4899', '#8A05BE', '#FF5555'];
+  const accountColors = ['var(--color-accent)', 'var(--color-positive)', 'var(--color-info)', '#FFB74D', '#EC4899', '#8A05BE', 'var(--color-negative-strong)'];
 
   return (
-    <div className="modal-overlay">
-      <div 
-        className="modal-panel w-full sm:max-w-md px-5 sm:px-6 pt-5 sm:pt-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
-          <h3 className="text-base font-bold text-white">
-            {accountToEdit ? 'Editar Conta' : 'Nova Conta Bancária'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1A1F29] text-[#8E95A3] hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={accountToEdit ? 'Editar Conta' : 'Nova Conta Bancária'}
+      size="md"
+      footer={
+        <button
+          type="submit"
+          form="account-form"
+          disabled={isSubmitting}
+          className="btn btn-primary btn-block"
+        >
+          <Check size={16} aria-hidden="true" />
+          <span>{isSubmitting ? 'Salvando…' : (accountToEdit ? 'Atualizar Conta' : 'Criar Conta')}</span>
+        </button>
+      }
+    >
+      <form id="account-form" onSubmit={handleSubmit} className="space-y-4">
+        <TextField
+          label="Nome da Conta"
+          placeholder="Ex: Nubank, Itaú Principal..."
+          value={name}
+          onChange={setName}
+        />
+        <TextField
+          label="Instituição"
+          placeholder="Ex: Nubank, Inter, Bradesco..."
+          value={institution}
+          onChange={setInstitution}
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Tipo de Conta"
+            value={type}
+            onChange={(v) => setType(v as AccountType)}
+            options={[
+              { value: 'checking', label: 'Conta Corrente' },
+              { value: 'savings', label: 'Poupança' },
+              { value: 'cash', label: 'Dinheiro em Espécie' },
+              { value: 'digital_wallet', label: 'Carteira Digital' },
+              { value: 'investment', label: 'Investimentos' },
+              { value: 'other', label: 'Outro' },
+            ]}
+          />
+          <AmountField
+            label="Saldo Atual"
+            value={initialBalanceStr}
+            onChange={setInitialBalanceStr}
+            placeholder="0,00"
+          />
         </div>
 
+        <ColorSwatchRow
+          label="Cor de identificação"
+          colors={accountColors}
+          value={color}
+          onChange={setColor}
+        />
+
         {errorMsg && (
-          <div className="my-3 p-3 rounded-xl bg-[#2A1215] border border-[#FF5555]/30 text-[#FF5555] text-xs">
+          <p role="alert" className="text-xs text-negative-strong">
             {errorMsg}
-          </div>
+          </p>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 my-4">
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Nome da Conta</label>
-            <input
-              type="text"
-              placeholder="Ex: Nubank, Itaú Principal..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] text-sm text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1">Instituição</label>
-            <input
-              type="text"
-              placeholder="Ex: Nubank, Inter, Bradesco..."
-              value={institution}
-              onChange={(e) => setInstitution(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] text-sm text-white placeholder-[#5F6570]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Tipo de Conta</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as AccountType)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white"
-              >
-                <option value="checking">Conta Corrente</option>
-                <option value="savings">Poupança</option>
-                <option value="cash">Dinheiro em Espécie</option>
-                <option value="digital_wallet">Carteira Digital</option>
-                <option value="investment">Investimentos</option>
-                <option value="other">Outro</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#8E95A3] mb-1">Saldo Atual (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={initialBalanceStr}
-                onChange={(e) => setInitialBalanceStr(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1A1F29] border border-[#262C3A] text-xs text-white font-medium placeholder-[#5F6570]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[#8E95A3] mb-1.5">Cor de identificação</label>
-            <div className="flex items-center space-x-2">
-              {accountColors.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={`w-7 h-7 rounded-full border-2 transition-transform ${
-                    color === c ? 'scale-110 border-white' : 'border-transparent'
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-[#8B7CFF] hover:bg-[#7a6aeb] text-white font-semibold text-xs sm:text-sm shadow-lg shadow-[#8B7CFF]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              <Check size={16} />
-              <span>{isSubmitting ? 'Salvando...' : (accountToEdit ? 'Atualizar Conta' : 'Criar Conta')}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

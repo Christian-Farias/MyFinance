@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Plus, CreditCard as CardIcon, Layers, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { VisualCreditCard } from '../components/VisualCreditCard';
 import { TransactionItem } from '../components/TransactionItem';
 import { CardModal } from '../components/modals/CardModal';
 import { formatCurrency, formatDateBR } from '../calculations/financialCalculations';
 import type { CreditCard } from '../types';
+import { ErrorState, LoadingState } from '../components/ui';
 
 export const CardsPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { cards, transactions, categories, openNewTxModal, openTxDetail, deleteCard } = useFinance();
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [cardToEdit, setCardToEdit] = useState<CreditCard | undefined>(undefined);
@@ -21,17 +24,27 @@ export const CardsPage: React.FC = () => {
   const invoiceAmount = activeCard ? Math.max(0, activeCard.limit - activeCard.availableLimit) : 0;
   const usedPercent  = activeCard && activeCard.limit > 0 ? Math.min(100, (invoiceAmount / activeCard.limit) * 100) : 0;
 
-  const barColor = usedPercent >= 90 ? '#FF5C5C' : usedPercent >= 70 ? '#F59E0B' : '#39D98A';
+  const barColor = usedPercent >= 90 ? 'var(--color-negative)' : usedPercent >= 70 ? 'var(--color-warning)' : 'var(--color-positive)';
+
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
 
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Cartões</h1>
+        <h1 className="text-xl font-bold text-ink tracking-tight">Cartões</h1>
         <button
           onClick={() => { setCardToEdit(undefined); setIsCardModalOpen(true); }}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/20 text-[#8B7CFF] text-xs font-semibold hover:bg-[#8B7CFF]/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Novo</span>
@@ -40,14 +53,14 @@ export const CardsPage: React.FC = () => {
 
       {cards.length === 0 ? (
         <div className="card p-12 text-center">
-          <div className="w-14 h-14 rounded-3xl bg-[#8B7CFF]/10 flex items-center justify-center mx-auto mb-4">
-            <CardIcon size={28} className="text-[#8B7CFF]" />
+          <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
+            <CardIcon size={28} className="text-accent" />
           </div>
-          <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Nenhum cartão cadastrado</h3>
+          <h3 className="text-sm font-semibold text-ink mb-2">Nenhum cartão cadastrado</h3>
           <p className="label-xs leading-relaxed mb-5">Adicione seu cartão para acompanhar limites e faturas.</p>
           <button
             onClick={() => setIsCardModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-[#8B7CFF] text-white text-xs font-semibold hover:bg-[#7B6CEF] transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
           >
             Adicionar cartão
           </button>
@@ -63,8 +76,8 @@ export const CardsPage: React.FC = () => {
                   onClick={() => setSelectedCardId(c.id)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
                     activeCard?.id === c.id
-                      ? 'bg-[#8B7CFF]/15 text-[#8B7CFF] border border-[#8B7CFF]/30'
-                      : 'bg-[#0D0F12] text-[#8B919B] border border-[#1D2026] hover:text-[#F5F5F5]'
+                      ? 'bg-accent/15 text-accent border border-accent/30'
+                      : 'bg-surface text-ink-muted border border-edge hover:text-ink'
                   }`}
                 >
                   {c.name}
@@ -89,15 +102,15 @@ export const CardsPage: React.FC = () => {
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <p className="label-xs mb-1">Fatura atual</p>
-                  <p className="text-sm font-bold text-[#FF5C5C]">{formatCurrency(invoiceAmount)}</p>
+                  <p className="text-sm font-bold text-negative">{formatCurrency(invoiceAmount)}</p>
                 </div>
                 <div>
                   <p className="label-xs mb-1">Disponível</p>
-                  <p className="text-sm font-bold text-[#39D98A]">{formatCurrency(activeCard.availableLimit)}</p>
+                  <p className="text-sm font-bold text-positive">{formatCurrency(activeCard.availableLimit)}</p>
                 </div>
                 <div>
                   <p className="label-xs mb-1">Limite total</p>
-                  <p className="text-sm font-bold text-[#F5F5F5]">{formatCurrency(activeCard.limit)}</p>
+                  <p className="text-sm font-bold text-ink">{formatCurrency(activeCard.limit)}</p>
                 </div>
               </div>
               <div className="progress-track-thick">
@@ -106,25 +119,25 @@ export const CardsPage: React.FC = () => {
               <p className="label-xs mt-2">{usedPercent.toFixed(0)}% do limite utilizado</p>
 
               {/* Edit / Delete */}
-              <div className="flex items-center space-x-2 pt-3 mt-3 border-t border-[#1D2026]">
+              <div className="flex items-center space-x-2 pt-3 mt-3 border-t border-edge">
                 <button
                   onClick={() => { setCardToEdit(activeCard); setIsCardModalOpen(true); }}
-                  className="flex items-center space-x-1.5 text-xs text-[#8B919B] hover:text-[#F5F5F5] transition-colors"
+                  className="flex items-center space-x-1.5 text-xs text-ink-muted hover:text-ink transition-colors"
                 >
                   <Edit2 size={13} />
                   <span>Editar</span>
                 </button>
-                <span className="text-[#1D2026]">•</span>
+                <span className="text-edge">•</span>
                 <button
                   onClick={() => deleteCard(activeCard.id)}
-                  className="flex items-center space-x-1.5 text-xs text-[#FF5C5C]/60 hover:text-[#FF5C5C] transition-colors"
+                  className="flex items-center space-x-1.5 text-xs text-negative/60 hover:text-negative transition-colors"
                 >
                   <Trash2 size={13} />
                   <span>Excluir</span>
                 </button>
                 {activeCard.dueDay && (
                   <>
-                    <span className="text-[#1D2026]">•</span>
+                    <span className="text-edge">•</span>
                     <span className="label-xs">Vence dia {activeCard.dueDay}</span>
                   </>
                 )}
@@ -137,14 +150,14 @@ export const CardsPage: React.FC = () => {
             <p className="label-section mb-3 px-0.5">Últimas compras</p>
             {recentPurchases.length === 0 ? (
               <div className="card p-8 text-center">
-                <p className="text-xs text-[#5F6570]">Nenhuma compra registrada neste cartão.</p>
+                <p className="text-xs text-ink-faint">Nenhuma compra registrada neste cartão.</p>
               </div>
             ) : (
               <div className="card overflow-hidden">
                 {recentPurchases.map((tx, idx) => {
                   const category = categories.find(c => c.id === tx.categoryId);
                   return (
-                    <div key={tx.id} className={idx < recentPurchases.length - 1 ? 'border-b border-[#1D2026]' : ''}>
+                    <div key={tx.id} className={idx < recentPurchases.length - 1 ? 'border-b border-edge' : ''}>
                       <TransactionItem
                         transaction={tx}
                         category={category}
@@ -163,7 +176,7 @@ export const CardsPage: React.FC = () => {
           {installmentTxs.length > 0 && (
             <div>
               <div className="flex items-center space-x-2 mb-3 px-0.5">
-                <Layers size={13} className="text-[#8B7CFF]" />
+                <Layers size={13} className="text-accent" />
                 <p className="label-section">Parcelamentos em andamento</p>
               </div>
               <div className="card overflow-hidden">
@@ -171,19 +184,19 @@ export const CardsPage: React.FC = () => {
                   <button
                     key={tx.id}
                     onClick={() => openTxDetail(tx)}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-[#121419] transition-colors ${
-                      idx < installmentTxs.length - 1 ? 'border-b border-[#1D2026]' : ''
+                    className={`w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-surface-raised transition-colors ${
+                      idx < installmentTxs.length - 1 ? 'border-b border-edge' : ''
                     }`}
                   >
                     <div>
-                      <p className="text-xs font-semibold text-[#F5F5F5]">{tx.description}</p>
+                      <p className="text-xs font-semibold text-ink">{tx.description}</p>
                       <p className="label-xs mt-0.5">
                         Parcela {tx.installmentNumber} de {tx.installmentTotal} • {formatDateBR(tx.date)}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-[#F5F5F5]">{formatCurrency(tx.amount)}</span>
-                      <ChevronRight size={13} className="text-[#5F6570]" />
+                      <span className="text-xs font-bold text-ink">{formatCurrency(tx.amount)}</span>
+                      <ChevronRight size={13} className="text-ink-faint" />
                     </div>
                   </button>
                 ))}

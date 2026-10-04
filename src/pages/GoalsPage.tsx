@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Target, Laptop, Plane, PlusCircle, Edit2, Trash2, TrendingUp } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { GoalModal } from '../components/modals/GoalModal';
 import { GoalDepositModal } from '../components/modals/GoalDepositModal';
 import { formatCurrency, calculateGoalProgress } from '../calculations/financialCalculations';
 import type { Goal } from '../types';
+import { ErrorState, LoadingState } from '../components/ui';
 
 const getGoalIcon = (name: string) => {
   const l = name.toLowerCase();
@@ -15,6 +17,7 @@ const getGoalIcon = (name: string) => {
 };
 
 export const GoalsPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { goals, deleteGoal } = useFinance();
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [goalToEdit, setGoalToEdit]       = useState<Goal | undefined>(undefined);
@@ -24,15 +27,25 @@ export const GoalsPage: React.FC = () => {
   const totalGoalProgress = goals.reduce((s, g) => s + g.currentAmount, 0);
   const overallPct = totalGoalAmount > 0 ? Math.min(100, (totalGoalProgress / totalGoalAmount) * 100) : 0;
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Metas</h1>
+        <h1 className="text-xl font-bold text-ink tracking-tight">Metas</h1>
         <button
           onClick={() => { setGoalToEdit(undefined); setIsGoalModalOpen(true); }}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/20 text-[#8B7CFF] text-xs font-semibold hover:bg-[#8B7CFF]/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Nova meta</span>
@@ -50,7 +63,7 @@ export const GoalsPage: React.FC = () => {
           <div className="progress-track-thick">
             <div
               className="progress-fill"
-              style={{ width: `${overallPct}%`, backgroundColor: '#8B7CFF' }}
+              style={{ width: `${overallPct}%`, backgroundColor: 'var(--color-accent)' }}
             />
           </div>
           <p className="label-xs mt-2">{overallPct.toFixed(0)}% do total das metas</p>
@@ -60,14 +73,14 @@ export const GoalsPage: React.FC = () => {
       {/* ── GOALS LIST ── */}
       {goals.length === 0 ? (
         <div className="card p-12 text-center">
-          <div className="w-14 h-14 rounded-3xl bg-[#8B7CFF]/10 flex items-center justify-center mx-auto mb-4">
-            <Target size={28} className="text-[#8B7CFF]" />
+          <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
+            <Target size={28} className="text-accent" />
           </div>
-          <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Nenhuma meta criada</h3>
+          <h3 className="text-sm font-semibold text-ink mb-2">Nenhuma meta criada</h3>
           <p className="label-xs leading-relaxed mb-5">Defina metas para organizar seus sonhos e reservas financeiras.</p>
           <button
             onClick={() => setIsGoalModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-[#8B7CFF] text-white text-xs font-semibold hover:bg-[#7B6CEF] transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
           >
             Criar primeira meta
           </button>
@@ -78,7 +91,7 @@ export const GoalsPage: React.FC = () => {
             const { percentage, remaining, monthlySavingsNeeded } = calculateGoalProgress(goal);
             const safeMonthly = monthlySavingsNeeded ?? 0;
             const Icon = getGoalIcon(goal.name);
-            const color = goal.color || '#8B7CFF';
+            const color = goal.color || 'var(--color-accent)';
             const isComplete = percentage >= 100;
 
             return (
@@ -88,15 +101,17 @@ export const GoalsPage: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <div
                       className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${color}20` }}
+                      style={{
+                        backgroundColor: `color-mix(in oklab, ${color} 12%, transparent)`,
+                      }}
                     >
                       <Icon size={20} style={{ color }} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-[#F5F5F5]">{goal.name}</h4>
+                      <h4 className="text-sm font-bold text-ink">{goal.name}</h4>
                       <p className="label-xs mt-0.5">
                         {formatCurrency(goal.currentAmount)}
-                        <span className="text-[#5F6570]"> / {formatCurrency(goal.targetAmount)}</span>
+                        <span className="text-ink-faint"> / {formatCurrency(goal.targetAmount)}</span>
                       </p>
                     </div>
                   </div>
@@ -109,13 +124,13 @@ export const GoalsPage: React.FC = () => {
                 <div className="progress-track-thick mb-3">
                   <div
                     className="progress-fill"
-                    style={{ width: `${percentage}%`, backgroundColor: isComplete ? '#39D98A' : color }}
+                    style={{ width: `${percentage}%`, backgroundColor: isComplete ? 'var(--color-positive)' : color }}
                   />
                 </div>
 
                 {/* Sub-info */}
                 {!isComplete && (
-                  <div className="flex items-center justify-between text-xs text-[#8B919B] mb-4">
+                  <div className="flex items-center justify-between text-xs text-ink-muted mb-4">
                     <span>Faltam {formatCurrency(remaining)}</span>
                     {goal.deadline && (
                       <span>Prazo: {goal.deadline.substring(0, 7)}</span>
@@ -124,35 +139,35 @@ export const GoalsPage: React.FC = () => {
                 )}
 
                 {isComplete && (
-                  <p className="text-xs text-[#39D98A] font-semibold mb-4">🎉 Meta atingida!</p>
+                  <p className="text-xs text-positive font-semibold mb-4">🎉 Meta atingida!</p>
                 )}
 
                 {safeMonthly > 0 && !isComplete && (
-                  <div className="bg-[#121419] rounded-xl p-3 mb-4 accent-left">
-                    <p className="text-xs text-[#8B919B]">
-                      Poupar <span className="text-[#F5F5F5] font-semibold">{formatCurrency(safeMonthly)}/mês</span> para atingir no prazo.
+                  <div className="bg-surface-raised rounded-xl p-3 mb-4 accent-left">
+                    <p className="text-xs text-ink-muted">
+                      Poupar <span className="text-ink font-semibold">{formatCurrency(safeMonthly)}/mês</span> para atingir no prazo.
                     </p>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center space-x-2 pt-3 border-t border-[#1D2026]">
+                <div className="flex items-center space-x-2 pt-3 border-t border-edge">
                   <button
                     onClick={() => setGoalForDeposit(goal)}
-                    className="flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/20 text-[#8B7CFF] text-xs font-semibold hover:bg-[#8B7CFF]/15 transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
                   >
                     <PlusCircle size={13} />
                     <span>Guardar dinheiro</span>
                   </button>
                   <button
                     onClick={() => { setGoalToEdit(goal); setIsGoalModalOpen(true); }}
-                    className="p-2 rounded-xl bg-[#121419] text-[#8B919B] hover:text-[#F5F5F5] transition-colors"
+                    className="p-2 rounded-xl bg-surface-raised text-ink-muted hover:text-ink transition-colors"
                   >
                     <Edit2 size={14} />
                   </button>
                   <button
                     onClick={() => deleteGoal(goal.id)}
-                    className="p-2 rounded-xl bg-[#121419] text-[#FF5C5C]/50 hover:text-[#FF5C5C] transition-colors"
+                    className="p-2 rounded-xl bg-surface-raised text-negative/50 hover:text-negative transition-colors"
                   >
                     <Trash2 size={14} />
                   </button>

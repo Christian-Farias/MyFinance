@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, Wallet, ArrowLeftRight, Trash2, Edit2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { usePageData } from '../hooks/usePageData';
 import { AccountModal } from '../components/modals/AccountModal';
 import { formatCurrency } from '../calculations/financialCalculations';
 import type { Account } from '../types';
+import { ErrorState, LoadingState } from '../components/ui';
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   checking: 'Conta Corrente',
@@ -14,29 +16,40 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 };
 
 export const AccountsPage: React.FC = () => {
+  const { isLoading, loadFailed, retry } = usePageData();
   const { accounts, deleteAccount, openNewTxModal } = useFinance();
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [accountToEdit, setAccountToEdit] = useState<Account | undefined>(undefined);
 
   const totalBalance = accounts.reduce((s, a) => s + (a.currentBalance || 0), 0);
 
+  /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
+     responder — e uma falha de leitura ficava idêntica a "não há dados". */
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={4} />;
+  }
+
   return (
     <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-[#F5F5F5] tracking-tight">Contas</h1>
+        <h1 className="text-xl font-bold text-ink tracking-tight">Contas</h1>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => openNewTxModal('transfer')}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#0D0F12] border border-[#1D2026] text-[#8B919B] text-xs font-semibold hover:text-[#F5F5F5] hover:border-[#272B34] transition-colors"
+            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-surface border border-edge text-ink-muted text-xs font-semibold hover:text-ink hover:border-edge-strong transition-colors"
           >
             <ArrowLeftRight size={14} />
             <span>Transferir</span>
           </button>
           <button
             onClick={() => { setAccountToEdit(undefined); setIsAccountModalOpen(true); }}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/20 text-[#8B7CFF] text-xs font-semibold hover:bg-[#8B7CFF]/15 transition-colors"
+            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
           >
             <Plus size={15} strokeWidth={2.5} />
             <span>Nova conta</span>
@@ -56,14 +69,14 @@ export const AccountsPage: React.FC = () => {
       {/* ── ACCOUNTS LIST ── */}
       {accounts.length === 0 ? (
         <div className="card p-12 text-center">
-          <div className="w-14 h-14 rounded-3xl bg-[#39D98A]/10 flex items-center justify-center mx-auto mb-4">
-            <Wallet size={28} className="text-[#39D98A]" />
+          <div className="w-14 h-14 rounded-3xl bg-positive/10 flex items-center justify-center mx-auto mb-4">
+            <Wallet size={28} className="text-positive" />
           </div>
-          <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Nenhuma conta cadastrada</h3>
+          <h3 className="text-sm font-semibold text-ink mb-2">Nenhuma conta cadastrada</h3>
           <p className="label-xs leading-relaxed mb-5">Adicione suas contas bancárias para acompanhar seus saldos.</p>
           <button
             onClick={() => setIsAccountModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-[#8B7CFF] text-white text-xs font-semibold hover:bg-[#7B6CEF] transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
           >
             Adicionar conta
           </button>
@@ -77,13 +90,13 @@ export const AccountsPage: React.FC = () => {
             >
               <div className="flex items-center space-x-3.5">
                 <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-white text-sm shrink-0"
-                  style={{ backgroundColor: acc.color || '#8B7CFF' }}
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-ink text-sm shrink-0"
+                  style={{ backgroundColor: acc.color || 'var(--color-accent)' }}
                 >
                   {acc.institution.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-[#F5F5F5]">{acc.name}</h4>
+                  <h4 className="text-sm font-semibold text-ink">{acc.name}</h4>
                   <p className="label-xs mt-0.5">
                     {acc.institution} · {ACCOUNT_TYPE_LABELS[acc.type] || 'Outro'}
                   </p>
@@ -93,7 +106,7 @@ export const AccountsPage: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <div className="text-right">
                   <p className="label-xs mb-0.5">Saldo</p>
-                  <p className={`text-sm font-bold ${acc.currentBalance >= 0 ? 'text-[#F5F5F5]' : 'text-[#FF5C5C]'}`}>
+                  <p className={`text-sm font-bold ${acc.currentBalance >= 0 ? 'text-ink' : 'text-negative'}`}>
                     {formatCurrency(acc.currentBalance)}
                   </p>
                 </div>
@@ -101,7 +114,7 @@ export const AccountsPage: React.FC = () => {
                 <div className="flex items-center space-x-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => { setAccountToEdit(acc); setIsAccountModalOpen(true); }}
-                    className="w-8 h-8 rounded-lg bg-[#121419] text-[#8B919B] hover:text-[#F5F5F5] flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-lg bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center transition-colors"
                     title="Editar"
                     aria-label={`Editar conta ${acc.name}`}
                   >
@@ -109,7 +122,7 @@ export const AccountsPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => deleteAccount(acc.id)}
-                    className="w-8 h-8 rounded-lg bg-[#121419] text-[#FF5C5C]/60 hover:text-[#FF5C5C] flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-lg bg-surface-raised text-negative/60 hover:text-negative flex items-center justify-center transition-colors"
                     title="Excluir"
                     aria-label={`Excluir conta ${acc.name}`}
                   >

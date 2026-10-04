@@ -34,19 +34,19 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   return (
     <div
       onClick={onClick}
-      className="flex items-center justify-between px-4 py-3.5 hover:bg-[#121419] active:scale-[0.99] transition-all cursor-pointer group"
+      className="flex items-center justify-between px-4 py-3.5 hover:bg-surface-raised active:scale-[0.99] transition-all cursor-pointer group"
     >
       <div className="flex items-center space-x-3 min-w-0">
         <CategoryIcon
           iconName={category?.icon || (isIncome ? 'wallet' : 'tag')}
-          color={category?.color || (isIncome ? '#39D98A' : '#8B919B')}
+          color={category?.color || (isIncome ? 'var(--color-positive)' : 'var(--color-ink-muted)')}
           size={18}
         />
         <div className="min-w-0">
-          <h4 className="text-[#F5F5F5] font-medium text-xs truncate group-hover:text-white transition-colors">
+          <h4 className="text-ink font-medium text-xs truncate group-hover:text-ink transition-colors">
             {transaction.description}
           </h4>
-          <p className="text-[#5F6570] text-[11px] truncate mt-0.5">
+          <p className="text-ink-faint text-[11px] truncate mt-0.5">
             {catName} · {sourceName}{installmentText}{dateText}
           </p>
         </div>
@@ -56,10 +56,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         <span
           className={`font-bold text-xs tracking-tight ${
             isIncome
-              ? 'text-[#39D98A]'
+              ? 'text-positive'
               : isTransfer
-                ? 'text-[#8B7CFF]'
-                : 'text-[#F5F5F5]'
+                ? 'text-accent'
+                : 'text-ink'
           }`}
         >
           {isIncome ? '+' : isTransfer ? '' : '−'}{' '}
