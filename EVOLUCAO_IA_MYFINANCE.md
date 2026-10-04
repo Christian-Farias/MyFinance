@@ -96,14 +96,15 @@ Cada consulta do usuário passa sequencialmente pelo seguinte fluxo:
    - Listagem rápida das últimas movimentações com badge de entrada/saída e categoria.
 5. **Despesas Fixas e Recorrentes (`GET_RECURRING`)**:
    - Total mensal comprometido em assinaturas e recorrências fixas ativas.
-6. **Alertas e Personalidade ("Katrovou 🐒")**:
-   - O assistente insere o bordão solicitado `"Katrovou 🐒"` exatamente nos cenários de indicadores desfavoráveis:
+6. **Alertas e Personalidade ("Katrovou")**:
+   - O assistente insere o termo `"Katrovou"` nos cenários de indicadores desfavoráveis:
      - Gastos aumentaram em relação ao mês anterior no comparativo mensal.
      - Compra simulada que deixaria o saldo negativo ou margem perigosa (`CAN_I_SPEND`).
      - Saldo projetado para os próximos 30 dias for negativo (`GET_FORECAST`).
      - Saúde financeira com diagnóstico `'atenção'` ou `'crítico'` (`GET_FINANCIAL_HEALTH`).
      - Orçamento mensal de alguma categoria for estourado (`GET_BUDGET`).
      - Rentabilidade acumulada de investimentos for negativa (`GET_INVESTMENTS`).
+
 
 ---
 

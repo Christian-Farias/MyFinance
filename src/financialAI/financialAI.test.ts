@@ -242,15 +242,16 @@ describe('Financial AI Engine - Phase 4 Comprehensive Tests', () => {
       expect(comp.difference).toBe(500);
     });
 
-    it('adiciona "Katrovou 🐒" quando orçamento é estourado', () => {
+    it('adiciona "Katrovou" quando orçamento é estourado', () => {
       const resp = generateResponse('GET_BUDGET', 'orçamentos', mockState);
-      expect(resp.text).toContain('Katrovou 🐒');
+      expect(resp.text).toContain('Katrovou');
     });
 
-    it('adiciona "Katrovou 🐒" quando o usuário não pode arcar com uma compra', () => {
+    it('adiciona "Katrovou" quando o usuário não pode arcar com uma compra', () => {
       const resp = generateResponse('CAN_I_SPEND', 'posso gastar 5000?', mockState, undefined, { amount: 5000 });
-      expect(resp.text).toContain('Katrovou 🐒');
+      expect(resp.text).toContain('Katrovou');
     });
+
 
     it('simula valores necessários para atingir meta', () => {
       const sim = financialTools.simulateGoalSavings(mockState, 'Viagem', 6);

@@ -25,11 +25,12 @@ export function generateResponse(
   switch (intent) {
     case 'HELP_GREETING': {
       return {
-        text: 'E aí! Sou o **Neguin**, seu assistente financeiro local e pessoal. 🐒\n\nAnaliso suas finanças com cálculos 100% determinísticos no seu dispositivo. Veja o que posso fazer:\n\n• **Consultas**: "Qual meu saldo?", "Quanto gastei este mês?", "Quanto foi com comida?"\n• **Comparações**: "Gastei mais que mês passado?", "Compara alimentação com transporte"\n• **Simulações**: "Posso gastar R$ 300 hoje?", "Quanto preciso guardar para a meta?"\n• **Obrigações**: "Quais contas vencem essa semana?", "Fatura do cartão", "Minhas assinaturas"\n• **Lançamentos**: "Gastei 50 no mercado", "Transfira 100 da conta corrente para carteira"',
+        text: 'E aí! Sou o **Neguin**, seu assistente financeiro local e pessoal.\n\nAnaliso suas finanças com cálculos 100% determinísticos no seu dispositivo. Veja o que posso fazer:\n\n• **Consultas**: "Qual meu saldo?", "Quanto gastei este mês?", "Quanto foi com comida?"\n• **Comparações**: "Gastei mais que mês passado?", "Compara alimentação com transporte"\n• **Simulações**: "Posso gastar R$ 300 hoje?", "Quanto preciso guardar para a meta?"\n• **Obrigações**: "Quais contas vencem essa semana?", "Fatura do cartão", "Minhas assinaturas"\n• **Lançamentos**: "Gastei 50 no mercado", "Transfira 100 da conta corrente para carteira"',
         intent,
         followUpSuggestions: ['Qual é o meu saldo?', 'Quanto gastei este mês?', 'Posso gastar R$ 300?', 'Como estão minhas finanças?'],
       };
     }
+
 
     case 'GET_BALANCE': {
       const balanceInfo = financialTools.getBalance(state);
@@ -209,7 +210,8 @@ export function generateResponse(
 
       const comparisonText = isExpenseLess
         ? `Você gastou **${formatCurrency(diffAmount)} a menos** que no mês passado (uma redução de ${Math.abs(comp.expenseVariationPercent).toFixed(1)}%). 💪`
-        : `Seus gastos subiram **${formatCurrency(diffAmount)}** em comparação ao mês passado (+${comp.expenseVariationPercent.toFixed(1)}%). Katrovou 🐒`;
+        : `Seus gastos subiram **${formatCurrency(diffAmount)}** em comparação ao mês passado (+${comp.expenseVariationPercent.toFixed(1)}%). Katrovou`;
+
 
       return {
         text: `${comparisonText}\n\n• **Mês Atual (${comp.currentMonth.label})**: ${formatCurrency(comp.currentExpense)}\n• **Mês Anterior (${comp.previousMonth.label})**: ${formatCurrency(comp.previousExpense)}`,
@@ -380,7 +382,7 @@ export function generateResponse(
     case 'CAN_I_SPEND': {
       const checkAmount = params?.amount || 200;
       const result = calculateAffordability(checkAmount, state);
-      const canSpendSuffix = result.canAfford ? '' : ' Katrovou 🐒';
+      const canSpendSuffix = result.canAfford ? '' : ' Katrovou';
       return {
         text: `${result.advice}${canSpendSuffix}`,
         intent,
@@ -402,7 +404,7 @@ export function generateResponse(
     case 'GET_FORECAST': {
       const forecast = financialTools.getForecast(state, 30);
       const forecastBad = forecast.projectedEndBalance < 0;
-      const forecastSuffix = forecastBad ? ' Katrovou 🐒' : '';
+      const forecastSuffix = forecastBad ? ' Katrovou' : '';
       return {
         text: `Sua previsão de saldo ao fim de 30 dias é de **${formatCurrency(forecast.projectedEndBalance)}**.${forecastSuffix}\n\n• **Saldo Inicial**: ${formatCurrency(forecast.initialBalance)}\n• **Entradas Previstas**: +${formatCurrency(forecast.totalInflows)}\n• **Saídas Previstas**: -${formatCurrency(forecast.totalOutflows)}`,
         intent,
@@ -432,7 +434,8 @@ export function generateResponse(
       }
 
       const hasExceeded = budgets.some(b => b.isExceeded);
-      const budgetSuffix = hasExceeded ? '\n\nKatrovou 🐒' : '';
+      const budgetSuffix = hasExceeded ? '\n\nKatrovou' : '';
+
 
       const list = budgets
         .map(b => `• **${b.categoryName}**: ${formatCurrency(b.spent)} de ${formatCurrency(b.budget.limitAmount)} (${b.percentage.toFixed(0)}%)${b.isExceeded ? ' ⚠️ ESTOURADO' : ''}`)
@@ -532,7 +535,7 @@ export function generateResponse(
 
       const rentabilitySuffix = inv.isPositive
         ? `Lucro de **+${inv.formattedProfitLoss}** (+${inv.profitLossPercent.toFixed(1)}%) 💪`
-        : `Prejuízo de **${inv.formattedProfitLoss}** (${inv.profitLossPercent.toFixed(1)}%) Katrovou 🐒`;
+        : `Prejuízo de **${inv.formattedProfitLoss}** (${inv.profitLossPercent.toFixed(1)}%) Katrovou`;
 
       return {
         text: `Seu patrimônio em investimentos é de **${inv.formattedTotalInvested}**.\n\n• **Valor Aplicado**: ${inv.formattedTotalCost}\n• **Rentabilidade Acumulada**: ${rentabilitySuffix}`,
@@ -555,13 +558,14 @@ export function generateResponse(
       const health = diagnoseFinancialHealth(state);
       const pointsText = health.pointsOfInterest.map(p => `• ${p}`).join('\n');
       const isHealthBad = health.status === 'crítico' || health.status === 'atenção';
-      const healthSuffix = isHealthBad ? '\n\nKatrovou 🐒' : '';
+      const healthSuffix = isHealthBad ? '\n\nKatrovou' : '';
       return {
         text: `**Status: ${health.status.toUpperCase()}**\n\n${health.summary}\n\n${pointsText}${healthSuffix}`,
         intent,
         followUpSuggestions: ['Quanto gastei este mês?', 'Como estão meus orçamentos?', 'Quanto falta para minha meta?'],
       };
     }
+
 
     default: {
       return {

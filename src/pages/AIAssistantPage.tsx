@@ -64,10 +64,11 @@ export const AIAssistantPage: React.FC = () => {
     {
       id: 'init_1',
       sender: 'assistant',
-      text: 'E aí! Sou o Neguin, seu assistente financeiro pessoal. 🐒\n\nAnaliso seus dados aqui mesmo, sem mandar nada pra nuvem — tudo fica entre a gente!\n\nComo posso te ajudar hoje?',
+      text: 'E aí! Sou o Neguin, seu assistente financeiro pessoal.\n\nAnaliso seus dados aqui mesmo, sem mandar nada pra nuvem — tudo fica entre a gente!\n\nComo posso te ajudar hoje?',
       timestamp: 'Agora',
     },
   ]);
+
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -204,9 +205,10 @@ export const AIAssistantPage: React.FC = () => {
             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-positive border-2 border-[#050505]" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-ink tracking-tight">Neguin 🐒</h1>
+            <h1 className="text-base font-bold text-ink tracking-tight">Neguin</h1>
             <span className="label-xs text-positive">Assistente Financeiro · Modo Offline</span>
           </div>
+
         </div>
 
         {/* Tabs */}

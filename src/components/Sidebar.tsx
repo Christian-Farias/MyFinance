@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
     { to: '/calendario', label: 'Calendário', icon: Calendar },
     { to: '/fluxo-caixa', label: 'Fluxo de Caixa', icon: TrendingUp },
     { to: '/gastos', label: 'Gastos', icon: PieChart },
-    { to: '/ia', label: 'Neguin 🐒', icon: Sparkles, badge: 'IA' },
+    { to: '/ia', label: 'Neguin', icon: Sparkles, badge: 'IA' },
     { to: '/cartoes', label: 'Cartões', icon: CreditCard },
   ];
 
