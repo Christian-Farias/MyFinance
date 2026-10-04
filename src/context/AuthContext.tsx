@@ -12,9 +12,7 @@ interface AuthContextType {
   userEmail: string;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
-  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: Error | null }>;
   bypassAuth: () => void;
 }
 
@@ -96,23 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      if (!isSupabaseConfigured) {
-        throw new Error('Supabase não configurado. Por favor, adicione as chaves no arquivo .env.');
-      }
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}${window.location.pathname}`,
-        },
-      });
-      return { error: error ? new Error(error.message) : null };
-    } catch (err: any) {
-      return { error: err };
-    }
-  };
-
   const signOut = async () => {
     try {
       localStorage.removeItem('myfinance_auth_bypassed');
@@ -125,20 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setUser(null);
       setSession(null);
-    }
-  };
-
-  const resetPassword = async (email: string) => {
-    try {
-      if (!isSupabaseConfigured) {
-        throw new Error('Supabase não configurado. Por favor, adicione as chaves no arquivo .env.');
-      }
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/configuracoes`,
-      });
-      return { error: error ? new Error(error.message) : null };
-    } catch (err: any) {
-      return { error: err };
     }
   };
 
@@ -157,9 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userEmail,
         signIn,
         signUp,
-        signInWithGoogle,
         signOut,
-        resetPassword,
         bypassAuth,
       }}
     >
