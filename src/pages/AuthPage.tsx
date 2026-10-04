@@ -19,18 +19,23 @@ export const AuthPage: React.FC = () => {
   const { signIn, signUp, signInWithGoogle, resetPassword, isConfigured, bypassAuth } = useAuth();
 
   // O fluxo OAuth redireciona de volta para a app mesmo quando falha, passando o
-  // motivo no fragmento da URL (ex.: #error=access_denied&error_description=...).
-  // Sem este tratamento o erro seria descartado silenciosamente pelo detectSessionInUrl.
+  // motivo na URL. Sem este tratamento o erro seria descartado silenciosamente.
+  // O redirect de erro pode montar os parametros no fragmento ou na query,
+  // dependendo de como o GoTrue montou o retorno, entao ambos sao verificados.
   const readOAuthError = (): string => {
-    const hash = window.location.hash;
-    if (!hash || !hash.includes('error=')) return '';
+    const sources = [window.location.hash.slice(1), window.location.search.slice(1)];
 
-    const params = new URLSearchParams(hash.slice(1));
-    const description = params.get('error_description') || params.get('error') || '';
-    return (
-      description.replace(/\+/g, ' ') ||
-      'Não foi possível entrar com o Google. Tente novamente.'
-    );
+    for (const source of sources) {
+      if (!source.includes('error=')) continue;
+
+      const params = new URLSearchParams(source);
+      const description = params.get('error_description') || params.get('error') || '';
+      return (
+        description.replace(/\+/g, ' ') ||
+        'Não foi possível entrar com o Google. Tente novamente.'
+      );
+    }
+    return '';
   };
 
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
@@ -49,10 +54,10 @@ export const AuthPage: React.FC = () => {
     setSuccessMsg('');
   };
 
-  // Limpa o fragmento da URL para o erro nao reaparecer em um novo render.
+  // Limpa a query e o fragmento para o erro nao reaparecer em um novo render.
   useEffect(() => {
     if (readOAuthError()) {
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
 
