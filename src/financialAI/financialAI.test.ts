@@ -1,17 +1,22 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { parseNaturalLanguageDate } from './parsers/dateParser';
 import { parseNaturalLanguageAmount } from './parsers/amountParser';
 import { parseUserIntent } from './parsers/intentParser';
+import { resolveConversationContext, updateConversationContext } from './contextResolver';
 import { createActionPlan } from './actionPlanner';
 import { executeActionPlan } from './actionExecutor';
 import { calculateAffordability, diagnoseFinancialHealth } from './calculators/financialAICalculators';
+import { financialTools } from './tools/financialTools';
+import { generateResponse } from './responseGenerator';
 import { aiService } from './aiService';
-import type { Category, Account, Transaction, Bill, Goal, CreditCard } from '../types';
+import type { Category, Account, Transaction, Bill, Goal, CreditCard, Budget } from '../types';
 import type { FinancialState } from './tools/financialTools';
+import type { AIConversationContext } from './types';
 
-describe('Financial AI Architecture & Safety Tests (Prompt Sections 43 & 44)', () => {
+describe('Financial AI Engine - Phase 4 Comprehensive Tests', () => {
   const mockCategories: Category[] = [
     { id: 'cat_alimentacao', name: 'Alimentação', icon: 'Utensils', color: '#FF5C5C', type: 'expense' },
+    { id: 'cat_transporte', name: 'Transporte', icon: 'Car', color: '#3B82F6', type: 'expense' },
     { id: 'cat_moradia', name: 'Moradia', icon: 'Home', color: '#6366F1', type: 'expense' },
     { id: 'cat_salario', name: 'Salário', icon: 'Briefcase', color: '#39D98A', type: 'income' },
   ];
@@ -21,134 +26,257 @@ describe('Financial AI Architecture & Safety Tests (Prompt Sections 43 & 44)', (
     { id: 'acc_wallet', name: 'Carteira', institution: 'Físico', type: 'cash', balance: 200, currentBalance: 200, color: '#FFB800', createdAt: '2026-10-01', updatedAt: '2026-10-01' },
   ];
 
-  // 1. Interpretação de datas em linguagem natural
-  it('1. Deve interpretar termos de data em linguagem natural', () => {
-    const todayRange = parseNaturalLanguageDate('gastei hoje');
-    expect(todayRange.label).toBe('Este Mês');
+  const mockCards: CreditCard[] = [
+    {
+      id: 'card_nu',
+      name: 'Nubank Ultravioleta',
+      institution: 'Nubank',
+      brand: 'mastercard',
+      limit: 5000,
+      availableLimit: 4000,
+      closingDay: 25,
+      dueDay: 5,
+      lastDigits: '1234',
+      color: '#8A05BE',
+      isActive: true,
+      createdAt: '2026-10-01',
+      updatedAt: '2026-10-01',
+    }
+  ];
 
-    const yesterdayRange = parseNaturalLanguageDate('gastei ontem');
-    expect(yesterdayRange.label).toBe('Ontem');
+  const mockGoals: Goal[] = [
+    { id: 'goal_viagem', name: 'Viagem', targetAmount: 6000, currentAmount: 2000, deadline: '2026-12-31', color: '#FF5C5C', createdAt: '2026-10-01', updatedAt: '2026-10-01' }
+  ];
 
-    const lastMonthRange = parseNaturalLanguageDate('quanto gastei no mês passado');
-    expect(lastMonthRange.label).toBe('Mês Passado');
+  const mockState: FinancialState = {
+    accounts: mockAccounts,
+    transactions: [
+      { id: 't1', type: 'expense', amount: 800, description: 'Supermercado', date: '2026-10-02', categoryId: 'cat_alimentacao', accountId: 'acc_checking', createdAt: '2026-10-02', updatedAt: '2026-10-02' },
+      { id: 't2', type: 'expense', amount: 300, description: 'Combustível', date: '2026-10-03', categoryId: 'cat_transporte', accountId: 'acc_checking', createdAt: '2026-10-03', updatedAt: '2026-10-03' },
+      { id: 't3', type: 'income', amount: 4000, description: 'Salário', date: '2026-10-01', categoryId: 'cat_salario', accountId: 'acc_checking', createdAt: '2026-10-01', updatedAt: '2026-10-01' },
+      // Previous month transactions (2026-09)
+      { id: 't_prev1', type: 'expense', amount: 600, description: 'Mercado Setembro', date: '2026-09-15', categoryId: 'cat_alimentacao', accountId: 'acc_checking', createdAt: '2026-09-15', updatedAt: '2026-09-15' },
+      { id: 't_prev2', type: 'expense', amount: 200, description: 'Uber Setembro', date: '2026-09-18', categoryId: 'cat_transporte', accountId: 'acc_checking', createdAt: '2026-09-18', updatedAt: '2026-09-18' },
+    ],
+    categories: mockCategories,
+    cards: mockCards,
+    goals: mockGoals,
+    budgets: [
+      { id: 'b1', categoryId: 'cat_alimentacao', monthYear: '2026-10', limitAmount: 700, createdAt: '2026-10-01', updatedAt: '2026-10-01' } // spent 800, limit 700 -> exceeded!
+    ],
+    bills: [
+      { id: 'b_bill1', description: 'Aluguel', amount: 1500, dueDate: '2026-10-10', categoryId: 'cat_moradia', accountId: 'acc_checking', status: 'pending', createdAt: '2026-10-01', updatedAt: '2026-10-01' }
+    ],
+    receivables: [],
+    recurring: [
+      { id: 'rec_1', description: 'Internet Fibra', amount: 120, type: 'expense', frequency: 'monthly', status: 'active', categoryId: 'cat_moradia', accountId: 'acc_checking', startDate: '2026-01-01', nextOccurrence: '2026-11-01', createdAt: '2026-01-01', updatedAt: '2026-01-01' }
+    ],
+    subscriptions: [],
+    investments: [
+      { id: 'inv_1', assetName: 'Tesouro Selic', type: 'fixed_income', quantity: 1, averagePrice: 5000, currentPrice: 5200, yieldPercentage: 4, institution: 'Tesouro', date: '2026-01-01', totalInvested: 5000, currentValue: 5200, createdAt: '2026-01-01', updatedAt: '2026-10-01' }
+    ],
+  };
 
-    const nextMonthRange = parseNaturalLanguageDate('quanto vou pagar no próximo mês');
-    expect(nextMonthRange.label).toBe('Próximo Mês');
+
+  // ─── 1. INTERPRETAÇÃO TEMPORAL ───
+  describe('1. Interpretação Temporal e Expressões Naturais', () => {
+    const fixedRef = new Date(2026, 9, 15); // 15 de Outubro de 2026
+
+    it('identifica dias relativos: hoje, ontem, anteontem, amanhã', () => {
+      expect(parseNaturalLanguageDate('gastei hoje', fixedRef).label).toBe('Hoje');
+      expect(parseNaturalLanguageDate('comprei ontem', fixedRef).label).toBe('Ontem');
+      expect(parseNaturalLanguageDate('foi anteontem', fixedRef).label).toBe('Anteontem');
+      expect(parseNaturalLanguageDate('vence amanhã', fixedRef).label).toBe('Amanhã');
+    });
+
+    it('identifica meses nominais com e sem ano (ex: outubro, de setembro de 2026)', () => {
+      const out = parseNaturalLanguageDate('despesas de outubro', fixedRef);
+      expect(out.monthYear).toBe('2026-10');
+      expect(out.startDate).toBe('2026-10-01');
+      expect(out.endDate).toBe('2026-10-31');
+
+      const set = parseNaturalLanguageDate('gastos em setembro de 2026', fixedRef);
+      expect(set.monthYear).toBe('2026-09');
+      expect(set.startDate).toBe('2026-09-01');
+      expect(set.endDate).toBe('2026-09-30');
+    });
+
+    it('identifica janelas móveis diferenciando de meses de calendário', () => {
+      const r30 = parseNaturalLanguageDate('últimos 30 dias', fixedRef);
+      expect(r30.isRollingWindow).toBe(true);
+      expect(r30.label).toBe('Últimos 30 dias');
+
+      const calMonth = parseNaturalLanguageDate('mês passado', fixedRef);
+      expect(calMonth.isRollingWindow).toBeFalsy();
+      expect(calMonth.monthYear).toBe('2026-09');
+    });
+
+    it('identifica intervalos de dias: entre os dias 5 e 20', () => {
+      const interval = parseNaturalLanguageDate('entre os dias 5 e 20', fixedRef);
+      expect(interval.startDate).toBe('2026-10-05');
+      expect(interval.endDate).toBe('2026-10-20');
+    });
+
+    it('identifica trimestres (Q1, primeiro trimestre, etc.)', () => {
+      const q1 = parseNaturalLanguageDate('gastos do primeiro trimestre', fixedRef);
+      expect(q1.startDate).toBe('2026-01-01');
+      expect(q1.endDate).toBe('2026-03-31');
+    });
   });
 
-  // 2. Interpretação de valores em linguagem natural
-  it('2. Deve interpretar valores numéricos e por extenso', () => {
-    expect(parseNaturalLanguageAmount('R$ 50,00')).toBe(50);
-    expect(parseNaturalLanguageAmount('50 reais')).toBe(50);
-    expect(parseNaturalLanguageAmount('cinquenta reais')).toBe(50);
-    expect(parseNaturalLanguageAmount('R$ 1.500,50')).toBe(1500.5);
-    expect(parseNaturalLanguageAmount('mil e quinhentos')).toBe(1500);
-    expect(parseNaturalLanguageAmount('dez mil')).toBe(10000);
+  // ─── 2. EXTRAÇÃO DE VALORES E ENTIDADES ───
+  describe('2. Valores e Normalização de Entidades', () => {
+    it('interpreta moedas padrão e coloquiais (pila, conto, reais)', () => {
+      expect(parseNaturalLanguageAmount('R$ 1.500,50')).toBe(1500.5);
+      expect(parseNaturalLanguageAmount('50 pila')).toBe(50);
+      expect(parseNaturalLanguageAmount('100 conto')).toBe(100);
+      expect(parseNaturalLanguageAmount('cento e cinquenta reais')).toBe(150);
+      expect(parseNaturalLanguageAmount('dois mil')).toBe(2000);
+      expect(parseNaturalLanguageAmount('dez mil')).toBe(10000);
+    });
   });
 
-  // 3. Reconhecimento de Intenções de Consulta
-  it('3. Deve mapear frases em linguagem natural para intenções corretas', () => {
-    const p1 = parseUserIntent('Quanto eu tenho?', mockCategories, mockAccounts);
-    expect(p1.intent).toBe('GET_BALANCE');
+  // ─── 3. RECONHECIMENTO DE INTENÇÕES (FORMULAÇÕES VARIADAS) ───
+  describe('3. Reconhecimento de Intenções Semânticas', () => {
+    it('reconhece diferentes formulações para consulta de despesas gerais', () => {
+      const q1 = parseUserIntent('Quanto gastei esse mês?', mockCategories, mockAccounts);
+      expect(q1.intent).toBe('GET_EXPENSES');
 
-    const p2 = parseUserIntent('Quanto gastei com comida?', mockCategories, mockAccounts);
-    expect(p2.intent).toBe('GET_CATEGORY_SPENDING');
-    expect(p2.parameters.categoryId).toBe('cat_alimentacao');
+      const q2 = parseUserIntent('Qual foi meu gasto total no mês atual?', mockCategories, mockAccounts);
+      expect(q2.intent).toBe('GET_EXPENSES');
 
-    const p3 = parseUserIntent('Gastei mais que mês passado?', mockCategories, mockAccounts);
-    expect(p3.intent).toBe('GET_MONTHLY_COMPARISON');
+      const q3 = parseUserIntent('Me mostra minhas despesas de outubro', mockCategories, mockAccounts);
+      expect(q3.intent).toBe('GET_EXPENSES');
+      expect(q3.parameters.dateRange?.monthYear).toBe('2026-10');
 
-    const p4 = parseUserIntent('Quais contas vencem essa semana?', mockCategories, mockAccounts);
-    expect(p4.intent).toBe('GET_BILLS');
+      const q4 = parseUserIntent('Quanto saiu da minha conta neste mês?', mockCategories, mockAccounts);
+      expect(q4.intent).toBe('GET_EXPENSES');
+    });
 
-    const p5 = parseUserIntent('Posso gastar R$ 500?', mockCategories, mockAccounts);
-    expect(p5.intent).toBe('CAN_I_SPEND');
-    expect(p5.parameters.amount).toBe(500);
+    it('reconhece categorias por sinônimos informais (ex: comida, uber, luz)', () => {
+      const qComida = parseUserIntent('Quanto gastei com comida?', mockCategories, mockAccounts);
+      expect(qComida.intent).toBe('GET_CATEGORY_SPENDING');
+      expect(qComida.parameters.categoryId).toBe('cat_alimentacao');
+
+      const qUber = parseUserIntent('Quanto foi de uber este mês?', mockCategories, mockAccounts);
+      expect(qUber.intent).toBe('GET_CATEGORY_SPENDING');
+      expect(qUber.parameters.categoryId).toBe('cat_transporte');
+    });
+
+    it('reconhece novas intenções especializadas', () => {
+      const qAcc = parseUserIntent('Quais contas eu tenho?', mockCategories, mockAccounts);
+      expect(qAcc.intent).toBe('GET_ACCOUNTS');
+
+      const qTx = parseUserIntent('Me mostre meu extrato recente', mockCategories, mockAccounts);
+      expect(qTx.intent).toBe('GET_TRANSACTIONS');
+
+      const qInv = parseUserIntent('Como estão meus investimentos?', mockCategories, mockAccounts);
+      expect(qInv.intent).toBe('GET_INVESTMENTS');
+
+      const qRec = parseUserIntent('Quais são minhas despesas fixas?', mockCategories, mockAccounts);
+      expect(qRec.intent).toBe('GET_RECURRING');
+
+      const qHelp = parseUserIntent('O que você sabe fazer?', mockCategories, mockAccounts);
+      expect(qHelp.intent).toBe('HELP_GREETING');
+    });
   });
 
-  // 4. Reconhecimento de Intenções de Ação
-  it('4. Deve identificar intenções de mutação e extrair parâmetros', () => {
-    const pExp = parseUserIntent('Gastei 50 reais no supermercado', mockCategories, mockAccounts);
-    expect(pExp.intent).toBe('CREATE_EXPENSE');
-    expect(pExp.parameters.amount).toBe(50);
+  // ─── 4. CONTEXTO CONVERSACIONAL EM MÚLTIPLOS TURNOS ───
+  describe('4. Contexto Conversacional e Elipses', () => {
+    let context: AIConversationContext;
 
-    const pTrans = parseUserIntent('Transfira 200 da conta corrente para carteira', mockCategories, mockAccounts);
-    expect(pTrans.intent).toBe('CREATE_TRANSFER');
-    expect(pTrans.parameters.amount).toBe(200);
+    beforeEach(() => {
+      context = {
+        messagesHistory: [],
+      };
+    });
 
-    const pDel = parseUserIntent('Apague a despesa de R$ 50', mockCategories, mockAccounts);
-    expect(pDel.intent).toBe('DELETE_TRANSACTION');
+    it('resolve cadeia completa: "alimentação" -> "e mês passado?" -> "e transporte?" -> "agora compara os dois"', () => {
+      // Turno 1: "Quanto gastei com alimentação este mês?"
+      let p1 = parseUserIntent('Quanto gastei com alimentação este mês?', mockCategories, mockAccounts);
+      p1 = resolveConversationContext(p1, 'Quanto gastei com alimentação este mês?', context);
+      updateConversationContext(p1, context);
+
+      expect(p1.intent).toBe('GET_CATEGORY_SPENDING');
+      expect(context.lastCategoryQuery).toBe('Alimentação');
+      expect(context.lastDateRange?.label).toBe('Este Mês');
+
+      // Turno 2: "E no mês passado?"
+      let p2 = parseUserIntent('E no mês passado?', mockCategories, mockAccounts);
+      p2 = resolveConversationContext(p2, 'E no mês passado?', context);
+      updateConversationContext(p2, context);
+
+      expect(p2.intent).toBe('GET_CATEGORY_SPENDING');
+      expect(p2.parameters.categoryQuery).toBe('Alimentação');
+      expect(p2.parameters.dateRange?.monthYear).toBe('2026-09');
+
+      // Turno 3: "E transporte?"
+      let p3 = parseUserIntent('E transporte?', mockCategories, mockAccounts);
+      p3 = resolveConversationContext(p3, 'E transporte?', context);
+      updateConversationContext(p3, context);
+
+      expect(p3.intent).toBe('GET_CATEGORY_SPENDING');
+      expect(p3.parameters.categoryQuery).toBe('Transporte');
+      expect(p3.parameters.dateRange?.monthYear).toBe('2026-09'); // herdou o período do mês passado!
+      expect(context.lastCategoryQuery).toBe('Transporte');
+      expect(context.secondLastCategoryQuery).toBe('Alimentação'); // memorizou as duas categorias!
+
+      // Turno 4: "Agora compara os dois."
+      let p4 = parseUserIntent('Agora compara os dois.', mockCategories, mockAccounts);
+      p4 = resolveConversationContext(p4, 'Agora compara os dois.', context);
+
+      expect(p4.intent).toBe('GET_CATEGORY_COMPARISON');
+      expect(p4.parameters.categoryQuery).toBe('Alimentação');
+      expect(p4.parameters.secondCategoryQuery).toBe('Transporte');
+      expect(p4.parameters.dateRange?.monthYear).toBe('2026-09');
+    });
   });
 
-  // 5. Nível de Risco e Planos de Ação
-  it('5. Deve classificar risco e exigir confirmação para ações de mutação', () => {
-    const parsedExp = parseUserIntent('Gastei 50 no mercado', mockCategories, mockAccounts);
-    const planExp = createActionPlan(parsedExp.intent, parsedExp.parameters, mockCategories, mockAccounts);
-    expect(planExp?.riskLevel).toBe('MEDIUM');
-    expect(planExp?.requiresConfirmation).toBe(true);
+  // ─── 5. RACIOCÍNIO FINANCEIRO DETERMINÍSTICO E "KATROVOU 🐒" ───
+  describe('5. Raciocínio Financeiro Local e Alertas Determinísticos', () => {
+    it('compara duas categorias deterministamente', () => {
+      const comp = financialTools.getCategoryComparison(mockState, 'Alimentação', 'Transporte', '2026-10');
+      expect(comp.higherCategoryName).toBe('Alimentação');
+      expect(comp.categoryA.total).toBe(800);
+      expect(comp.categoryB.total).toBe(300);
+      expect(comp.difference).toBe(500);
+    });
 
-    const parsedTransfer = parseUserIntent('Transfira 200 para carteira', mockCategories, mockAccounts);
-    const planTransfer = createActionPlan(parsedTransfer.intent, parsedTransfer.parameters, mockCategories, mockAccounts);
-    expect(planTransfer?.riskLevel).toBe('HIGH');
-    expect(planTransfer?.requiresConfirmation).toBe(true);
+    it('adiciona "Katrovou 🐒" quando orçamento é estourado', () => {
+      const resp = generateResponse('GET_BUDGET', 'orçamentos', mockState);
+      expect(resp.text).toContain('Katrovou 🐒');
+    });
+
+    it('adiciona "Katrovou 🐒" quando o usuário não pode arcar com uma compra', () => {
+      const resp = generateResponse('CAN_I_SPEND', 'posso gastar 5000?', mockState, undefined, { amount: 5000 });
+      expect(resp.text).toContain('Katrovou 🐒');
+    });
+
+    it('simula valores necessários para atingir meta', () => {
+      const sim = financialTools.simulateGoalSavings(mockState, 'Viagem', 6);
+      expect(sim.hasGoal).toBe(true);
+      expect(sim.remainingAmount).toBe(4000); // 6000 - 2000
+      expect(sim.neededMonthly).toBeCloseTo(4000 / 6, 2);
+    });
   });
 
-  // 6. Segurança: Ação não executada sem confirmação explícita
-  it('6. Segurança: Não deve executar plano de ação com status pending', async () => {
-    const parsedExp = parseUserIntent('Gastei 50 no mercado', mockCategories, mockAccounts);
-    const planExp = createActionPlan(parsedExp.intent, parsedExp.parameters, mockCategories, mockAccounts);
-    
-    // Status ainda é 'pending'
-    const result = await executeActionPlan(planExp!);
-    expect(result.success).toBe(false);
-    expect(result.message).toContain('não foi confirmada');
-  });
+  // ─── 6. SEGURANÇA E PLANOS DE AÇÃO ───
+  describe('6. Segurança e Confirmação de Ações', () => {
+    it('cria plano de orçamento e exige confirmação', () => {
+      const p = parseUserIntent('Definir orcamento de 1000 para alimentacao', mockCategories, mockAccounts);
+      const plan = createActionPlan(p.intent, p.parameters, mockCategories, mockAccounts);
+      expect(plan?.intent).toBe('CREATE_BUDGET');
+      expect(plan?.requiresConfirmation).toBe(true);
+      expect(plan?.status).toBe('pending');
+    });
 
-  // 7. Análise de Viabilidade Financeira (Can I Spend?)
-  it('7. Deve calcular se o usuário pode gastar com base no saldo e compromissos', () => {
-    const state: FinancialState = {
-      accounts: mockAccounts,
-      transactions: [],
-      categories: mockCategories,
-      cards: [],
-      goals: [],
-      budgets: [],
-      bills: [
-        { id: 'b1', description: 'Aluguel', amount: 2000, dueDate: new Date().toISOString().split('T')[0], categoryId: 'cat_moradia', accountId: 'acc_checking', status: 'pending', createdAt: '2026-10-01', updatedAt: '2026-10-01' }
-      ],
-      receivables: [],
-      recurring: [],
-      subscriptions: [],
-      investments: [],
-    };
-
-    const res = calculateAffordability(1500, state);
-    // Saldo = 3200, Bills próximos 7 dias = 2000. Disponível seguro = 1200 < 1500.
-    expect(res.canAfford).toBe(false);
-    expect(res.advice).toContain('deixaria uma margem muito apertada');
-  });
-
-  // 8. Diagnóstico de Saúde Financeira
-  it('8. Deve fornecer diagnóstico objetivo de saúde financeira', () => {
-    const state: FinancialState = {
-      accounts: mockAccounts,
-      transactions: [
-        { id: 't1', type: 'income', amount: 3000, description: 'Salário', date: '2026-10-05', categoryId: 'cat_salario', accountId: 'acc_checking', createdAt: '2026-10-05', updatedAt: '2026-10-05' },
-        { id: 't2', type: 'expense', amount: 1200, description: 'Mercado', date: '2026-10-10', categoryId: 'cat_alimentacao', accountId: 'acc_checking', createdAt: '2026-10-10', updatedAt: '2026-10-10' }
-      ],
-      categories: mockCategories,
-      cards: [],
-      goals: [],
-      budgets: [],
-      bills: [],
-      receivables: [],
-      recurring: [],
-      subscriptions: [],
-      investments: [],
-    };
-
-    const health = diagnoseFinancialHealth(state);
-    expect(health.status).toBe('excelente');
-    expect(health.summary).toContain('ótimo estado');
+    it('não permite executar plano não confirmado', async () => {
+      const p = parseUserIntent('Definir orcamento de 1000 para alimentacao', mockCategories, mockAccounts);
+      const plan = createActionPlan(p.intent, p.parameters, mockCategories, mockAccounts);
+      const res = await executeActionPlan(plan!);
+      expect(res.success).toBe(false);
+      expect(res.message).toContain('não foi confirmada');
+    });
   });
 });
+

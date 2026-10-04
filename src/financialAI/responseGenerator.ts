@@ -258,8 +258,9 @@ export function generateResponse(
     }
 
     case 'GET_INSTALLMENTS': {
-      const futureCommitments = financialTools.getCommitments(state, 6);
-      const totalFuture = futureCommitments.reduce((sum, c) => sum + c.total, 0);
+      const commitments = financialTools.getCommitments(state, 6);
+      const totalFuture = commitments.totalFutureCommitments;
+      const monthEntries = Object.entries(commitments.monthlyTotals);
 
       return {
         text: `Você possui compras e compromissos parcelados projetados somando **${formatCurrency(totalFuture)}** nos próximos 6 meses.`,
@@ -267,15 +268,16 @@ export function generateResponse(
         visual: {
           type: 'list',
           title: 'Compromissos dos Próximos Meses',
-          items: futureCommitments.map(c => ({
-            label: c.monthLabel,
-            value: c.total,
-            formattedValue: formatCurrency(c.total),
+          items: monthEntries.map(([ym, total]) => ({
+            label: ym,
+            value: total,
+            formattedValue: formatCurrency(total),
           })),
         },
         followUpSuggestions: ['Fatura do cartão', 'Quais contas vencem essa semana?'],
       };
     }
+
 
     case 'GET_BILLS': {
       const bills = financialTools.getBills(state);
@@ -465,8 +467,9 @@ export function generateResponse(
       }
 
       const list = goals
-        .map(g => `• **${g.goal.name}**: ${formatCurrency(g.goal.currentAmount)} de ${formatCurrency(g.goal.targetAmount)} (${g.progress.percentage.toFixed(0)}%) - Falta ${formatCurrency(g.progress.remainingAmount)}`)
+        .map(g => `• **${g.goal.name}**: ${formatCurrency(g.goal.currentAmount)} de ${formatCurrency(g.goal.targetAmount)} (${g.progress.percentage.toFixed(0)}%) - Falta ${formatCurrency(g.progress.remaining)}`)
         .join('\n');
+
 
       const primary = goals[0];
       return {

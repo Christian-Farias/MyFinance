@@ -42,6 +42,15 @@ export function resolveConversationContext(
     norm.includes('diferenca entre os dois') ||
     (parsed.intent === 'UNKNOWN' && (parsed.parameters.dateRange || parsed.parameters.categoryQuery));
 
+  const hasExplicitDate =
+    norm.includes('hoje') || norm.includes('ontem') || norm.includes('amanha') ||
+    norm.includes('mes') || norm.includes('ano') || norm.includes('semana') ||
+    norm.includes('dia') || norm.includes('dias') || norm.includes('trimestre') ||
+    norm.includes('janeiro') || norm.includes('fevereiro') || norm.includes('marco') ||
+    norm.includes('abril') || norm.includes('maio') || norm.includes('junho') ||
+    norm.includes('julho') || norm.includes('agosto') || norm.includes('setembro') ||
+    norm.includes('outubro') || norm.includes('novembro') || norm.includes('dezembro');
+
   // Case A: "Agora compara os dois" / "compara os dois"
   if (
     norm.includes('compara os dois') ||
@@ -56,13 +65,14 @@ export function resolveConversationContext(
       parsed.parameters.categoryId = context.secondLastCategoryId;
       parsed.parameters.secondCategoryQuery = context.lastCategoryQuery;
       parsed.parameters.secondCategoryId = context.lastCategoryId;
-      if (!parsed.parameters.dateRange && context.lastDateRange) {
+      if (!hasExplicitDate && context.lastDateRange) {
         parsed.parameters.dateRange = context.lastDateRange;
       }
       parsed.confidence = 0.95;
       return parsed;
     }
   }
+
 
   // Case B: "E no mês passado?" / Ellipsis altering only the date period
   if (

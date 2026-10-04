@@ -289,7 +289,7 @@ export const financialTools = {
       typeBreakdown,
       items: state.investments.map(inv => ({
         id: inv.id,
-        name: inv.name,
+        name: inv.assetName,
         type: inv.type,
         currentValue: inv.currentValue,
         formattedValue: formatCurrency(inv.currentValue),
@@ -298,7 +298,7 @@ export const financialTools = {
   },
 
   getRecurring(state: FinancialState) {
-    const active = state.recurring.filter(r => r.active);
+    const active = state.recurring.filter(r => r.status === 'active');
     const totalMonthly = active.reduce((sum, r) => sum + r.amount, 0);
     return {
       activeCount: active.length,
@@ -313,6 +313,7 @@ export const financialTools = {
       })),
     };
   },
+
 
   simulateGoalSavings(state: FinancialState, goalIdOrName?: string, monthsAhead: number = 6) {
     const goal = goalIdOrName
