@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Lock, 
   Mail, 
@@ -18,6 +18,21 @@ import { useAuth } from '../context/AuthContext';
 export const AuthPage: React.FC = () => {
   const { signIn, signUp, signInWithGoogle, resetPassword, isConfigured, bypassAuth } = useAuth();
 
+  // O fluxo OAuth redireciona de volta para a app mesmo quando falha, passando o
+  // motivo no fragmento da URL (ex.: #error=access_denied&error_description=...).
+  // Sem este tratamento o erro seria descartado silenciosamente pelo detectSessionInUrl.
+  const readOAuthError = (): string => {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('error=')) return '';
+
+    const params = new URLSearchParams(hash.slice(1));
+    const description = params.get('error_description') || params.get('error') || '';
+    return (
+      description.replace(/\+/g, ' ') ||
+      'Não foi possível entrar com o Google. Tente novamente.'
+    );
+  };
+
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,13 +41,20 @@ export const AuthPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState(readOAuthError);
   const [successMsg, setSuccessMsg] = useState('');
 
   const clearMessages = () => {
     setErrorMsg('');
     setSuccessMsg('');
   };
+
+  // Limpa o fragmento da URL para o erro nao reaparecer em um novo render.
+  useEffect(() => {
+    if (readOAuthError()) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +136,20 @@ export const AuthPage: React.FC = () => {
       setErrorMsg(error.message || 'Erro ao enviar e-mail de recuperação.');
     } else {
       setSuccessMsg('Enviamos um link de recuperação para o seu e-mail.');
+    }
+  };
+
+  const handleGoogle = async () => {
+    clearMessages();
+    setIsLoading(true);
+
+    const { error } = await signInWithGoogle();
+
+    // Em caso de sucesso o browser sai da pagina (redireciona para o Google),
+    // entao isLoading so e resetado quando algo falha de fato.
+    if (error) {
+      setIsLoading(false);
+      setErrorMsg(error.message || 'Erro ao entrar com o Google.');
     }
   };
 
@@ -372,8 +408,9 @@ export const AuthPage: React.FC = () => {
               {/* Login com Google */}
               <button
                 type="button"
-                onClick={() => signInWithGoogle()}
-                className="w-full py-3 rounded-2xl bg-[#14171D] hover:bg-[#1C2029] border border-[#222733] text-white font-semibold text-xs transition-all flex items-center justify-center space-x-2.5 active:scale-[0.99]"
+                onClick={handleGoogle}
+                disabled={isLoading}
+                className="w-full py-3 rounded-2xl bg-[#14171D] hover:bg-[#1C2029] border border-[#222733] text-white font-semibold text-xs transition-all flex items-center justify-center space-x-2.5 active:scale-[0.99] disabled:opacity-50"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
