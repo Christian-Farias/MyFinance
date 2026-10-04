@@ -39,7 +39,13 @@ export const PWAInstallPrompt: React.FC = () => {
   if (isInstalled || isDismissed || !deferredPrompt) return null;
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:w-96 z-40 p-4 rounded-2xl bg-[#0E0F13] border border-[#22242A] shadow-2xl flex items-start space-x-3.5 animate-slide-up">
+    <div
+      className="fixed right-4 left-4 md:left-auto md:w-96 z-30 p-4 rounded-2xl bg-[#0E0F13] border border-[#22242A] shadow-2xl flex items-start space-x-3.5 animate-slide-up"
+      style={{
+        /* On mobile: above the FAB and bottom nav */
+        bottom: 'calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom)) + 70px)',
+      }}
+    >
       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white shrink-0 shadow-md">
         <Smartphone size={20} />
       </div>

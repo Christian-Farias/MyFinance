@@ -38,7 +38,7 @@ export const MonthlyComparisonPage: React.FC = () => {
   const barColor = activeTab === 'expenses' ? '#FF5C5C' : activeTab === 'income' ? '#39D98A' : '#8B7CFF';
 
   return (
-    <div className="space-y-5 animate-fade-in pb-24 px-1">
+    <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="pt-2">

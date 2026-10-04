@@ -54,7 +54,8 @@ export const Sidebar: React.FC = () => {
   return (
     <aside 
       aria-label="Navegação desktop"
-      className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-[#08090B] border-r border-[#1D2026] p-5 shrink-0 z-30 select-none overflow-y-auto"
+      className="hidden md:flex flex-col w-64 sticky top-0 bg-[#08090B] border-r border-[#1D2026] p-5 shrink-0 z-10 select-none overflow-y-auto"
+      style={{ height: '100dvh' }}
     >
       {/* Brand Header */}
       <div className="flex items-center space-x-3 mb-7 px-2">

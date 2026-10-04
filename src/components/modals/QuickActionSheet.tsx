@@ -93,14 +93,15 @@ export const QuickActionSheet: React.FC = () => {
   ];
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+    <div
+      className="modal-overlay"
       onClick={() => setQuickActionOpen(false)}
     >
-      <div 
-        className="w-full sm:max-w-md bg-[#14171D] border border-[#222733] rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto"
+      <div
+        className="modal-panel w-full sm:max-w-md px-6 pt-5"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="bottom-sheet-handle md:hidden" />
         <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
           <div>
             <h3 className="text-base font-bold text-white">Ação Rápida</h3>

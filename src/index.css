@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════ */
 @theme {
   --color-bg-main: #050505;
   --color-bg-secondary: #08090B;
@@ -15,18 +18,77 @@
   --color-accent: #8B7CFF;
 }
 
-:root { color-scheme: dark; }
+/* ══════════════════════════════════════════════════
+   Z-INDEX HIERARCHY  (never use magic numbers)
+   base       → 0
+   sticky     → 10
+   dropdown   → 20
+   fab        → 30
+   bottom-nav → 40
+   overlay    → 50
+   modal      → 60
+   toast      → 70
+══════════════════════════════════════════════════ */
+:root {
+  color-scheme: dark;
 
-html, body {
+  /* Safe-area shorthands (populated by browser) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+
+  /* Bottom nav height — single source of truth */
+  --bottom-nav-h: 64px;
+
+  /* Content bottom clearance = nav + safe area + extra breathing */
+  --page-bottom-pad: calc(var(--bottom-nav-h) + var(--sab) + 16px);
+
+  /* Spacing scale */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+}
+
+/* ══════════════════════════════════════════════════
+   BASE
+══════════════════════════════════════════════════ */
+html {
+  /* dvh respects mobile browser chrome properly */
+  min-height: 100dvh;
+  background-color: #050505;
+}
+
+body {
   background-color: #050505;
   color: #F5F5F5;
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal overflow on any viewport */
   overflow-x: hidden;
-  min-height: 100vh;
+  max-width: 100vw;
+  min-height: 100dvh;
+  /* Respect safe areas on body level */
+  padding-left: var(--sal);
+  padding-right: var(--sar);
 }
 
+/* Prevent any child from causing horizontal overflow */
+#root {
+  overflow-x: hidden;
+  min-height: 100dvh;
+}
+
+/* ══════════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #1D2026; border-radius: 9999px; }
@@ -34,24 +96,75 @@ html, body {
 .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
-.safe-top  { padding-top: env(safe-area-inset-top, 0px); }
-.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* ══════════════════════════════════════════════════
+   SAFE AREA UTILITIES
+   Always use max() so a minimum padding is kept
+   even when safe-area-inset is 0.
+══════════════════════════════════════════════════ */
+.safe-top    { padding-top:    max(var(--sp-4), var(--sat)); }
+.safe-bottom { padding-bottom: max(var(--sp-3), var(--sab)); }
+.safe-left   { padding-left:   max(var(--sp-4), var(--sal)); }
+.safe-right  { padding-right:  max(var(--sp-4), var(--sar)); }
+.safe-x      { padding-left: max(var(--sp-4), var(--sal)); padding-right: max(var(--sp-4), var(--sar)); }
 
-.glass-nav {
-  background: rgba(5, 5, 5, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(29, 32, 38, 0.8);
+/* Used specifically on the bottom nav bar */
+.nav-safe-bottom {
+  padding-bottom: max(12px, var(--sab));
 }
 
+/* ══════════════════════════════════════════════════
+   LAYOUT — Page content padding
+   Every page gets bottom clearance so content
+   doesn't hide behind bottom nav.
+══════════════════════════════════════════════════ */
+.page-content {
+  /* On mobile: clear bottom nav + safe area */
+  padding-bottom: var(--page-bottom-pad);
+}
+
+/* On desktop (md+) bottom nav is hidden, so reset */
+@media (min-width: 768px) {
+  .page-content {
+    padding-bottom: var(--sp-8);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   GLASS NAV  (bottom navigation bar)
+══════════════════════════════════════════════════ */
+.glass-nav {
+  background: rgba(5, 5, 5, 0.94);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(29, 32, 38, 0.9);
+}
+
+/* ══════════════════════════════════════════════════
+   CARD SYSTEM
+══════════════════════════════════════════════════ */
 .glass-card { background: #0D0F12; border: 1px solid #1D2026; }
 
+.card {
+  background-color: #0D0F12;
+  border: 1px solid #1D2026;
+  border-radius: 20px;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+.card-hover:hover {
+  background-color: #121419;
+  border-color: #272B34;
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════════ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes scaleIn {
@@ -77,13 +190,26 @@ html, body {
 .animate-count-up { animation: countUp 0.4s ease-out forwards; }
 .animate-spin     { animation: spin 1s linear infinite; }
 
-.stagger > *:nth-child(1) { animation-delay: 0ms; }
-.stagger > *:nth-child(2) { animation-delay: 60ms; }
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay:   0ms; }
+.stagger > *:nth-child(2) { animation-delay:  60ms; }
 .stagger > *:nth-child(3) { animation-delay: 120ms; }
 .stagger > *:nth-child(4) { animation-delay: 180ms; }
 .stagger > *:nth-child(5) { animation-delay: 240ms; }
 .stagger > *:nth-child(6) { animation-delay: 300ms; }
 
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   SKELETON
+══════════════════════════════════════════════════ */
 .skeleton {
   background: linear-gradient(90deg, #0D0F12 25%, #1A1D22 50%, #0D0F12 75%);
   background-size: 400px 100%;
@@ -91,27 +217,18 @@ html, body {
   border-radius: 8px;
 }
 
-.card {
-  background-color: #0D0F12;
-  border: 1px solid #1D2026;
-  border-radius: 20px;
-  transition: border-color 0.18s ease, background-color 0.18s ease;
-}
-.card-hover:hover {
-  background-color: #121419;
-  border-color: #272B34;
-  cursor: pointer;
-}
-
+/* ══════════════════════════════════════════════════
+   TYPOGRAPHY SCALE
+══════════════════════════════════════════════════ */
 .num-xl {
-  font-size: clamp(2rem, 6vw, 2.75rem);
+  font-size: clamp(1.75rem, 5.5vw, 2.75rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
   color: #F5F5F5;
 }
 .num-lg {
-  font-size: clamp(1.375rem, 4vw, 1.75rem);
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: #F5F5F5;
@@ -130,10 +247,16 @@ html, body {
   color: #5F6570;
 }
 
-.progress-track { height: 4px; background: #1D2026; border-radius: 9999px; overflow: hidden; }
+/* ══════════════════════════════════════════════════
+   PROGRESS BARS
+══════════════════════════════════════════════════ */
+.progress-track       { height: 4px; background: #1D2026; border-radius: 9999px; overflow: hidden; }
 .progress-track-thick { height: 6px; background: #1D2026; border-radius: 9999px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 9999px; transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
 
+/* ══════════════════════════════════════════════════
+   PILLS / BADGES
+══════════════════════════════════════════════════ */
 .pill {
   display: inline-flex;
   align-items: center;
@@ -142,6 +265,8 @@ html, body {
   border-radius: 9999px;
   font-size: 11px;
   font-weight: 600;
+  /* Prevent pills from being interactive targets that are too small */
+  min-height: 22px;
 }
 .pill-positive { background: rgba(57, 217, 138, 0.12); color: #39D98A; }
 .pill-negative { background: rgba(255, 92, 92, 0.12);  color: #FF5C5C; }
@@ -149,59 +274,260 @@ html, body {
 .pill-neutral  { background: rgba(139, 145, 155, 0.10); color: #8B919B; }
 .pill-warning  { background: rgba(245, 158, 11, 0.12); color: #F59E0B; }
 
+/* ══════════════════════════════════════════════════
+   BOTTOM SHEETS & MODALS
+   Critical: must respect safe areas and dvh
+══════════════════════════════════════════════════ */
 .bottom-sheet-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 50;
   animation: fadeIn 0.2s ease-out;
+  /* Prevent touch events bleeding through */
+  touch-action: none;
 }
+
 .bottom-sheet-panel {
-  position: fixed; bottom: 0; left: 0; right: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: #0D0F12;
   border-top: 1px solid #1D2026;
   border-radius: 24px 24px 0 0;
   z-index: 51;
   animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  max-height: 90vh;
+  /* Max height uses dvh — respects browser chrome properly */
+  max-height: 92dvh;
   overflow-y: auto;
+  /* Safe area padding at bottom so content clears home indicator */
+  padding-bottom: max(20px, var(--sab));
+  /* Safe area padding on sides */
+  padding-left: max(0px, var(--sal));
+  padding-right: max(0px, var(--sar));
 }
 
-.fab {
-  position: fixed; right: 20px; bottom: 80px;
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  background: #8B7CFF; color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 20px rgba(139, 124, 255, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
-  z-index: 40;
+/* Modal drag handle */
+.bottom-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #272B34;
+  border-radius: 9999px;
+  margin: 0 auto 16px;
+  flex-shrink: 0;
 }
-.fab:hover  { transform: scale(1.06); box-shadow: 0 6px 24px rgba(139, 124, 255, 0.4); }
+
+/* Full-screen modal wrapper */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s ease-out;
+  /* Padding at top so modal doesn't cover Dynamic Island */
+  padding-top: max(48px, var(--sat));
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+    padding: var(--sp-4);
+  }
+}
+
+/* Modal panel inside overlay */
+.modal-panel {
+  width: 100%;
+  background: #14171D;
+  border: 1px solid #222733;
+  /* Mobile: bottom sheet style */
+  border-radius: 24px 24px 0 0;
+  /* Safe area at bottom */
+  padding-bottom: max(20px, var(--sab));
+  max-height: calc(92dvh - max(48px, var(--sat)));
+  overflow-y: auto;
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.6);
+  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+  .modal-panel {
+    border-radius: 24px;
+    max-height: min(90dvh, 680px);
+    max-width: 480px;
+    padding-bottom: var(--sp-6);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   FAB — Floating Action Button
+   Position must account for bottom nav + safe area
+══════════════════════════════════════════════════ */
+.fab {
+  position: fixed;
+  right: max(20px, var(--sar));
+  /* bottom = nav height + safe area + gap */
+  bottom: calc(var(--bottom-nav-h) + max(12px, var(--sab)) + 12px);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #8B7CFF;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(139, 124, 255, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 30;
+  /* Minimum touch target */
+  min-width: 44px;
+  min-height: 44px;
+}
+.fab:hover  { transform: scale(1.06); box-shadow: 0 6px 24px rgba(139, 124, 255, 0.45); }
 .fab:active { transform: scale(0.94); }
 
+/* ══════════════════════════════════════════════════
+   FORM INPUTS
+   font-size: 16px prevents iOS Safari zoom on focus
+══════════════════════════════════════════════════ */
 .input-field {
   width: 100%;
   background: #08090B;
   border: 1px solid #1D2026;
   border-radius: 12px;
+  /* min 44px height for touch targets */
   padding: 12px 16px;
-  color: #F5F5F5; font-size: 14px;
+  min-height: 44px;
+  color: #F5F5F5;
+  /* 16px prevents iOS Safari auto-zoom */
+  font-size: 16px;
   outline: none;
   transition: border-color 0.18s;
+  /* Prevent inputs from being wider than their container */
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .input-field::placeholder { color: #5F6570; }
 .input-field:focus { border-color: #8B7CFF; }
 
-.accent-left { border-left: 3px solid #8B7CFF; padding-left: 12px; }
+/* Apply to all native inputs/selects to prevent Safari zoom */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* Minimum touch target for interactive elements */
+button, a, [role="button"] {
+  min-height: 44px;
+  /* Don't force width — let layout handle */
+}
+
+/* But allow small inline pills/badges */
+.pill, .pill > *, .label-xs, .label-section {
+  min-height: unset;
+}
+
+/* ══════════════════════════════════════════════════
+   ACCENT BORDERS
+══════════════════════════════════════════════════ */
+.accent-left          { border-left: 3px solid #8B7CFF; padding-left: 12px; }
 .accent-left-positive { border-left-color: #39D98A; }
 .accent-left-negative { border-left-color: #FF5C5C; }
 .accent-left-warning  { border-left-color: #F59E0B; }
 
+/* ══════════════════════════════════════════════════
+   RECHARTS TOOLTIPS
+══════════════════════════════════════════════════ */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   background: #0D0F12 !important;
   border: 1px solid #1D2026 !important;
   border-radius: 12px !important;
   color: #F5F5F5 !important;
   font-size: 11px !important;
+}
+
+/* ══════════════════════════════════════════════════
+   PREVENT OVERFLOW IN CARDS / TEXT
+══════════════════════════════════════════════════ */
+.overflow-safe {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Numbers that could be long — truncate gracefully */
+.num-truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════
+   CHART CONTAINERS — prevent overflow
+══════════════════════════════════════════════════ */
+.chart-container {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════
+   TOAST POSITIONING
+   Top of screen, below safe area / Dynamic Island
+══════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  top: max(16px, var(--sat));
+  left: max(16px, var(--sal));
+  right: max(16px, var(--sar));
+  z-index: 70;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════
+   DROPDOWN — stays inside viewport
+══════════════════════════════════════════════════ */
+.dropdown-panel {
+  position: absolute;
+  z-index: 20;
+  background: #14171D;
+  border: 1px solid #222733;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  /* Cap height so it doesn't overflow viewport */
+  max-height: min(320px, 50dvh);
+  overflow-y: auto;
+}
+
+/* ══════════════════════════════════════════════════
+   LANDSCAPE MODE adjustments
+══════════════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal-panel,
+  .bottom-sheet-panel {
+    max-height: 95dvh;
+    border-radius: 16px;
+  }
+  :root {
+    --bottom-nav-h: 52px;
+  }
 }

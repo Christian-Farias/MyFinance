@@ -74,7 +74,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in pb-24 px-1">
+    <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="pt-2">

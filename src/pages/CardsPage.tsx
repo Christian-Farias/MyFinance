@@ -24,7 +24,7 @@ export const CardsPage: React.FC = () => {
   const barColor = usedPercent >= 90 ? '#FF5C5C' : usedPercent >= 70 ? '#F59E0B' : '#39D98A';
 
   return (
-    <div className="space-y-5 animate-fade-in pb-24 px-1">
+    <div className="page-content space-y-5 animate-fade-in px-0.5">
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">

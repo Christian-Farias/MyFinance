@@ -80,14 +80,15 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
   ];
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+    <div
+      className="modal-overlay"
       onClick={onClose}
     >
-      <div 
-        className="w-full sm:max-w-md bg-[#14171D] border border-[#222733] rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[85vh] overflow-y-auto animate-slide-up"
+      <div
+        className="modal-panel w-full sm:max-w-md px-5 sm:px-6 pt-5 sm:pt-6"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="bottom-sheet-handle md:hidden" />
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#222733]">
           <div>

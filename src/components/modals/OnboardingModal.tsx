@@ -49,7 +49,15 @@ export const OnboardingModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in"
+      style={{
+        paddingTop: 'max(16px, env(safe-area-inset-top))',
+        paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(16px, env(safe-area-inset-left))',
+        paddingRight: 'max(16px, env(safe-area-inset-right))',
+      }}
+    >
       <div className="w-full max-w-md bg-[#14171D] border border-[#222733] rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
         {step < slides.length ? (
           <div>

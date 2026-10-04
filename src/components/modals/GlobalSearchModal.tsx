@@ -63,12 +63,14 @@ export const GlobalSearchModal: React.FC = () => {
   if (!isGlobalSearchOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/85 backdrop-blur-md animate-fade-in"
+    <div
+      className="fixed inset-0 z-[60] flex items-start justify-center px-4 bg-black/85 backdrop-blur-md animate-fade-in"
+      style={{ paddingTop: 'max(64px, calc(env(safe-area-inset-top) + 48px))' }}
       onClick={() => setGlobalSearchOpen(false)}
     >
-      <div 
-        className="w-full max-w-xl bg-[#14171D] border border-[#222733] rounded-3xl p-5 shadow-2xl max-h-[80vh] flex flex-col"
+      <div
+        className="w-full max-w-xl bg-[#14171D] border border-[#222733] rounded-3xl p-5 shadow-2xl flex flex-col"
+        style={{ maxHeight: '80dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}

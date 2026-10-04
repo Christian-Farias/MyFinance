@@ -158,11 +158,13 @@ export const NewTransactionModal: React.FC = () => {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div 
-        className="w-full sm:max-w-lg bg-[#14171D] border border-[#222733] rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto"
+    <div className="modal-overlay" onClick={closeNewTxModal}>
+      <div
+        className="modal-panel w-full sm:max-w-lg px-5 sm:px-6 pt-5 sm:pt-6"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Drag handle — visible on mobile */}
+        <div className="bottom-sheet-handle md:hidden" />
         {/* Header */}
         <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#222733]">
           <h3 className="text-base sm:text-lg font-bold text-white">
@@ -245,7 +247,7 @@ export const NewTransactionModal: React.FC = () => {
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
                 autoFocus
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] focus:outline-none text-xl sm:text-2xl font-bold text-white placeholder-[#5F6570]"
+                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-[#1A1F29] border border-[#262C3A] focus:border-[#8B7CFF] focus:outline-none text-xl sm:text-2xl font-bold text-white placeholder-[#5F6570]" style={{ fontSize: '24px' }}
               />
             </div>
           </div>

@@ -57,7 +57,7 @@ export const CashFlowPage: React.FC = () => {
   }, [cashFlow]);
 
   return (
-    <div className="space-y-5 animate-fade-in pb-24 px-1">
+    <div className="page-content space-y-5 animate-fade-in px-0.5">
       {/* ── HEADER ── */}
       <div className="pt-2">
         <h1 className="text-xl font-bold text-white tracking-tight">Fluxo de Caixa & Saldo Projetado</h1>
