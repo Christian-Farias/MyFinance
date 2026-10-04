@@ -52,6 +52,10 @@ export const AuthPage: React.FC = () => {
         setErrorMsg('E-mail ou senha incorretos. Verifique seus dados.');
       } else if (error.message.includes('Email not confirmed')) {
         setErrorMsg('Por favor, confirme seu e-mail antes de acessar.');
+      } else if (error.message.includes('logins are disabled')) {
+        setErrorMsg('O login por e-mail está desativado no momento. Fale com o administrador.');
+      } else if (error.message.includes('Email rate limit')) {
+        setErrorMsg('Muitas tentativas seguidas. Aguarde alguns minutos e tente novamente.');
       } else {
         setErrorMsg(error.message || 'Erro ao realizar login.');
       }
@@ -166,7 +170,7 @@ export const AuthPage: React.FC = () => {
           </div>
         )}
 
-          {/* ── LOGIN & REGISTER VIEW ── */}
+        {/* ── LOGIN & REGISTER VIEW ── */}
         <div className="card p-6 border-[#222733] bg-[#0D0F12]">
           {/* Tabs de modo */}
           {signupEnabled ? (
