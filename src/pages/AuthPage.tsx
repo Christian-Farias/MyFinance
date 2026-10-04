@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 
 export const AuthPage: React.FC = () => {
   const { signIn, signUp, isConfigured, bypassAuth } = useAuth();
+  const signupEnabled = import.meta.env.VITE_ALLOW_SIGNUP === 'true';
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
@@ -60,6 +61,11 @@ export const AuthPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
+
+    if (!signupEnabled) {
+      setErrorMsg('O cadastro está fechado no momento. Fale com o administrador para criar sua conta.');
+      return;
+    }
 
     if (!name.trim() || !email.trim() || !password) {
       setErrorMsg('Por favor, preencha todos os campos obrigatórios.');
@@ -163,30 +169,34 @@ export const AuthPage: React.FC = () => {
           {/* ── LOGIN & REGISTER VIEW ── */}
         <div className="card p-6 border-[#222733] bg-[#0D0F12]">
           {/* Tabs de modo */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-[#14171D] rounded-2xl border border-[#222733] mb-6">
-            <button
-              type="button"
-              onClick={() => { clearMessages(); setMode('login'); }}
-              className={`py-2.5 text-xs font-bold rounded-xl transition-all ${
-                mode === 'login'
-                  ? 'bg-[#8B7CFF] text-white shadow-md'
-                  : 'text-[#8E95A3] hover:text-white'
-              }`}
-            >
-              Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => { clearMessages(); setMode('register'); }}
-              className={`py-2.5 text-xs font-bold rounded-xl transition-all ${
-                mode === 'register'
-                  ? 'bg-[#8B7CFF] text-white shadow-md'
-                  : 'text-[#8E95A3] hover:text-white'
-              }`}
-            >
-              Criar Conta
-            </button>
-          </div>
+          {signupEnabled ? (
+            <div className="grid grid-cols-2 gap-1 p-1 bg-[#14171D] rounded-2xl border border-[#222733] mb-6">
+              <button
+                type="button"
+                onClick={() => { clearMessages(); setMode('login'); }}
+                className={`py-2.5 text-xs font-bold rounded-xl transition-all ${
+                  mode === 'login'
+                    ? 'bg-[#8B7CFF] text-white shadow-md'
+                    : 'text-[#8E95A3] hover:text-white'
+                }`}
+              >
+                Entrar
+              </button>
+              <button
+                type="button"
+                onClick={() => { clearMessages(); setMode('register'); }}
+                className={`py-2.5 text-xs font-bold rounded-xl transition-all ${
+                  mode === 'register'
+                    ? 'bg-[#8B7CFF] text-white shadow-md'
+                    : 'text-[#8E95A3] hover:text-white'
+                }`}
+              >
+                Criar Conta
+              </button>
+            </div>
+          ) : (
+            <h2 className="text-lg font-bold text-white mb-4">Entrar na sua conta</h2>
+          )}
 
           <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
             {/* Campo Nome (Apenas Registro) */}
