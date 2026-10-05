@@ -60,15 +60,40 @@ export const AIAssistantPage: React.FC = () => {
   const [tab, setTab] = useState<'chat' | 'agents'>('chat');
   const [inputQuestion, setInputQuestion] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const platform = getPlatform();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'init_1',
       sender: 'assistant',
-      text: 'E aí! Sou o Neguin, seu assistente financeiro pessoal.\n\nAnaliso seus dados aqui mesmo, sem mandar nada pra nuvem — tudo fica entre a gente!\n\nComo posso te ajudar hoje?',
+      text: 'E aí! Sou o Neguin, seu assistente financeiro pessoal.\n\nAnaliso seus dados aqui mesmo, sem mandar nada pra nuvem — tudo fica entre a gente!',
+      timestamp: 'Agora',
+    },
+    {
+      id: 'pwa_guide',
+      sender: 'assistant',
+      text: getPWAInstallMessage(platform),
       timestamp: 'Agora',
     },
   ]);
 
+
+  function getPlatform(): 'ios' | 'android' | 'desktop' {
+  if (typeof window === 'undefined') return 'desktop';
+  const ua = navigator.userAgent || navigator.vendor || '';
+  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+  if (/android/i.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function getPWAInstallMessage(platform: 'ios' | 'android' | 'desktop'): string {
+  if (platform === 'android') {
+    return '📲 **Instale o app na tela inicial**\n\n1. Abra o app no Chrome/Edge\n2. Toque no menu (⋮) > "Adicionar à tela inicial" ou "Instalar app"\n3. Confirme o nome e toque em "Adicionar"';
+  }
+  if (platform === 'ios') {
+    return '📲 **Adicione à Tela de Início**\n\n1. Abra no Safari\n2. Toque no botão Compartilhar (□↑) na barra inferior\n3. Role e toque em "Adicionar à Tela de Início"\n4. Ajuste o nome e toque em "Adicionar"';
+  }
+  return '📲 **Instale o app no seu PC**\n\nNo Chrome/Edge, clique no ícone de instalar (ou ⋯ > Instalar MyFinance) que aparece na barra de endereços.';
+}
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
