@@ -32,7 +32,7 @@ export const VisualCreditCard: React.FC<VisualCreditCardProps> = ({
           </div>
           <div className="min-w-0">
             <h4 className="text-ink font-semibold text-sm sm:text-base leading-tight truncate">{card.name}</h4>
-            <span className="text-ink-faint text-[11px] sm:text-xs font-mono tracking-widest">•••• {card.lastDigits || '0000'}</span>
+            <span className="text-ink-faint text-xs sm:text-xs font-mono tracking-widest">•••• {card.lastDigits || '0000'}</span>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export const VisualCreditCard: React.FC<VisualCreditCardProps> = ({
 
       {/* Invoice Amount */}
       <div className="mb-4 sm:mb-5">
-        <span className="text-ink-faint text-[11px] sm:text-xs font-medium uppercase tracking-wider block mb-1">Fatura atual</span>
+        <span className="text-ink-faint text-xs sm:text-xs font-medium uppercase tracking-wider block mb-1">Fatura atual</span>
         <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
           {formatCurrency(currentInvoice || used)}
         </div>

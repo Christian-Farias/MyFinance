@@ -62,7 +62,7 @@ export const PWAInstallPrompt: React.FC = () => {
       <div className="flex-1 min-w-0 space-y-2">
         <div>
           <h4 className="text-xs font-bold text-ink leading-tight">Adicione à tela inicial</h4>
-          <p className="text-[11px] text-ink-faint mt-0.5 leading-snug">
+          <p className="text-xs text-ink-faint mt-0.5 leading-snug">
             {platform === 'ios'
               ? 'Abra no Safari e adicione este app à sua tela inicial.'
               : 'Tenha acesso rápido às suas finanças mesmo offline.'}
@@ -70,7 +70,7 @@ export const PWAInstallPrompt: React.FC = () => {
         </div>
 
         {showIOS && (
-          <div className="space-y-1.5 text-[11px] text-ink leading-snug">
+          <div className="space-y-1.5 text-xs text-ink leading-snug">
             <div className="flex items-start gap-1.5">
               <span className="font-semibold shrink-0">1.</span>
               <span>Toque no botão Compartilhar <Share2 size={11} className="inline" /> na barra inferior do Safari</span>

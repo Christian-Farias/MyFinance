@@ -245,7 +245,7 @@ export const DashboardPage: React.FC = () => {
             <img
               src="/logo.png"
               alt=""
-              className="w-10 h-10 rounded-2xl object-contain bg-black border border-active"
+              className="w-10 h-10 rounded-2xl object-contain"
             />
           </button>
         }
@@ -321,7 +321,7 @@ export const DashboardPage: React.FC = () => {
               <TrendingUp size={12} className="text-ink-muted group-hover:text-accent transition-colors shrink-0" />
               <span className="label-xs truncate">Investimentos</span>
             </div>
-            <span className="text-xs font-bold text-accent tracking-tight truncate max-w-full">{formatCurrency(totalInvested)}</span>
+            <span className="text-xs font-bold text-ink tracking-tight truncate max-w-full">{formatCurrency(totalInvested)}</span>
           </button>
         </div>
       </div>
@@ -342,7 +342,7 @@ export const DashboardPage: React.FC = () => {
             <p className="text-sm font-semibold text-ink leading-snug mb-1">
               {insight.emoji} {insight.headline}
             </p>
-            <p className="text-xs text-ink-muted leading-relaxed">{insight.sub}</p>
+            <p className="text-sm text-ink-muted leading-relaxed">{insight.sub}</p>
           </div>
           <ChevronRight size={16} className="text-ink-faint shrink-0 mt-0.5" aria-hidden="true" />
         </div>
@@ -375,7 +375,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-ink mb-0.5">{item.title}</p>
-                    <p className="text-xs text-ink-muted leading-relaxed line-clamp-2">{item.desc}</p>
+                    <p className="text-sm text-ink-muted leading-relaxed line-clamp-2">{item.desc}</p>
                   </div>
                   <ChevronRight size={14} className="text-ink-faint shrink-0 mt-1" />
                 </button>
@@ -410,7 +410,7 @@ export const DashboardPage: React.FC = () => {
                 >
                   <Icon size={16} style={{ color: qa.color }} strokeWidth={2} />
                 </div>
-                <span className="text-[11px] font-medium text-ink-muted text-center leading-tight truncate max-w-full px-0.5">{qa.label}</span>
+                <span className="text-xs font-medium text-ink-muted text-center leading-tight truncate max-w-full px-0.5">{qa.label}</span>
               </button>
             );
           })}

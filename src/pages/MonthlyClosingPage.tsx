@@ -83,7 +83,7 @@ export const MonthlyClosingPage: React.FC = () => {
       {/* ── HEADER & MONTH SELECTOR ── */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-xl font-bold text-ink tracking-tight">Fechamento Mensal</h1>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">Fechamento Mensal</h1>
           <p className="label-xs text-ink-muted mt-0.5">Resumo consolidado e histórico financeiro</p>
         </div>
 
@@ -107,7 +107,7 @@ export const MonthlyClosingPage: React.FC = () => {
       </div>
 
       {/* ── HERO CLOSING CARD ── */}
-      <div className="card p-5 sm:p-6 bg-gradient-to-br from-panel to-field border-active relative overflow-hidden">
+      <div className="card p-5 sm:p-6 bg-gradient-to-br from-panel to-field relative overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <span className="label-xs text-ink-muted">Resultado de {monthNames[month - 1]}</span>
           <span className={`pill ${isPositiveResult ? 'pill-positive' : 'pill-negative'}`}>
@@ -147,7 +147,7 @@ export const MonthlyClosingPage: React.FC = () => {
       {/* ── INSIGHT SUMMARY BOX ── */}
       <div className="card p-4 flex items-start space-x-3.5 border-accent/20 bg-accent/5">
         <Sparkles size={20} className="text-accent shrink-0 mt-0.5" />
-        <div className="text-xs leading-relaxed text-ink">
+        <div className="text-sm leading-relaxed text-ink">
           <strong className="text-ink block font-semibold mb-0.5">Diagnóstico do Período:</strong>
           {closing.totalIncome === 0 && closing.totalExpenses === 0 ? (
             'Nenhuma movimentação financeira registrada para este mês.'
@@ -186,7 +186,7 @@ export const MonthlyClosingPage: React.FC = () => {
             <span className="label-xs">Custo Médio Mensal</span>
           </div>
           <div className="text-sm font-bold text-info">{formatCurrency(costOfLiving.estimatedMonthlyCost)}</div>
-          <span className="text-[10px] text-ink-muted mt-0.5 block">Baseado em histórico & fixos</span>
+          <span className="text-[11px] text-ink-muted mt-0.5 block">Baseado em histórico & fixos</span>
         </div>
       </div>
 

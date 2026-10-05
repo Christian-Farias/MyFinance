@@ -67,7 +67,7 @@ export const InvestmentsPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Investimentos</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Investimentos</h1>
         <button
           onClick={() => { setInvestmentToEdit(undefined); setIsModalOpen(true); }}
           className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
@@ -168,7 +168,7 @@ export const InvestmentsPage: React.FC = () => {
             <p className="label-xs leading-relaxed mb-5">Adicione seus investimentos para acompanhar a evolução.</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
+              className="btn btn-primary"
             >
               Adicionar ativo
             </button>
@@ -186,7 +186,7 @@ export const InvestmentsPage: React.FC = () => {
                     <div className="flex items-center space-x-2 mb-0.5">
                       <h4 className="text-xs font-bold text-ink truncate">{inv.assetName}</h4>
                       {inv.ticker && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-lg bg-edge text-ink-muted">
+                        <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-lg bg-edge text-ink-muted">
                           {inv.ticker}
                         </span>
                       )}
@@ -197,8 +197,8 @@ export const InvestmentsPage: React.FC = () => {
                   </div>
 
                   <div className="text-right shrink-0 ml-3">
-                    <div className="text-xs font-bold text-ink">{formatCurrency(inv.currentValue)}</div>
-                    <span className={`text-[11px] font-semibold ${isProfit ? 'text-positive' : 'text-negative'}`}>
+                    <div className="text-sm font-bold text-ink">{formatCurrency(inv.currentValue)}</div>
+                    <span className={`text-xs font-semibold ${isProfit ? 'text-positive' : 'text-negative'}`}>
                       {isProfit ? '+' : ''}{inv.yieldPercentage.toFixed(2)}%
                     </span>
                   </div>

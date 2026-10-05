@@ -113,7 +113,7 @@ export const AlertsPage: React.FC = () => {
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-xl font-bold text-ink tracking-tight">Feed de Inteligência</h1>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">Feed de Inteligência</h1>
           <p className="label-xs mt-0.5">Insights proativos gerados pelos seus agentes locais.</p>
         </div>
         {alerts.length > 0 && (
@@ -139,7 +139,7 @@ export const AlertsPage: React.FC = () => {
             onClick={() => setFilter(t.key as any)}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
               filter === t.key
-                ? 'bg-accent text-on-accent shadow-sm shadow-accent/20'
+                ? 'bg-accent text-on-accent'
                 : 'bg-surface-raised border border-edge text-ink-muted hover:text-ink'
             }`}
           >
@@ -166,22 +166,22 @@ export const AlertsPage: React.FC = () => {
                       <p className="label-xs text-ink-muted">{insight.agentName} • {insight.category || 'Geral'}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md border ${getPriorityBadge(insight.priority)}`}>
+                  <span className={`px-2 py-0.5 text-[11px] font-bold rounded-md border ${getPriorityBadge(insight.priority)}`}>
                     {insight.priority}
                   </span>
                 </div>
 
-                <p className="text-xs text-ink leading-relaxed">{insight.summary}</p>
+                <p className="text-sm text-ink leading-relaxed">{insight.summary}</p>
 
                 {/* Explainability section */}
                 {isExpanded && (
-                  <div className="p-3 bg-surface-raised rounded-xl border border-active text-[11px] text-ink-muted space-y-1 animate-fade-in">
+                  <div className="p-3 bg-surface-raised rounded-xl border border-active text-xs text-ink-muted space-y-1 animate-fade-in">
                     <p className="font-semibold text-ink flex items-center space-x-1">
                       <Info size={12} className="text-accent" />
                       <span>Por que estou vendo isso?</span>
                     </p>
                     <p className="leading-relaxed">{insight.explanation}</p>
-                    <p className="text-[10px] text-ink-faint pt-1">Confiança da Análise: {insight.confidence}</p>
+                    <p className="text-[11px] text-ink-faint pt-1">Confiança da Análise: {insight.confidence}</p>
                   </div>
                 )}
 
@@ -189,7 +189,7 @@ export const AlertsPage: React.FC = () => {
                 <div className="flex items-center justify-between pt-1 border-t border-edge-strong">
                   <button
                     onClick={() => setExpandedInsightId(isExpanded ? null : insight.id)}
-                    className="text-[11px] font-semibold text-ink-muted hover:text-ink flex items-center space-x-1"
+                    className="text-xs font-semibold text-ink-muted hover:text-ink flex items-center space-x-1"
                   >
                     <Info size={12} />
                     <span>{isExpanded ? 'Ocultar detalhes' : 'Por que estou vendo isso?'}</span>
@@ -207,7 +207,7 @@ export const AlertsPage: React.FC = () => {
                     {insight.actionUrl && (
                       <button
                         onClick={() => navigate(insight.actionUrl!)}
-                        className="px-3 py-1 rounded-xl bg-accent text-on-accent text-[11px] font-bold flex items-center space-x-1 hover:bg-accent transition-all"
+                        className="px-3 py-1 rounded-full bg-accent text-on-accent text-xs font-bold flex items-center space-x-1 hover:bg-accent-hover transition-all"
                       >
                         <span>{insight.actionLabel || 'Ver'}</span>
                         <ArrowRight size={12} />
@@ -251,12 +251,12 @@ export const AlertsPage: React.FC = () => {
                         {alert.title}
                         {isUnread && <span className="sr-only"> (não lido)</span>}
                       </p>
-                      <time className="text-[10px] text-ink-faint shrink-0">{formatAlertDate(alert.date)}</time>
+                      <time className="text-[11px] text-ink-faint shrink-0">{formatAlertDate(alert.date)}</time>
                     </div>
-                    <p className="text-[11px] text-ink-muted leading-relaxed">{alert.message}</p>
+                    <p className="text-sm text-ink-muted leading-relaxed">{alert.message}</p>
 
                     {isExpanded && (
-                      <p className="text-[11px] text-ink-faint leading-relaxed animate-fade-in">
+                      <p className="text-xs text-ink-faint leading-relaxed animate-fade-in">
                         {visual.why}
                       </p>
                     )}
@@ -265,7 +265,7 @@ export const AlertsPage: React.FC = () => {
                       <button
                         onClick={() => setExpandedAlertId(isExpanded ? null : alert.id)}
                         aria-expanded={isExpanded}
-                        className="text-[11px] font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                        className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1"
                       >
                         <Info size={11} />
                         <span>Por que estou vendo isso?</span>
@@ -278,7 +278,7 @@ export const AlertsPage: React.FC = () => {
                             if (isUnread) void markAlertAsRead(alert.id);
                             if (url) navigate(url);
                           }}
-                          className="text-[11px] font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                          className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1"
                         >
                           <span>{visual.action}</span>
                           <ArrowRight size={11} />
@@ -288,7 +288,7 @@ export const AlertsPage: React.FC = () => {
                       {isUnread && (
                         <button
                           onClick={() => void markAlertAsRead(alert.id)}
-                          className="text-[11px] font-semibold text-ink-faint hover:text-ink hover:underline"
+                          className="text-xs font-semibold text-ink-faint hover:text-ink hover:underline"
                         >
                           Marcar como lido
                         </button>

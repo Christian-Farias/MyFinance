@@ -106,7 +106,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Configurações</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Configurações</h1>
       </div>
 
       {/* ── APP ABOUT & LOGO ── */}
@@ -114,12 +114,12 @@ export const SettingsPage: React.FC = () => {
         <img 
           src="/logo.png" 
           alt="MyFinance" 
-          className="w-14 h-14 rounded-2xl object-contain bg-black border border-active shadow-md shrink-0" 
+          className="w-14 h-14 rounded-2xl object-contain shadow-md shrink-0" 
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2">
             <h3 className="text-base font-bold text-ink tracking-tight">MyFinance</h3>
-            <span className="pill pill-accent text-[10px]">PWA v2.0</span>
+            <span className="pill pill-accent text-[11px]">PWA v2.0</span>
           </div>
           <p className="text-xs text-ink-muted mt-0.5">Gestão financeira pessoal moderna e offline-first.</p>
         </div>
@@ -196,7 +196,7 @@ export const SettingsPage: React.FC = () => {
            ir: o app é dark-only e pt-BR. ── */}
       <div className="card p-4 flex items-start gap-3">
         <Info size={16} className="text-ink-faint shrink-0 mt-0.5" aria-hidden="true" />
-        <div className="text-xs text-ink-muted leading-relaxed min-w-0">
+        <div className="text-sm text-ink-muted leading-relaxed min-w-0">
           <p>
             <span className="font-semibold text-ink">Aparência:</span> Escuro{' '}
             <span className="text-ink-faint">(único tema)</span>
@@ -282,7 +282,7 @@ export const SettingsPage: React.FC = () => {
               <AlertTriangle size={16} />
               <span>Tem certeza que deseja apagar todos os dados?</span>
             </div>
-            <p className="text-xs text-ink-muted leading-relaxed">
+            <p className="text-sm text-ink-muted leading-relaxed">
               Esta ação excluirá todas as transações, contas, cartões e orçamentos do banco local do seu dispositivo.
             </p>
             <div className="flex space-x-2">

@@ -32,11 +32,11 @@ export const AIResponseVisual: React.FC<AIResponseVisualProps> = ({ visual }) =>
         <ul className="space-y-2.5">
           {visual.items!.map((item, index) => (
             <li key={`${item.label}-${index}`} className="space-y-1">
-              <div className="flex justify-between gap-2 text-[11px] font-medium text-ink">
+              <div className="flex justify-between gap-2 text-xs font-medium text-ink">
                 <span className="min-w-0">
                   {item.label}
                   {item.subtitle && (
-                    <span className="block text-[10px] text-ink-faint font-normal">
+                    <span className="block text-[11px] text-ink-faint font-normal">
                       {item.subtitle}
                     </span>
                   )}
@@ -75,7 +75,7 @@ export const AIResponseVisual: React.FC<AIResponseVisualProps> = ({ visual }) =>
         const clamped = Math.min(100, Math.max(0, visual.progress.percentage));
         return (
         <div className="space-y-1.5">
-          <div className="flex justify-between gap-2 text-[11px] font-medium">
+          <div className="flex justify-between gap-2 text-xs font-medium">
             <span className="text-ink tabular-nums">
               {visual.progress.formattedCurrent}
             </span>
@@ -96,7 +96,7 @@ export const AIResponseVisual: React.FC<AIResponseVisualProps> = ({ visual }) =>
               style={{ width: `${clamped}%` }}
             />
           </div>
-          <p className="text-[10px] text-right text-ink-faint font-semibold tabular-nums">
+          <p className="text-[11px] text-right text-ink-faint font-semibold tabular-nums">
             {visual.progress.percentage.toFixed(0)}% concluído
           </p>
         </div>
@@ -109,7 +109,7 @@ export const AIResponseVisual: React.FC<AIResponseVisualProps> = ({ visual }) =>
           {visual.breakdown!.map((row, index) => (
             <div
               key={`${row.label}-${index}`}
-              className="flex justify-between gap-2 text-[11px] py-1 border-b border-edge-subtle last:border-b-0"
+              className="flex justify-between gap-2 text-xs py-1 border-b border-edge-subtle last:border-b-0"
             >
               <dt className="text-ink-muted min-w-0">{row.label}</dt>
               <dd

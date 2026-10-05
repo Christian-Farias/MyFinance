@@ -111,7 +111,7 @@ export const GlobalSearchModal: React.FC = () => {
           {primary}
         </span>
         {secondary && (
-          <span className="block truncate text-[11px] text-ink-muted">
+          <span className="block truncate text-xs text-ink-muted">
             {secondary}
           </span>
         )}

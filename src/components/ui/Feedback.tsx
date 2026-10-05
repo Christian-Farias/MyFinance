@@ -35,7 +35,7 @@ export function PageHeader({ title, eyebrow, subtitle, action, aside, leading }:
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-xs text-ink-muted leading-relaxed">
+            <p className="mt-1 text-sm text-ink-muted leading-relaxed">
               {subtitle}
             </p>
           )}
@@ -64,9 +64,12 @@ export interface EmptyStateProps {
 }
 
 const TONE_CLASS = {
-  accent: 'bg-[rgb(139_124_255/0.10)] text-accent',
-  positive: 'bg-[rgb(57_217_138/0.10)] text-positive',
-  warning: 'bg-[rgb(245_158_11/0.10)] text-warning',
+  /* These bypassed the token scale, so all three still carried the
+     pre-Inter palette (purple / mint / amber) and silently ignored
+     every theme change. */
+  accent: 'bg-accent-subtle text-accent',
+  positive: 'bg-positive-subtle text-positive',
+  warning: 'bg-warning-subtle text-warning',
   neutral: 'bg-surface-raised text-ink-muted',
 } as const;
 
@@ -95,7 +98,7 @@ export function EmptyState({
       </div>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
       {description && (
-        <p className="mx-auto mt-2 max-w-xs text-xs text-ink-muted leading-relaxed">
+        <p className="mx-auto mt-2 max-w-xs text-sm text-ink-muted leading-relaxed">
           {description}
         </p>
       )}
@@ -130,7 +133,7 @@ export function ErrorState({
         </svg>
       </div>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      <p className="mx-auto mt-2 max-w-xs text-xs text-ink-muted leading-relaxed">
+      <p className="mx-auto mt-2 max-w-xs text-sm text-ink-muted leading-relaxed">
         {description}
       </p>
       {onRetry && (

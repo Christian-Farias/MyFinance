@@ -121,7 +121,7 @@ export const AuthPage: React.FC = () => {
           <img 
             src="/logo.png" 
             alt="MyFinance" 
-            className="relative w-16 h-16 rounded-2xl object-contain bg-black border border-active shadow-xl"
+            className="relative w-16 h-16 rounded-2xl object-contain shadow-xl"
           />
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-ink">MyFinance</h1>
@@ -139,16 +139,16 @@ export const AuthPage: React.FC = () => {
               <Sparkles size={16} />
               <span>Configuração do Supabase</span>
             </div>
-            <p className="text-[11px] leading-relaxed text-ink-muted">
+            <p className="text-sm leading-relaxed text-ink-muted">
               Para conectar o login em nuvem, adicione suas credenciais no arquivo <code className="bg-black/50 px-1 py-0.5 rounded text-accent">.env</code>:
             </p>
-            <pre className="p-2 rounded-xl bg-black/60 text-[10px] text-positive font-mono overflow-x-auto">
+            <pre className="p-2 rounded-xl bg-black/60 text-[11px] text-positive font-mono overflow-x-auto">
               VITE_SUPABASE_URL=...&#10;VITE_SUPABASE_ANON_KEY=...
             </pre>
             <button
               type="button"
               onClick={bypassAuth}
-              className="w-full py-2 px-3 rounded-xl bg-accent/20 hover:bg-accent/30 text-accent text-xs font-bold transition-all text-center mt-1"
+              className="btn btn-accent-ghost w-full"
             >
               Continuar no Modo Local (Offline) →
             </button>
@@ -171,7 +171,7 @@ export const AuthPage: React.FC = () => {
         )}
 
         {/* ── LOGIN & REGISTER VIEW ── */}
-        <div className="card p-6 border-active bg-surface">
+        <div className="card p-6">
           {/* Tabs de modo */}
           {signupEnabled ? (
             <div className="grid grid-cols-2 gap-1 p-1 bg-panel rounded-2xl border border-active mb-6">
@@ -287,7 +287,7 @@ export const AuthPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-2xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-sm shadow-lg shadow-accent/20 transition-all flex items-center justify-center space-x-2 active:scale-[0.99] disabled:opacity-50 mt-2"
+              className="btn btn-primary w-full space-x-2 active:scale-[0.99] mt-2"
             >
               <span>
                 {isLoading 
@@ -301,7 +301,7 @@ export const AuthPage: React.FC = () => {
       </div>
 
       {/* ── FOOTER DE SEGURANÇA ── */}
-      <div className="w-full max-w-sm mx-auto flex items-center justify-center space-x-1.5 text-[11px] text-ink-faint pt-2">
+      <div className="w-full max-w-sm mx-auto flex items-center justify-center space-x-1.5 text-xs text-ink-faint pt-2">
         <ShieldCheck size={14} className="text-positive" />
         <span>Seus dados são protegidos com criptografia ponta a ponta.</span>
       </div>

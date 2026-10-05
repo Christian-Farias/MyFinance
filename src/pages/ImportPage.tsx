@@ -129,7 +129,7 @@ export const ImportPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Importar extrato</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Importar extrato</h1>
         <p className="label-xs mt-0.5">Traga seus dados de bancos e cartões sem pagar nada.</p>
       </div>
 
@@ -206,7 +206,7 @@ export const ImportPage: React.FC = () => {
             <div className="space-y-2.5 text-xs text-ink-muted">
               {['Selecione o arquivo exportado pelo seu banco', 'O sistema identifica e categoriza as transações', 'Você confere e confirma a importação'].map((text, i) => (
                 <div key={i} className="flex items-center space-x-3">
-                  <span className="w-5 h-5 rounded-full bg-edge text-ink flex items-center justify-center font-bold text-[10px] shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-edge text-ink flex items-center justify-center font-bold text-[11px] shrink-0">
                     {i + 1}
                   </span>
                   <span>{text}</span>
@@ -263,7 +263,7 @@ export const ImportPage: React.FC = () => {
             <button
               onClick={handleGeneratePreview}
               disabled={isProcessing}
-              className="flex-1 py-2.5 px-5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
+              className="btn btn-primary flex-1"
             >
               Visualizar transações →
             </button>
@@ -310,7 +310,7 @@ export const ImportPage: React.FC = () => {
                   <h5 className="font-semibold text-ink truncate">{item.description}</h5>
                   <span className="label-xs">{formatDateBR(item.date)}</span>
                   {item.isDuplicate && (
-                    <span className="ml-2 text-[10px] text-warning font-semibold">(Possível duplicidade)</span>
+                    <span className="ml-2 text-[11px] text-warning font-semibold">(Possível duplicidade)</span>
                   )}
                 </div>
                 <span className={`font-bold ${item.type === 'income' ? 'text-positive' : 'text-ink'}`}>
@@ -330,7 +330,7 @@ export const ImportPage: React.FC = () => {
             <button
               onClick={handleConfirmImport}
               disabled={isProcessing}
-              className="flex-1 py-2.5 px-5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent transition-colors"
+              className="btn btn-primary flex-1"
             >
               {isProcessing ? 'Importando...' : `Confirmar importação de ${previews.length} itens`}
             </button>

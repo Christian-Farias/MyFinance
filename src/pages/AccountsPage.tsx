@@ -38,7 +38,7 @@ export const AccountsPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Contas</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Contas</h1>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => openNewTxModal('transfer')}
@@ -76,7 +76,7 @@ export const AccountsPage: React.FC = () => {
           <p className="label-xs leading-relaxed mb-5">Adicione suas contas bancárias para acompanhar seus saldos.</p>
           <button
             onClick={() => setIsAccountModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
+            className="btn btn-primary"
           >
             Adicionar conta
           </button>

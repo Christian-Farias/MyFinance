@@ -14,7 +14,7 @@ export const ProtectedRoute: React.FC = () => {
           <img
             src="/logo.png"
             alt="Carregando..."
-            className="relative w-14 h-14 rounded-2xl object-contain bg-black border border-active shadow-lg"
+            className="relative w-14 h-14 rounded-2xl object-contain shadow-lg"
           />
         </div>
         <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />

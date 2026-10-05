@@ -77,13 +77,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           alt=""
           width={32}
           height={32}
-          className="w-8 h-8 rounded-full object-contain bg-black border border-active shrink-0 mb-1"
+          className="w-8 h-8 rounded-full object-contain shrink-0 mb-1"
         />
       )}
 
       <div className="max-w-[88%] min-w-0">
         <div
-          className={`px-4 py-3 rounded-3xl text-xs leading-relaxed ${
+          className={`px-4 py-3 rounded-3xl text-sm leading-relaxed ${
             isUser
               ? 'bg-accent text-on-accent rounded-br-sm'
               : 'bg-panel border border-active text-ink rounded-bl-sm'
@@ -97,7 +97,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <button
               type="button"
               onClick={() => onRetry(message.retryQuestion!)}
-              className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-field hover:bg-active text-ink text-[11px] font-semibold transition-colors border border-edge-strong"
+              className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-field hover:bg-active text-ink text-xs font-semibold transition-colors border border-edge-strong"
             >
               <RotateCcw size={12} aria-hidden="true" />
               <span>Tentar novamente</span>
@@ -127,7 +127,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   key={`${suggestion}-${index}`}
                   type="button"
                   onClick={() => onSuggest(suggestion)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-field hover:bg-active text-accent text-[11px] font-semibold transition-colors border border-edge-strong"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-field hover:bg-active text-accent text-xs font-semibold transition-colors border border-edge-strong"
                 >
                   <span>{suggestion}</span>
                   <ArrowRight size={10} aria-hidden="true" />
@@ -138,7 +138,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </div>
 
         <p
-          className={`mt-1 px-1 text-[10px] text-ink-faint ${
+          className={`mt-1 px-1 text-[11px] text-ink-faint ${
             isUser ? 'text-right' : ''
           }`}
         >

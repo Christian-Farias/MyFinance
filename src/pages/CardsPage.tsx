@@ -41,7 +41,7 @@ export const CardsPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Cartões</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Cartões</h1>
         <button
           onClick={() => { setCardToEdit(undefined); setIsCardModalOpen(true); }}
           className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
@@ -60,7 +60,7 @@ export const CardsPage: React.FC = () => {
           <p className="label-xs leading-relaxed mb-5">Adicione seu cartão para acompanhar limites e faturas.</p>
           <button
             onClick={() => setIsCardModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
+            className="btn btn-primary"
           >
             Adicionar cartão
           </button>
@@ -99,7 +99,7 @@ export const CardsPage: React.FC = () => {
           {activeCard && (
             <div className="card p-5">
               <p className="label-section mb-4">Uso do limite</p>
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div>
                   <p className="label-xs mb-1">Fatura atual</p>
                   <p className="text-sm font-bold text-negative">{formatCurrency(invoiceAmount)}</p>
@@ -195,7 +195,7 @@ export const CardsPage: React.FC = () => {
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-ink">{formatCurrency(tx.amount)}</span>
+                      <span className="text-sm font-bold text-ink">{formatCurrency(tx.amount)}</span>
                       <ChevronRight size={13} className="text-ink-faint" />
                     </div>
                   </button>

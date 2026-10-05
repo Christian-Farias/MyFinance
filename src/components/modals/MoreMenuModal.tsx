@@ -112,7 +112,7 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
 
         {menuSections.map((sec) => (
           <div key={sec.title}>
-            <h3 className="text-[11px] font-bold text-ink-faint uppercase tracking-wider block mb-2 px-1">
+            <h3 className="text-xs font-bold text-ink-faint uppercase tracking-wider block mb-2 px-1">
               {sec.title}
             </h3>
             <div className="space-y-1.5">
@@ -135,12 +135,12 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
                             {item.label}
                           </span>
                           {item.badge && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-negative-strong/20 text-negative-strong">
+                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-negative-strong/20 text-negative-strong">
                               {item.badge}
                             </span>
                           )}
                         </span>
-                        <span className="block text-[11px] text-ink-muted truncate">{item.desc}</span>
+                        <span className="block text-xs text-ink-muted truncate">{item.desc}</span>
                       </span>
                     </span>
 

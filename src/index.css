@@ -38,13 +38,21 @@
 
   /* ── Borders ────────────────────────────────────────
      Inter keeps dividers light on dark so they read as a
-     drawn line, not a gap. These carry no information on
-     their own — separation comes from the surface ramp.
-     ────────────────────────────────────────────────── */
+     drawn line, not a gap. Separators carry no information
+     on their own — separation comes from the surface ramp.
+
+     --color-edge-field is the exception. WCAG 1.4.11 wants
+     3:1 on anything required to identify a control, and an
+     input qualifies: its fill (#1D1D1D) sits at 1.14:1 on the
+     page and 1.24:1 inside a modal, so the border is the only
+     thing delineating it. #787878 is the lightest grey that
+     clears 3:1 against all four surfaces; #757575 reached
+     only 2.95:1 inside a modal, where NewTransactionModal's
+     fields actually live. */
   --color-edge: #2A2A2A;
   --color-edge-subtle: #212121;
   --color-edge-strong: #3D3D3D;
-  --color-edge-field: #3D3D3D;
+  --color-edge-field: #787878;
 
   /* ── Form fields ───────────────────────────────────*/
   --color-field: #1D1D1D;
@@ -90,6 +98,9 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-2xl: 24px;
+  /* Inter reserves full rounding for anything actionable: a pill reads
+     as a control, a 24px radius reads as a card. */
+  --radius-pill: 9999px;
 
   /* ── Focus ──────────────────────────────────────────*/
   --focus-ring-width: 2px;
@@ -175,6 +186,13 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Tabular figures app-wide. Inter's proportional digits change width
+     per glyph, so a column of amounts ("R$ 1.240,00" next to
+     "R$ 89,90") drifts out of alignment and updates animate sideways as
+     values change — the classic tell of a finance screen that was not
+     designed as one. Before this, only AIResponseVisual opted in. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   /* Prevent horizontal overflow on any viewport */
   overflow-x: hidden;
   max-width: 100vw;
@@ -903,29 +921,39 @@ select[aria-invalid="true"]:focus-visible {
   border: 1px solid var(--color-edge);
 }
 
+/* ── CARDS ────────────────────────────────────────
+   Banco Inter separates surfaces by background step and
+   reserves shadow for things that genuinely float. So a card
+   carries NO outline: the #161616 fill against the #0D0D0D page
+   is what separates it, reinforced by a 1px top highlight —
+   the standard trick for a lit edge on a dark plane, which a
+   uniform hairline border cannot fake (it lit the bottom edge
+   too, and read as a wireframe box).
+
+   The 1px inset costs nothing and is what makes the card look
+   like a physical panel rather than a rectangle of paint.     */
 .card {
   background-color: var(--color-surface);
-  border: 1px solid var(--color-edge);
   border-radius: var(--radius-xl);
-  transition: border-color var(--duration-base) ease,
-              background-color var(--duration-base) ease;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  transition: background-color var(--duration-base) ease,
+              box-shadow var(--duration-base) ease;
 }
 .card-hover:hover {
-  background-color: var(--color-surface-raised);
-  border-color: var(--color-active);
+  background-color: var(--color-hover);
   cursor: pointer;
 }
 
-/* Interactive card — keyboard users get the same affordance. */
+/* Interactive card — keyboard users get the same affordance via
+   the global :focus-visible outline, so hover only needs the fill. */
 .card-interactive {
   cursor: pointer;
-  transition: border-color var(--duration-base) ease,
-              background-color var(--duration-base) ease,
+  transition: background-color var(--duration-base) ease,
+              box-shadow var(--duration-base) ease,
               transform var(--duration-fast) ease;
 }
 .card-interactive:hover {
-  background-color: var(--color-surface-raised);
-  border-color: var(--color-active);
+  background-color: var(--color-hover);
 }
 
 /* ── BUTTONS ─────────────────────────────────────────
@@ -940,11 +968,13 @@ select[aria-invalid="true"]:focus-visible {
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  min-height: 44px;
-  padding: 0 var(--sp-4);
+  /* 48px is Inter's action height and clears the 44px AA target with
+     room for the focus ring without shifting neighbours. */
+  min-height: 48px;
+  padding: 0 var(--sp-5);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  font-size: 13px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -965,7 +995,8 @@ select[aria-invalid="true"]:focus-visible {
 }
 
 /* Primary — filled accent. Ink is --color-on-accent
-   (6.02:1); `text-white` here was 3.27:1 and failed. */
+   (6.92:1); `text-white` on the orange fill is 2.61:1
+   and fails AA, so the fill carries near-black. */
 .btn-primary {
   background-color: var(--color-accent);
   color: var(--color-on-accent);
@@ -975,12 +1006,12 @@ select[aria-invalid="true"]:focus-visible {
 /* Neutral filled — for secondary emphasis on accent CTAs. */
 .btn-secondary {
   background-color: var(--color-hover);
-  border-color: var(--color-edge-field);
+  border-color: var(--color-edge-strong);
   color: var(--color-ink);
 }
 .btn-secondary:hover:not(:disabled) {
   background-color: var(--color-active);
-  border-color: #2F3542;
+  border-color: var(--color-edge-strong);
 }
 
 /* Ghost — transparent until hovered. */
@@ -1085,7 +1116,7 @@ select[aria-invalid="true"]:focus-visible {
   padding: 10px var(--sp-4);
   padding-right: var(--sp-8);
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E95A3' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23BDBDBD' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right var(--sp-3) center;
   cursor: pointer;
@@ -1222,13 +1253,28 @@ select[aria-invalid="true"]:focus-visible {
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
 }
+/* ── TYPE SCALE ───────────────────────────────────
+   Follows the NuDS ramp (caption 12 / body2 14 /
+   body1 16 / subtitle 18 / screen-title 24).
+   In Tailwind terms the app now resolves to:
+
+     text-xs / label-xs   12px  caption, metadata
+     text-sm              14px  body, list-row titles, amounts
+     text-base            16px  emphasised body
+     text-2xl             24px  page <h1>
+     .num-lg / .num-xl    20-44px  financial figures
+
+   The audit that produced this scale found 178 uses of
+   `text-xs` against a single `text-4xl` in the whole app:
+   everything was 10-12px, so nothing had hierarchy.
+   ────────────────────────────────────────────────── */
 .label-xs {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-ink-muted);
   letter-spacing: 0.02em;
 }
-/* Was #5F6570 = 3.29:1. Now inherits the 4.59:1 token. */
+/* Was #5F6570 = 3.29:1. Now inherits the 7.2:1 token. */
 .label-section {
   font-size: 11px;
   font-weight: 700;

@@ -43,16 +43,12 @@ export const AIEmptyState: React.FC<AIEmptyStateProps> = ({
   return (
     <div className="flex flex-col items-center justify-center text-center py-8 px-1">
       <div className="relative mb-5">
-        <div
-          className="absolute inset-0 bg-accent/25 rounded-3xl blur-xl"
-          aria-hidden="true"
-        />
         <img
           src="/logo.png"
           alt=""
           width={64}
           height={64}
-          className="relative w-16 h-16 rounded-3xl object-contain bg-black border border-active shadow-lg shadow-accent/10"
+          className="w-16 h-16 rounded-3xl object-contain"
         />
         <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-positive border-2 border-base" />
       </div>
@@ -62,12 +58,12 @@ export const AIEmptyState: React.FC<AIEmptyStateProps> = ({
         {firstName ? `, ${firstName}` : ''}
       </h2>
 
-      <p className="mt-1.5 text-xs text-ink-muted max-w-[38ch] leading-relaxed">
+      <p className="mt-1.5 text-sm text-ink-muted max-w-[38ch] leading-relaxed">
         Pergunte sobre seus gastos, contas, metas ou cartões. Posso registrar
         transações e montar um plano de ação para você confirmar.
       </p>
 
-      <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] text-ink-faint font-medium">
+      <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-ink-faint font-medium">
         <ShieldCheck size={12} aria-hidden="true" className="text-positive" />
         <span>Análise local — seus dados não saem do dispositivo</span>
       </p>

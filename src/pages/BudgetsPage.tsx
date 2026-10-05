@@ -44,7 +44,7 @@ export const BudgetsPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Orçamentos</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Orçamentos</h1>
         <button
           onClick={() => { setBudgetToEdit(undefined); setIsBudgetModalOpen(true); }}
           className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
@@ -102,7 +102,7 @@ export const BudgetsPage: React.FC = () => {
           </p>
           <button
             onClick={() => setIsBudgetModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
+            className="btn btn-primary"
           >
             Criar primeiro orçamento
           </button>
@@ -120,13 +120,13 @@ export const BudgetsPage: React.FC = () => {
                     <div>
                       <div className="flex items-center space-x-2">
                         <h4 className="text-sm font-semibold text-ink">{category?.name || 'Categoria'}</h4>
-                        <span className={`pill ${cfg.pill} text-[10px]`}>{cfg.label}</span>
+                        <span className={`pill ${cfg.pill} text-[11px]`}>{cfg.label}</span>
                       </div>
                       <p className="label-xs mt-0.5">Restante: {formatCurrency(remaining)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-bold text-ink">{formatCurrency(spent)}</p>
+                    <p className="text-sm font-bold text-ink">{formatCurrency(spent)}</p>
                     <p className="label-xs">de {formatCurrency(budget.limitAmount)}</p>
                   </div>
                 </div>
@@ -141,18 +141,18 @@ export const BudgetsPage: React.FC = () => {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-2 border-t border-edge">
-                  <span className="text-[11px]" style={{ color: cfg.color }}>{cfg.msg} · {percentage.toFixed(0)}%</span>
+                  <span className="text-xs" style={{ color: cfg.color }}>{cfg.msg} · {percentage.toFixed(0)}%</span>
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => { setBudgetToEdit(budget); setIsBudgetModalOpen(true); }}
-                      className="flex items-center space-x-1 text-[11px] text-ink-muted hover:text-ink transition-colors"
+                      className="flex items-center space-x-1 text-xs text-ink-muted hover:text-ink transition-colors"
                     >
                       <Edit2 size={11} />
                       <span>Editar</span>
                     </button>
                     <button
                       onClick={() => deleteBudget(budget.id)}
-                      className="flex items-center space-x-1 text-[11px] text-negative/50 hover:text-negative transition-colors"
+                      className="flex items-center space-x-1 text-xs text-negative/50 hover:text-negative transition-colors"
                     >
                       <Trash2 size={11} />
                       <span>Excluir</span>

@@ -108,7 +108,7 @@ export const OnboardingModal: React.FC = () => {
               type="button"
               onClick={() => setStep((s) => s + 1)}
               data-autofocus
-              className="btn btn-primary flex-1 shadow-lg shadow-accent/20"
+              className="btn btn-primary flex-1"
             >
               <span>Avançar</span>
               <ChevronRight size={16} aria-hidden="true" />
@@ -117,7 +117,7 @@ export const OnboardingModal: React.FC = () => {
         </div>
       ) : (
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl p-1 bg-black border border-active flex items-center justify-center shadow-xl shadow-accent/20">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl p-1 flex items-center justify-center">
             <img src="/logo.png" alt="MyFinance" className="w-full h-full object-contain rounded-2xl" />
           </div>
 
@@ -132,10 +132,10 @@ export const OnboardingModal: React.FC = () => {
               type="button"
               disabled={isProcessing}
               onClick={handleStartWithDemo}
-              className="w-full py-4 px-6 rounded-2xl bg-accent hover:bg-accent-hover text-on-accent text-sm font-semibold shadow-lg shadow-accent/20 transition-all flex flex-col items-center disabled:opacity-50"
+              className="btn btn-primary w-full flex-col shadow-lg"
             >
               <span>Começar com dados de exemplo</span>
-              <span className="text-[11px] font-normal text-on-accent/80 mt-0.5">
+              <span className="text-xs font-normal text-on-accent/80 mt-0.5">
                 (Recomendado para conhecer todas as telas)
               </span>
             </button>

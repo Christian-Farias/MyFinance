@@ -42,7 +42,7 @@ export const GoalsPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Metas</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Metas</h1>
         <button
           onClick={() => { setGoalToEdit(undefined); setIsGoalModalOpen(true); }}
           className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
@@ -80,7 +80,7 @@ export const GoalsPage: React.FC = () => {
           <p className="label-xs leading-relaxed mb-5">Defina metas para organizar seus sonhos e reservas financeiras.</p>
           <button
             onClick={() => setIsGoalModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-semibold hover:bg-accent transition-colors"
+            className="btn btn-primary"
           >
             Criar primeira meta
           </button>

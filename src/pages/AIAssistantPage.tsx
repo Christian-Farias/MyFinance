@@ -236,7 +236,7 @@ export const AIAssistantPage: React.FC = () => {
             alt=""
             width={40}
             height={40}
-            className="w-10 h-10 rounded-2xl object-contain bg-black border border-active"
+            className="w-10 h-10 rounded-2xl object-contain"
           />
           <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-positive border-2 border-base" />
         </div>

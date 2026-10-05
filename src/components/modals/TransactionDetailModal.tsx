@@ -146,7 +146,7 @@ export const TransactionDetailModal: React.FC = () => {
             <Sparkles size={15} aria-hidden="true" />
             <span>Análise da IA</span>
           </div>
-          <p className="text-xs text-ink-muted leading-relaxed">
+          <p className="text-sm text-ink-muted leading-relaxed">
             {tx.notes ||
               (tx.installmentTotal
                 ? `Esta compra faz parte de uma compra parcelada de ${formatCurrency(tx.amount * tx.installmentTotal)} (${tx.installmentTotal}x).`

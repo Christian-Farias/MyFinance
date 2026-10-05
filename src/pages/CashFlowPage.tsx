@@ -69,7 +69,7 @@ export const CashFlowPage: React.FC = () => {
     <div className="page-content space-y-5 animate-fade-in px-0.5">
       {/* ── HEADER ── */}
       <div className="pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Fluxo de Caixa & Saldo Projetado</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Fluxo de Caixa & Saldo Projetado</h1>
         <p className="label-xs text-ink-muted mt-0.5">Previsão financeira dos próximos 30 dias</p>
       </div>
 
@@ -79,7 +79,7 @@ export const CashFlowPage: React.FC = () => {
           <AlertTriangle size={20} className="text-negative-strong shrink-0 mt-0.5" />
           <div>
             <h4 className="text-xs font-bold text-negative-strong">Atenção: Risco de Saldo Baixo</h4>
-            <p className="text-xs text-ink mt-1 leading-relaxed">
+            <p className="text-sm text-ink mt-1 leading-relaxed">
               Seu saldo projetado pode atingir a mínima de **{formatCurrency(cashFlow.lowestProjectedBalance)}** em **{formatDateBR(cashFlow.lowestBalanceDate)}** antes da entrada dos próximos recebimentos.
             </p>
           </div>
@@ -101,25 +101,25 @@ export const CashFlowPage: React.FC = () => {
         <div className="card p-3.5">
           <span className="label-xs text-ink-muted">Saldo Hoje</span>
           <div className="text-base font-bold text-ink mt-1">{formatCurrency(cashFlow.initialBalance)}</div>
-          <span className="text-[10px] text-ink-muted">Em todas as contas</span>
+          <span className="text-[11px] text-ink-muted">Em todas as contas</span>
         </div>
 
         <div className="card p-3.5">
           <span className="label-xs text-positive">Entradas Previstas</span>
           <div className="text-base font-bold text-positive mt-1">+{formatCurrency(cashFlow.totalInflows)}</div>
-          <span className="text-[10px] text-ink-muted">Próximos 30 dias</span>
+          <span className="text-[11px] text-ink-muted">Próximos 30 dias</span>
         </div>
 
         <div className="card p-3.5">
           <span className="label-xs text-negative-strong">Saídas Previstas</span>
           <div className="text-base font-bold text-negative-strong mt-1">-{formatCurrency(cashFlow.totalOutflows)}</div>
-          <span className="text-[10px] text-ink-muted">Contas e despesas</span>
+          <span className="text-[11px] text-ink-muted">Contas e despesas</span>
         </div>
 
         <div className="card p-3.5">
           <span className="label-xs text-accent">Saldo Projetado</span>
-          <div className="text-base font-bold text-accent mt-1">{formatCurrency(cashFlow.projectedEndBalance)}</div>
-          <span className="text-[10px] text-ink-muted">Estimativa em 30 dias</span>
+          <div className="text-base font-bold text-ink mt-1">{formatCurrency(cashFlow.projectedEndBalance)}</div>
+          <span className="text-[11px] text-ink-muted">Estimativa em 30 dias</span>
         </div>
       </div>
 
@@ -130,7 +130,7 @@ export const CashFlowPage: React.FC = () => {
             <h3 className="text-sm font-bold text-ink">Evolução do Saldo Projetado</h3>
             <p className="label-xs text-ink-muted">Projeção calculada dia a dia</p>
           </div>
-          <span className="pill pill-accent text-[10px]">30 dias</span>
+          <span className="pill pill-accent text-[11px]">30 dias</span>
         </div>
 
         <div className="h-60 w-full">
@@ -199,7 +199,7 @@ export const CashFlowPage: React.FC = () => {
                     <Calendar size={14} className="text-accent" />
                     <span className="text-xs font-bold text-ink">{formatDateBR(day.date)}</span>
                   </div>
-                  <span className="text-[11px] text-ink-muted font-medium">
+                  <span className="text-xs text-ink-muted font-medium">
                     Saldo ao fim do dia: <strong className="text-ink">{formatCurrency(day.projectedBalance)}</strong>
                   </span>
                 </div>

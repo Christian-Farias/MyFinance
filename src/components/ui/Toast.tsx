@@ -54,7 +54,9 @@ const TONE_ICON = {
 const TONE_CLASS = {
   success: 'text-positive',
   error: 'text-negative',
-  info: 'text-accent',
+  /* Semantic blue, not the brand. Reusing the accent here made an
+     informational toast indistinguishable from a call to action. */
+  info: 'text-info',
   warning: 'text-warning',
 } as const;
 
@@ -110,7 +112,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   aria-hidden="true"
                   className={`shrink-0 mt-0.5 ${TONE_CLASS[toast.tone]}`}
                 />
-                <p className="flex-1 text-xs text-ink leading-relaxed">
+                <p className="flex-1 text-sm text-ink leading-relaxed">
                   {toast.message}
                 </p>
                 {toast.action && (

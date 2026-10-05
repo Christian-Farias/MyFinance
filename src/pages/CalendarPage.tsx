@@ -151,7 +151,7 @@ export const CalendarPage: React.FC = () => {
       {/* ── HEADER & MONTH PICKER ── */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-xl font-bold text-ink tracking-tight">Calendário Financeiro</h1>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">Calendário Financeiro</h1>
           <p className="label-xs text-ink-muted mt-0.5">Visão cronológica de vencimentos e receitas</p>
         </div>
 
@@ -200,7 +200,7 @@ export const CalendarPage: React.FC = () => {
 
       {/* ── DESKTOP & TABLET MONTHLY GRID / MOBILE DATE SELECTOR ── */}
       <div className="card p-4 sm:p-5">
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[11px] font-semibold text-ink-muted">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-xs font-semibold text-ink-muted">
           <span>Dom</span>
           <span>Seg</span>
           <span>Ter</span>
@@ -308,7 +308,7 @@ export const CalendarPage: React.FC = () => {
 
                     <div className="min-w-0">
                       <h4 className="text-xs font-semibold text-ink truncate">{event.description}</h4>
-                      <span className="text-[11px] text-ink-muted capitalize">
+                      <span className="text-xs text-ink-muted capitalize">
                         {event.type.replace('_', ' ')}
                       </span>
                     </div>
@@ -319,7 +319,7 @@ export const CalendarPage: React.FC = () => {
                       {isIncome ? '+' : '-'}{formatCurrency(event.amount)}
                     </span>
                     {event.isPaid && (
-                      <span className="pill pill-positive text-[9px] py-0 px-1.5">Concluído</span>
+                      <span className="pill pill-positive text-[10px] py-0 px-1.5">Concluído</span>
                     )}
                   </div>
                 </div>

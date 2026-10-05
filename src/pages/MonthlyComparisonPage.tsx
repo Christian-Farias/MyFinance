@@ -55,7 +55,7 @@ export const MonthlyComparisonPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Comparação mensal</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Comparação mensal</h1>
         <p className="label-xs mt-0.5">Acompanhe as diferenças de fluxo mês a mês.</p>
       </div>
 
@@ -141,7 +141,7 @@ export const MonthlyComparisonPage: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <span className="text-ink-muted">{isIncrease ? '+' : ''}{formatCurrency(cv.difference)}</span>
                     <span
-                      className={`pill ${isIncrease ? 'pill-negative' : 'pill-positive'} text-[10px]`}
+                      className={`pill ${isIncrease ? 'pill-negative' : 'pill-positive'} text-[11px]`}
                     >
                       {isIncrease ? '+' : ''}{cv.variationPercent.toFixed(0)}%
                     </span>

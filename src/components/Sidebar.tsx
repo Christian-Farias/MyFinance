@@ -76,7 +76,7 @@ export const Sidebar: React.FC = () => {
       >
         <Icon size={17} aria-hidden={true} />
         <span className="min-w-0 truncate">{item.label}</span>
-        {item.badge && <span className="pill pill-accent text-[10px] py-0 px-1.5">{item.badge}</span>}
+        {item.badge && <span className="pill pill-accent text-[11px] py-0 px-1.5">{item.badge}</span>}
         {Boolean(item.count && item.count > 0) && (
           <span className="badge-count" aria-label={`${item.count} não lidas`}>
             {item.count}

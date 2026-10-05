@@ -20,6 +20,6 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({ explanation }) => 
       aria-hidden="true"
       className="text-accent shrink-0 mt-0.5"
     />
-    <p className="text-[11px] text-ink-muted leading-relaxed">{explanation}</p>
+    <p className="text-sm text-ink-muted leading-relaxed">{explanation}</p>
   </div>
 );

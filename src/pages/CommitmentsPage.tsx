@@ -134,7 +134,7 @@ export const CommitmentsPage: React.FC = () => {
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-xl font-bold text-ink tracking-tight">Compromissos Financeiros</h1>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">Compromissos Financeiros</h1>
           <p className="label-xs text-ink-muted mt-0.5">Contas a pagar, receitas previstas e assinaturas</p>
         </div>
 
@@ -160,7 +160,7 @@ export const CommitmentsPage: React.FC = () => {
           </div>
           <div>
             <div className="text-base font-bold text-ink">{formatCurrency(totalPendingBills)}</div>
-            <span className="text-[11px] text-ink-muted">{pendingBills.length} pendente(s)</span>
+            <span className="text-xs text-ink-muted">{pendingBills.length} pendente(s)</span>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export const CommitmentsPage: React.FC = () => {
           </div>
           <div>
             <div className="text-base font-bold text-ink">{formatCurrency(totalExpectedReceivables)}</div>
-            <span className="text-[11px] text-ink-muted">{expectedReceivables.length} previsto(s)</span>
+            <span className="text-xs text-ink-muted">{expectedReceivables.length} previsto(s)</span>
           </div>
         </div>
 
@@ -182,7 +182,7 @@ export const CommitmentsPage: React.FC = () => {
           </div>
           <div>
             <div className="text-base font-bold text-ink">{formatCurrency(subSummary.totalMonthlyEstimate)}</div>
-            <span className="text-[11px] text-ink-muted">/mês ({subSummary.activeCount} ativas)</span>
+            <span className="text-xs text-ink-muted">/mês ({subSummary.activeCount} ativas)</span>
           </div>
         </div>
 
@@ -193,7 +193,7 @@ export const CommitmentsPage: React.FC = () => {
           </div>
           <div>
             <div className="text-base font-bold text-ink">{formatCurrency(fixedReport.fixedExpensesTotal)}</div>
-            <span className="text-[11px] text-ink-muted">{fixedReport.fixedPercentage.toFixed(0)}% dos gastos</span>
+            <span className="text-xs text-ink-muted">{fixedReport.fixedPercentage.toFixed(0)}% dos gastos</span>
           </div>
         </div>
       </div>
@@ -217,7 +217,7 @@ export const CommitmentsPage: React.FC = () => {
           >
             <span>{label}</span>
             {count > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-active text-ink">
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[11px] bg-active text-ink">
                 {count}
               </span>
             )}
@@ -260,7 +260,7 @@ export const CommitmentsPage: React.FC = () => {
                             {bill.description}
                           </h4>
                           {bill.isFixedExpense && (
-                            <span className="pill pill-neutral text-[9px] py-0 px-1.5">Fixo</span>
+                            <span className="pill pill-neutral text-[10px] py-0 px-1.5">Fixo</span>
                           )}
                         </div>
                         <div className="flex items-center space-x-2 mt-0.5 text-xs text-ink-muted">
@@ -285,7 +285,7 @@ export const CommitmentsPage: React.FC = () => {
                             <span>Pagar</span>
                           </button>
                         ) : (
-                          <span className="pill pill-positive text-[10px]">Pago</span>
+                          <span className="pill pill-positive text-[11px]">Pago</span>
                         )}
 
                         <button
@@ -367,7 +367,7 @@ export const CommitmentsPage: React.FC = () => {
                             <span>Receber</span>
                           </button>
                         ) : (
-                          <span className="pill pill-positive text-[10px]">Recebido</span>
+                          <span className="pill pill-positive text-[11px]">Recebido</span>
                         )}
 
                         <button
@@ -403,10 +403,10 @@ export const CommitmentsPage: React.FC = () => {
               <Tv size={20} className="text-accent" />
               <div>
                 <h4 className="text-xs font-bold text-ink">Impacto Anual das Assinaturas</h4>
-                <p className="text-[11px] text-ink-muted">Economizar cancelando serviços ociosos</p>
+                <p className="text-xs text-ink-muted">Economizar cancelando serviços ociosos</p>
               </div>
             </div>
-            <span className="text-sm font-bold text-accent">{formatCurrency(subSummary.totalAnnualEstimate)}/ano</span>
+            <span className="text-sm font-bold text-ink">{formatCurrency(subSummary.totalAnnualEstimate)}/ano</span>
           </div>
 
           <div className="space-y-2">
@@ -427,7 +427,7 @@ export const CommitmentsPage: React.FC = () => {
                 <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-edge">
                   <div className="text-left sm:text-right">
                     <span className="text-sm font-bold text-ink block">{formatCurrency(sub.amount)}</span>
-                    <span className="text-[10px] text-ink-muted font-medium">{sub.frequency}</span>
+                    <span className="text-[11px] text-ink-muted font-medium">{sub.frequency}</span>
                   </div>
 
                   <button
@@ -458,7 +458,7 @@ export const CommitmentsPage: React.FC = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center space-x-2">
                     <h4 className="text-sm font-semibold text-ink truncate">{rule.description}</h4>
-                    <span className="pill pill-neutral text-[9px] py-0 px-1.5">{rule.frequency}</span>
+                    <span className="pill pill-neutral text-[10px] py-0 px-1.5">{rule.frequency}</span>
                   </div>
                   <p className="text-xs text-ink-muted mt-0.5">
                     Próxima ocorrência: {formatDateBR(rule.nextOccurrence)}

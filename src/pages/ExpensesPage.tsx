@@ -69,7 +69,7 @@ const CategoryDetailDrawer: React.FC<{
                   <p className="text-xs font-semibold text-ink">{tx.description}</p>
                   <p className="label-xs mt-0.5">{tx.date?.substring(0, 10)}</p>
                 </div>
-                <span className="text-xs font-bold text-negative">−{formatCurrency(tx.amount)}</span>
+                <span className="text-sm font-bold text-negative">−{formatCurrency(tx.amount)}</span>
               </div>
             ))}
           </div>
@@ -133,7 +133,7 @@ export const ExpensesPage: React.FC = () => {
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-ink tracking-tight">Seus gastos</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Seus gastos</h1>
         <div className="flex items-center space-x-1 bg-surface border border-edge rounded-2xl px-3 py-2">
           <button onClick={handlePrevMonth} className="p-0.5 text-ink-muted hover:text-ink transition-colors">
             <ChevronLeft size={16} />
@@ -200,8 +200,8 @@ export const ExpensesPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-[11px] text-ink-faint">{cat.percentage.toFixed(0)}%</span>
-                    <span className="text-xs font-bold text-ink">{formatCurrency(cat.total)}</span>
+                    <span className="text-xs text-ink-faint">{cat.percentage.toFixed(0)}%</span>
+                    <span className="text-sm font-bold text-ink">{formatCurrency(cat.total)}</span>
                   </div>
                 </div>
                 <div className="progress-track">

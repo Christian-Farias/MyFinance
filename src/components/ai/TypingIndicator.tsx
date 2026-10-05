@@ -15,7 +15,7 @@ export const TypingIndicator: React.FC = () => (
       alt=""
       width={32}
       height={32}
-      className="w-8 h-8 rounded-full object-contain bg-black border border-active shrink-0 mb-1"
+      className="w-8 h-8 rounded-full object-contain shrink-0 mb-1"
     />
     <div className="bg-panel border border-active px-4 py-3.5 rounded-3xl rounded-bl-sm flex items-center gap-1.5">
       {[0, 0.2, 0.4].map((delay) => (

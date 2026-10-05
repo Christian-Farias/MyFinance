@@ -35,7 +35,7 @@ export const AIActionCard: React.FC<AIActionCardProps> = ({
 
   if (resolved) {
     return (
-      <p className="text-[11px] font-semibold text-ink-muted">
+      <p className="text-xs font-semibold text-ink-muted">
         {resolved === 'confirmed'
           ? 'Ação confirmada e enviada para execução.'
           : 'Ação cancelada. Nenhum dado foi modificado.'}
@@ -57,19 +57,19 @@ export const AIActionCard: React.FC<AIActionCardProps> = ({
 
   return (
     <div className="mt-3 pt-3 border-t border-active space-y-2">
-      <div className="flex items-center gap-1.5 text-warning text-[11px] font-bold">
+      <div className="flex items-center gap-1.5 text-warning text-xs font-bold">
         <ShieldAlert size={14} aria-hidden="true" />
         <span>Confirmação exigida</span>
-        <span className="pill pill-warning text-[9px]">
+        <span className="pill pill-warning text-[10px]">
           {RISK_LABEL[plan.riskLevel]}
         </span>
       </div>
 
-      <p className="text-[11px] font-semibold text-ink">{plan.title}</p>
-      <p className="text-[11px] text-ink-muted leading-relaxed">{plan.summary}</p>
+      <p className="text-xs font-semibold text-ink">{plan.title}</p>
+      <p className="text-sm text-ink-muted leading-relaxed">{plan.summary}</p>
 
       {Object.keys(plan.details).length > 0 && (
-        <dl className="bg-surface-raised p-3 rounded-2xl border border-active space-y-1 text-[11px]">
+        <dl className="bg-surface-raised p-3 rounded-2xl border border-active space-y-1 text-xs">
           {Object.entries(plan.details).map(([key, value]) => (
             <div key={key} className="flex justify-between gap-2">
               <dt className="text-ink-muted">{key}</dt>
