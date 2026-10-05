@@ -44,7 +44,7 @@ export const CardsPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-ink tracking-tight">Cartões</h1>
         <button
           onClick={() => { setCardToEdit(undefined); setIsCardModalOpen(true); }}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Novo</span>
@@ -54,7 +54,7 @@ export const CardsPage: React.FC = () => {
       {cards.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-            <CardIcon size={28} className="text-accent" />
+            <CardIcon size={28} className="text-accent-text" />
           </div>
           <h3 className="text-sm font-semibold text-ink mb-2">Nenhum cartão cadastrado</h3>
           <p className="label-xs leading-relaxed mb-5">Adicione seu cartão para acompanhar limites e faturas.</p>
@@ -76,7 +76,7 @@ export const CardsPage: React.FC = () => {
                   onClick={() => setSelectedCardId(c.id)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
                     activeCard?.id === c.id
-                      ? 'bg-accent/15 text-accent border border-accent/30'
+                      ? 'bg-accent/15 text-accent-text border border-accent/30'
                       : 'bg-surface text-ink-muted border border-edge hover:text-ink'
                   }`}
                 >
@@ -176,7 +176,7 @@ export const CardsPage: React.FC = () => {
           {installmentTxs.length > 0 && (
             <div>
               <div className="flex items-center space-x-2 mb-3 px-0.5">
-                <Layers size={13} className="text-accent" />
+                <Layers size={13} className="text-accent-text" />
                 <p className="label-section">Parcelamentos em andamento</p>
               </div>
               <div className="card overflow-hidden">

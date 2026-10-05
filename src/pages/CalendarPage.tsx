@@ -289,7 +289,7 @@ export const CalendarPage: React.FC = () => {
 
         {selectedDateEvents.length === 0 ? (
           <div className="card p-6 text-center text-ink-muted">
-            <CalendarIcon size={32} className="mx-auto mb-2 opacity-30 text-accent" />
+            <CalendarIcon size={32} className="mx-auto mb-2 opacity-30 text-accent-text" />
             <p className="text-xs">Nenhum vencimento ou pagamento registrado para este dia.</p>
           </div>
         ) : (

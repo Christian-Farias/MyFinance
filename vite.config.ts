@@ -23,8 +23,8 @@ export default defineConfig({
         name: 'MyFinance - Gestão Financeira Pessoal',
         short_name: 'MyFinance',
         description: 'Gestão financeira pessoal moderna, inteligente e offline-first.',
-        theme_color: '#0D0D0D',
-        background_color: '#0D0D0D',
+        theme_color: '#050506',
+        background_color: '#050506',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

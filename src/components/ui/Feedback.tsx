@@ -67,7 +67,7 @@ const TONE_CLASS = {
   /* These bypassed the token scale, so all three still carried the
      pre-Inter palette (purple / mint / amber) and silently ignored
      every theme change. */
-  accent: 'bg-accent-subtle text-accent',
+  accent: 'bg-accent-subtle text-accent-text',
   positive: 'bg-positive-subtle text-positive',
   warning: 'bg-warning-subtle text-warning',
   neutral: 'bg-surface-raised text-ink-muted',

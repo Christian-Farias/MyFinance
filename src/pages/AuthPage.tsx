@@ -135,12 +135,12 @@ export const AuthPage: React.FC = () => {
         {/* Aviso se Supabase não configurado */}
         {!isConfigured && (
           <div className="mb-4 p-4 rounded-2xl bg-accent-subtle border border-accent/40 text-xs text-ink space-y-2.5">
-            <div className="flex items-center space-x-2 text-accent font-bold">
+            <div className="flex items-center space-x-2 text-accent-text font-bold">
               <Sparkles size={16} />
               <span>Configuração do Supabase</span>
             </div>
             <p className="text-sm leading-relaxed text-ink-muted">
-              Para conectar o login em nuvem, adicione suas credenciais no arquivo <code className="bg-black/50 px-1 py-0.5 rounded text-accent">.env</code>:
+              Para conectar o login em nuvem, adicione suas credenciais no arquivo <code className="bg-black/50 px-1 py-0.5 rounded text-accent-text">.env</code>:
             </p>
             <pre className="p-2 rounded-xl bg-black/60 text-[11px] text-positive font-mono overflow-x-auto">
               VITE_SUPABASE_URL=...&#10;VITE_SUPABASE_ANON_KEY=...

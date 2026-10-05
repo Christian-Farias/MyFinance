@@ -81,7 +81,7 @@ export const AIEmptyState: React.FC<AIEmptyStateProps> = ({
                 <Sparkles
                   size={14}
                   aria-hidden="true"
-                  className="text-accent shrink-0"
+                  className="text-accent-text shrink-0"
                 />
                 <span className="text-xs font-medium text-ink leading-snug">
                   {starter}

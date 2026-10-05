@@ -130,7 +130,7 @@ export const SettingsPage: React.FC = () => {
       {/* ── USER PROFILE ── */}
       <div className="card p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
-          <div className="w-12 h-12 rounded-full bg-surface-raised border border-edge flex items-center justify-center text-accent font-bold text-base">
+          <div className="w-12 h-12 rounded-full bg-surface-raised border border-edge flex items-center justify-center text-accent-text font-bold text-base">
             {(userName || settings.name || 'US').substring(0, 2).toUpperCase()}
           </div>
           <div>
@@ -220,7 +220,7 @@ export const SettingsPage: React.FC = () => {
             className="flex items-center justify-between p-4 hover:bg-surface-raised transition-colors cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <Download size={16} className="text-accent" />
+              <Download size={16} className="text-accent-text" />
               <span className="text-xs font-semibold text-ink">Exportar dados (Backup JSON)</span>
             </div>
             <ChevronRight size={14} className="text-ink-faint" />
@@ -266,7 +266,7 @@ export const SettingsPage: React.FC = () => {
             className="w-full flex items-center justify-between p-4 hover:bg-surface-raised transition-colors text-left text-xs font-semibold text-ink-muted hover:text-negative group cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <LogOut size={16} className="text-accent group-hover:text-negative transition-colors" />
+              <LogOut size={16} className="text-accent-text group-hover:text-negative transition-colors" />
               <span>Sair da conta</span>
             </div>
             <ChevronRight size={14} className="text-ink-faint" />

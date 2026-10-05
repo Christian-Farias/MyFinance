@@ -68,7 +68,7 @@ export const TransactionsPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-ink tracking-tight">Transações</h1>
         <button
           onClick={() => openNewTxModal('expense')}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Nova</span>
@@ -116,7 +116,7 @@ export const TransactionsPage: React.FC = () => {
       {sortedDates.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-            <Calendar size={28} className="text-accent" />
+            <Calendar size={28} className="text-accent-text" />
           </div>
           <h3 className="text-sm font-semibold text-ink mb-2">Nenhuma movimentação encontrada</h3>
           <p className="label-xs leading-relaxed mb-5">Adicione uma nova receita ou despesa.</p>

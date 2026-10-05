@@ -14,6 +14,7 @@ import {
   Plus,
   AlertTriangle,
   Target,
+  Settings2,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -236,17 +237,18 @@ export const DashboardPage: React.FC = () => {
         eyebrow={`${getGreeting(now.getHours())},`}
         title={`${settings.name || 'Você'} 👋`}
         leading={
+          /* O atalho para Configurações fica, mas o cachorro sai da
+             saudação: a marca já vive no topbar e na sidebar, e
+             repeti-la aqui competia com a hierarquia do valor.
+             Um ícone neutro de 20px mantém o alvo de toque e o
+             aria-label intactos. */
           <button
             type="button"
             onClick={() => navigate('/configuracoes')}
             aria-label="Abrir configurações"
-            className="md:hidden shrink-0"
+            className="md:hidden shrink-0 -ml-1 w-10 h-10 rounded-full flex items-center justify-center text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors"
           >
-            <img
-              src="/logo.png"
-              alt=""
-              className="w-10 h-10 rounded-2xl object-contain"
-            />
+            <Settings2 size={20} aria-hidden="true" />
           </button>
         }
         action={
@@ -268,13 +270,18 @@ export const DashboardPage: React.FC = () => {
         }
       />
 
-      {/* ── PATRIMÔNIO ── */}
-      <div className="card p-5">
-        <p className="label-xs mb-3">Seu patrimônio</p>
+      {/* ── PATRIMÔNIO ──
+          O objeto principal da tela. O valor é o único elemento em
+          escala .num-hero e fica sozinho na primeira faixa; a
+          sparkline perdeu altura e-opacity porque é contexto, não
+          informação. As três métricas abaixo são filhas do
+          patrimônio, então compartilham a mesma divisória. */}
+      <div className="card-hero p-5 sm:p-6">
+        <p className="label-brand mb-3">Seu patrimônio</p>
 
-        <div className="flex items-end justify-between mb-2">
-          <div className="num-xl">{formatCurrency(netWorth)}</div>
-          <div className={`pill ${comparison.expenseVariationPercent <= 0 ? 'pill-positive' : 'pill-negative'} mb-1`}>
+        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 mb-1">
+          <div className="num-hero">{formatCurrency(netWorth)}</div>
+          <div className={`pill ${comparison.expenseVariationPercent <= 0 ? 'pill-positive' : 'pill-negative'} mb-1.5`}>
             {comparison.expenseVariationPercent <= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
             {comparison.expenseVariationPercent <= 0
               ? `−${Math.abs(comparison.expenseVariationPercent).toFixed(1)}% gastos`
@@ -283,12 +290,12 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Mini sparkline */}
-        <div className="h-10 w-full mb-4">
-          <MiniSparkline data={sparklineData} color="var(--color-positive)" />
+        <div className="h-8 w-full mt-3 mb-5 opacity-70" aria-hidden="true">
+          <MiniSparkline data={sparklineData} color="var(--color-accent)" />
         </div>
 
         {/* Sub-row: contas / cartões / investimentos */}
-        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-edge">
+        <div className="grid grid-cols-3 gap-2 pt-5 border-t border-edge">
           <button
             onClick={() => navigate('/contas')}
             className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-surface-raised transition-colors group min-w-0"
@@ -318,7 +325,7 @@ export const DashboardPage: React.FC = () => {
             className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-surface-raised transition-colors group min-w-0"
           >
             <div className="flex items-center space-x-1.5 mb-1 max-w-full">
-              <TrendingUp size={12} className="text-ink-muted group-hover:text-accent transition-colors shrink-0" />
+              <TrendingUp size={12} className="text-ink-muted group-hover:text-accent-text transition-colors shrink-0" />
               <span className="label-xs truncate">Investimentos</span>
             </div>
             <span className="text-xs font-bold text-ink tracking-tight truncate max-w-full">{formatCurrency(totalInvested)}</span>
@@ -326,17 +333,71 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── INSIGHT PRINCIPAL ── */}
+      {/* ── RESUMO DO MÊS ──
+          Fica logo abaixo do patrimônio, e não no fim da página.
+          Patrimônio responde "quanto eu tenho" e este bloco
+          responde "como esse mês está indo" — são perguntas
+          diferentes, então têm cards diferentes. Burying it below
+          the transaction list made the month invisible on first
+          scroll. */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <p className="label-section">Resumo do mês</p>
+          <button
+            type="button"
+            onClick={() => navigate('/gastos')}
+            className="text-xs font-semibold text-accent-text inline-flex items-center gap-0.5 hover:underline"
+          >
+            <span>Analisar</span>
+            <ChevronRight size={13} aria-hidden="true" />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="label-xs mb-1">Receitas</p>
+            <p className="text-base font-bold text-positive tracking-tight">{formatCurrency(monthIncome)}</p>
+          </div>
+          <div>
+            <p className="label-xs mb-1">Despesas</p>
+            <p className="text-base font-bold text-negative tracking-tight">{formatCurrency(monthExpenses)}</p>
+          </div>
+        </div>
+        {monthIncome > 0 && (
+          <>
+            <div className="progress-track mt-4">
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${Math.min(100, (monthExpenses / monthIncome) * 100)}%`,
+                  backgroundColor: monthExpenses > monthIncome ? 'var(--color-negative)' : 'var(--color-positive)',
+                }}
+              />
+            </div>
+            <p className="label-xs mt-2">
+              {monthExpenses <= monthIncome
+                ? `Você usou ${((monthExpenses / monthIncome) * 100).toFixed(0)}% da sua renda`
+                : 'Despesas excedem receitas este mês'}
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* ── INSIGHT PRINCIPAL ──
+          A borda esquerda de 3px era a única coisa separando este
+          card do resto, e ela competia com a hierarquia do
+          patrimônio. O tint indigo faz o mesmo trabalho com menos
+          peso; a cor semântica do insight entra só no ponto do
+          título, onde carrega significado em vez de decoração. */}
       <button
         type="button"
         onClick={() => navigate('/gastos')}
-        className="card p-4 text-left w-full card-hover"
-        style={{ borderLeft: `3px solid ${insightBorderColor}` }}
+        className="w-full text-left rounded-2xl p-4 border border-accent/25 bg-accent-subtle card-hover"
+        style={{ borderColor: `color-mix(in srgb, ${insightBorderColor} 28%, transparent)` }}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1 pr-3">
             <div className="flex items-center space-x-1.5 mb-1.5">
-              <Sparkles size={13} className="text-accent" />
+              <Sparkles size={13} className="shrink-0" style={{ color: insightBorderColor }} aria-hidden="true" />
               <span className="label-section">Insight do mês</span>
             </div>
             <p className="text-sm font-semibold text-ink leading-snug mb-1">
@@ -346,7 +407,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <ChevronRight size={16} className="text-ink-faint shrink-0 mt-0.5" aria-hidden="true" />
         </div>
-        <span className="mt-3 inline-block text-xs font-semibold text-accent">
+        <span className="mt-3 inline-block text-xs font-semibold text-accent-text">
           Ver análise →
         </span>
       </button>
@@ -385,31 +446,31 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── AÇÕES RÁPIDAS ── */}
+      {/* ── AÇÕES RÁPIDAS ──
+          Sem o anel colorido de 36px em volta do ícone: quatro
+          manchas saturadas lado a lado viravam o bloco mais
+          ruidoso da tela. Agora o glyph carrega a cor diretamente
+          sobre a superfície neutra, o que mantém a distinção
+          Despesa/Receita/Transferir/Gastos com muito menos peso.
+          O alvo de toque continua acima de 44px. */}
       <div>
         <p className="label-section mb-3 px-0.5">Ações rápidas</p>
         <div className="grid grid-cols-4 gap-2">
           {[
             { label: 'Despesa',  icon: ArrowDownLeft,  color: 'var(--color-negative)', action: () => openNewTxModal('expense') },
             { label: 'Receita',  icon: ArrowUpRight,   color: 'var(--color-positive)', action: () => openNewTxModal('income') },
-            { label: 'Transferir', icon: ArrowLeftRight, color: 'var(--color-accent)', action: () => openNewTxModal('transfer') },
+            { label: 'Transferir', icon: ArrowLeftRight, color: 'var(--color-accent-text)', action: () => openNewTxModal('transfer') },
             { label: 'Gastos',   icon: Target,         color: 'var(--color-warning)', action: () => navigate('/gastos') },
           ].map((qa) => {
             const Icon = qa.icon;
             return (
               <button
                 key={qa.label}
+                type="button"
                 onClick={qa.action}
-                className="flex flex-col items-center py-3 px-1 rounded-2xl card card-hover gap-2 min-w-0"
+                className="flex flex-col items-center gap-2 py-3 px-1 min-w-0 min-h-[56px] rounded-2xl card card-hover"
               >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{
-                    backgroundColor: `color-mix(in oklab, ${qa.color} 12%, transparent)`,
-                  }}
-                >
-                  <Icon size={16} style={{ color: qa.color }} strokeWidth={2} />
-                </div>
+                <Icon size={18} className="shrink-0" style={{ color: qa.color }} strokeWidth={2} aria-hidden="true" />
                 <span className="text-xs font-medium text-ink-muted text-center leading-tight truncate max-w-full px-0.5">{qa.label}</span>
               </button>
             );
@@ -423,7 +484,7 @@ export const DashboardPage: React.FC = () => {
           <p className="label-section">Movimentações recentes</p>
           <button
             onClick={() => navigate('/transacoes')}
-            className="text-xs font-semibold text-accent flex items-center space-x-0.5 hover:underline"
+            className="text-xs font-semibold text-accent-text flex items-center space-x-0.5 hover:underline"
           >
             <span>Ver tudo</span>
             <ChevronRight size={13} />
@@ -467,39 +528,6 @@ export const DashboardPage: React.FC = () => {
               );
             })}
           </div>
-        )}
-      </div>
-
-      {/* ── RESUMO DO MÊS ── */}
-      <div className="card p-5">
-        <p className="label-section mb-4">Resumo do mês</p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="label-xs mb-1">Receitas</p>
-            <p className="text-base font-bold text-positive tracking-tight">{formatCurrency(monthIncome)}</p>
-          </div>
-          <div>
-            <p className="label-xs mb-1">Despesas</p>
-            <p className="text-base font-bold text-negative tracking-tight">{formatCurrency(monthExpenses)}</p>
-          </div>
-        </div>
-        {monthIncome > 0 && (
-          <>
-            <div className="progress-track mt-4">
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${Math.min(100, (monthExpenses / monthIncome) * 100)}%`,
-                  backgroundColor: monthExpenses > monthIncome ? 'var(--color-negative)' : 'var(--color-positive)',
-                }}
-              />
-            </div>
-            <p className="label-xs mt-2">
-              {monthExpenses <= monthIncome
-                ? `Você usou ${((monthExpenses / monthIncome) * 100).toFixed(0)}% da sua renda`
-                : 'Despesas excedem receitas este mês'}
-            </p>
-          </>
         )}
       </div>
     </div>

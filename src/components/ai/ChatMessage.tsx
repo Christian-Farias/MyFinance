@@ -127,7 +127,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   key={`${suggestion}-${index}`}
                   type="button"
                   onClick={() => onSuggest(suggestion)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-field hover:bg-active text-accent text-xs font-semibold transition-colors border border-edge-strong"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-field hover:bg-active text-accent-text text-xs font-semibold transition-colors border border-edge-strong"
                 >
                   <span>{suggestion}</span>
                   <ArrowRight size={10} aria-hidden="true" />

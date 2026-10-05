@@ -130,7 +130,7 @@ export const GlobalSearchModal: React.FC = () => {
       closeOnBackdrop
     >
       <div className="relative flex items-center pb-3 border-b border-active">
-        <Search size={20} className="text-accent mr-3 shrink-0" aria-hidden="true" />
+        <Search size={20} className="text-accent-text mr-3 shrink-0" aria-hidden="true" />
         <input
           type="search"
           placeholder="Buscar por mercado, uber, cartão, viagem..."
@@ -147,7 +147,7 @@ export const GlobalSearchModal: React.FC = () => {
           <div className="py-8 text-center">
             <Search
               size={32}
-              className="mx-auto mb-3 opacity-30 text-accent"
+              className="mx-auto mb-3 opacity-30 text-accent-text"
               aria-hidden="true"
             />
             <p className="text-sm text-ink-muted">
@@ -233,7 +233,7 @@ export const GlobalSearchModal: React.FC = () => {
                 <ResultRow
                   key={c.id}
                   icon={CreditCard}
-                  iconClass="text-accent"
+                  iconClass="text-accent-text"
                   primary={c.name}
                   secondary={`•••• ${c.lastDigits}`}
                   trailing={

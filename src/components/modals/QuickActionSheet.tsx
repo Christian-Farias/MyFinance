@@ -16,7 +16,7 @@ const TONE_ICON = {
   'negative-strong': 'bg-negative-strong/12 text-negative-strong',
   positive: 'bg-positive/12 text-positive',
   info: 'bg-info/12 text-info',
-  accent: 'bg-accent/12 text-accent',
+  accent: 'bg-accent/12 text-accent-text',
   warning: 'bg-warning/12 text-warning',
 } as const;
 
@@ -109,7 +109,7 @@ export const QuickActionSheet: React.FC = () => {
                 <Icon size={20} />
               </span>
               <span className="flex-1 min-w-0">
-                <span className="block text-sm font-semibold text-ink group-hover:text-accent transition-colors">
+                <span className="block text-sm font-semibold text-ink group-hover:text-accent-text transition-colors">
                   {act.title}
                 </span>
                 <span className="block text-xs text-ink-muted">{act.subtitle}</span>

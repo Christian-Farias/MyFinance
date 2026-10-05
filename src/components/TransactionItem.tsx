@@ -67,7 +67,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             isIncome
               ? 'text-positive'
               : isTransfer
-                ? 'text-accent'
+                ? 'text-accent-text'
                 : 'text-ink'
           }`}
         >

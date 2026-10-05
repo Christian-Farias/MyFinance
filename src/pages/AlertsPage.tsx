@@ -17,7 +17,7 @@ function formatAlertDate(date: string): string {
 const ALERT_TONE: Record<string, string> = {
   negative: 'bg-negative/12 text-negative',
   warning: 'bg-warning/12 text-warning',
-  accent: 'bg-accent/12 text-accent',
+  accent: 'bg-accent/12 text-accent-text',
   positive: 'bg-positive/12 text-positive',
   pink: 'bg-negative-strong/12 text-negative-strong',
 };
@@ -91,7 +91,7 @@ export const AlertsPage: React.FC = () => {
     switch (priority) {
       case 'CRITICAL': return 'bg-negative/12 text-negative border-negative/25';
       case 'HIGH':     return 'bg-warning/12 text-warning border-warning/25';
-      case 'MEDIUM':   return 'bg-accent/12 text-accent border-accent/25';
+      case 'MEDIUM':   return 'bg-accent/12 text-accent-text border-accent/25';
       case 'LOW':
       default:         return 'bg-positive/12 text-positive border-positive/25';
     }
@@ -119,7 +119,7 @@ export const AlertsPage: React.FC = () => {
         {alerts.length > 0 && (
           <button
             onClick={() => markAllAlertsAsRead()}
-            className="flex items-center space-x-1.5 text-xs font-semibold text-accent hover:underline"
+            className="flex items-center space-x-1.5 text-xs font-semibold text-accent-text hover:underline"
           >
             <CheckCheck size={14} />
             <span>Limpar alertas</span>
@@ -158,7 +158,7 @@ export const AlertsPage: React.FC = () => {
               <div key={insight.id} className="card p-4 space-y-3 relative group">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="w-7 h-7 rounded-xl bg-accent/15 text-accent flex items-center justify-center text-xs font-bold shrink-0">
+                    <span className="w-7 h-7 rounded-xl bg-accent/15 text-accent-text flex items-center justify-center text-xs font-bold shrink-0">
                       <Sparkles size={14} />
                     </span>
                     <div>
@@ -177,7 +177,7 @@ export const AlertsPage: React.FC = () => {
                 {isExpanded && (
                   <div className="p-3 bg-surface-raised rounded-xl border border-active text-xs text-ink-muted space-y-1 animate-fade-in">
                     <p className="font-semibold text-ink flex items-center space-x-1">
-                      <Info size={12} className="text-accent" />
+                      <Info size={12} className="text-accent-text" />
                       <span>Por que estou vendo isso?</span>
                     </p>
                     <p className="leading-relaxed">{insight.explanation}</p>
@@ -265,7 +265,7 @@ export const AlertsPage: React.FC = () => {
                       <button
                         onClick={() => setExpandedAlertId(isExpanded ? null : alert.id)}
                         aria-expanded={isExpanded}
-                        className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                        className="text-xs font-semibold text-accent-text hover:underline inline-flex items-center gap-1"
                       >
                         <Info size={11} />
                         <span>Por que estou vendo isso?</span>
@@ -278,7 +278,7 @@ export const AlertsPage: React.FC = () => {
                             if (isUnread) void markAlertAsRead(alert.id);
                             if (url) navigate(url);
                           }}
-                          className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                          className="text-xs font-semibold text-accent-text hover:underline inline-flex items-center gap-1"
                         >
                           <span>{visual.action}</span>
                           <ArrowRight size={11} />

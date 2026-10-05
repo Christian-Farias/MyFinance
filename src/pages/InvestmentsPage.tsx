@@ -70,7 +70,7 @@ export const InvestmentsPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-ink tracking-tight">Investimentos</h1>
         <button
           onClick={() => { setInvestmentToEdit(undefined); setIsModalOpen(true); }}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Novo ativo</span>
@@ -143,11 +143,11 @@ export const InvestmentsPage: React.FC = () => {
       {/* ── AI INSIGHT ── */}
       {dominantAsset && (
         <div className="card p-4 flex items-center space-x-3.5" style={{ borderLeft: '3px solid var(--color-accent)' }}>
-          <div className="w-9 h-9 rounded-2xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-2xl bg-accent/15 text-accent-text flex items-center justify-center shrink-0">
             <Sparkles size={16} />
           </div>
           <div>
-            <span className="label-xs text-accent block mb-0.5">Insight</span>
+            <span className="label-xs text-accent-text block mb-0.5">Insight</span>
             <p className="text-xs text-ink">
               Sua maior exposição está em {dominantAsset.name.toLowerCase()} ({dominantAsset.percentage.toFixed(0)}%).
             </p>
@@ -162,7 +162,7 @@ export const InvestmentsPage: React.FC = () => {
         {investments.length === 0 ? (
           <div className="card p-12 text-center">
             <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-              <TrendingUp size={28} className="text-accent" />
+              <TrendingUp size={28} className="text-accent-text" />
             </div>
             <h3 className="text-sm font-semibold text-ink mb-2">Nenhum ativo cadastrado</h3>
             <p className="label-xs leading-relaxed mb-5">Adicione seus investimentos para acompanhar a evolução.</p>

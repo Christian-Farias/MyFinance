@@ -146,7 +146,7 @@ export const MonthlyClosingPage: React.FC = () => {
 
       {/* ── INSIGHT SUMMARY BOX ── */}
       <div className="card p-4 flex items-start space-x-3.5 border-accent/20 bg-accent/5">
-        <Sparkles size={20} className="text-accent shrink-0 mt-0.5" />
+        <Sparkles size={20} className="text-accent-text shrink-0 mt-0.5" />
         <div className="text-sm leading-relaxed text-ink">
           <strong className="text-ink block font-semibold mb-0.5">Diagnóstico do Período:</strong>
           {closing.totalIncome === 0 && closing.totalExpenses === 0 ? (

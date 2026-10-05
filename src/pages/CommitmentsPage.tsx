@@ -177,8 +177,8 @@ export const CommitmentsPage: React.FC = () => {
 
         <div className="card p-3.5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="label-xs text-accent">Assinaturas</span>
-            <Tv size={14} className="text-accent" />
+            <span className="label-xs text-accent-text">Assinaturas</span>
+            <Tv size={14} className="text-accent-text" />
           </div>
           <div>
             <div className="text-base font-bold text-ink">{formatCurrency(subSummary.totalMonthlyEstimate)}</div>
@@ -400,7 +400,7 @@ export const CommitmentsPage: React.FC = () => {
         <div className="space-y-3">
           <div className="card p-4 flex items-center justify-between border-accent/20 bg-accent/5">
             <div className="flex items-center space-x-3">
-              <Tv size={20} className="text-accent" />
+              <Tv size={20} className="text-accent-text" />
               <div>
                 <h4 className="text-xs font-bold text-ink">Impacto Anual das Assinaturas</h4>
                 <p className="text-xs text-ink-muted">Economizar cancelando serviços ociosos</p>
@@ -413,7 +413,7 @@ export const CommitmentsPage: React.FC = () => {
             {subscriptions.map(sub => (
               <div key={sub.id} className="card p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div className="w-10 h-10 rounded-2xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-accent/15 text-accent-text flex items-center justify-center shrink-0">
                     <Tv size={18} />
                   </div>
                   <div className="min-w-0 flex-1">

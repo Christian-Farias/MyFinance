@@ -126,12 +126,12 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
                     className="w-full flex items-center justify-between p-3 rounded-2xl bg-surface hover:bg-field border border-active hover:border-accent/40 transition-all text-left group"
                   >
                     <span className="flex items-center space-x-3.5 min-w-0">
-                      <span className="w-9 h-9 rounded-xl bg-field group-hover:bg-accent/15 text-accent flex items-center justify-center shrink-0 transition-colors">
+                      <span className="w-9 h-9 rounded-xl bg-field group-hover:bg-accent/15 text-accent-text flex items-center justify-center shrink-0 transition-colors">
                         <Icon size={18} aria-hidden="true" />
                       </span>
                       <span className="min-w-0">
                         <span className="flex items-center space-x-2">
-                          <span className="text-xs font-semibold text-ink group-hover:text-accent transition-colors">
+                          <span className="text-xs font-semibold text-ink group-hover:text-accent-text transition-colors">
                             {item.label}
                           </span>
                           {item.badge && (

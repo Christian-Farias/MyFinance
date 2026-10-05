@@ -45,7 +45,7 @@ export const GoalsPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-ink tracking-tight">Metas</h1>
         <button
           onClick={() => { setGoalToEdit(undefined); setIsGoalModalOpen(true); }}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Nova meta</span>
@@ -74,7 +74,7 @@ export const GoalsPage: React.FC = () => {
       {goals.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="w-14 h-14 rounded-3xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-            <Target size={28} className="text-accent" />
+            <Target size={28} className="text-accent-text" />
           </div>
           <h3 className="text-sm font-semibold text-ink mb-2">Nenhuma meta criada</h3>
           <p className="label-xs leading-relaxed mb-5">Defina metas para organizar seus sonhos e reservas financeiras.</p>
@@ -154,7 +154,7 @@ export const GoalsPage: React.FC = () => {
                 <div className="flex items-center space-x-2 pt-3 border-t border-edge">
                   <button
                     onClick={() => setGoalForDeposit(goal)}
-                    className="flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/15 transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
                   >
                     <PlusCircle size={13} />
                     <span>Guardar dinheiro</span>

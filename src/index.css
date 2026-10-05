@@ -5,92 +5,106 @@
 ══════════════════════════════════════════════════ */
 @theme {
   /* ── Surfaces ─────────────────────────────────────
-     Banco Inter dark ramp. Bottom to top: page →
+     Near-black neutral ramp. Bottom to top: page →
      sidebar → card → raised → hover → panel → active.
-     Nothing above this scale should introduce a new hex.
 
-     The previous ramp carried six steps packed inside a
-     5% luminance band (#050505…#222733), so hover and
-     active were imperceptible and every surface had to
-     be separated by a hairline border instead. Inter
-     uses four deliberately wide steps: the gap between
-     two adjacent fills is now visible on its own.
+     The page sits at #050506 rather than pure black so a
+     modal, a menu or a hairline still separates from it,
+     while the whole app reads darker than the #0D0D0D base
+     it replaces (the card/page gap is now 1.10:1 — smaller than
+     before, so cards lean harder on the top highlight below).
+     hover/panel/active are derived rather than
+     specified: they are not brand colours, they only have to
+     stay perceptibly distinct in sequence.
      ────────────────────────────────────────────────── */
-  --color-base: #0D0D0D;          /* page background */
-  --color-base-alt: #121212;      /* sidebar, inset blocks */
-  --color-surface: #161616;       /* cards */
-  --color-surface-raised: #1D1D1D;/* elevated cards, menus */
-  --color-hover: #262626;         /* interactive fill */
-  --color-panel: #2E2E2E;         /* modals, dropdowns */
-  --color-active: #383838;        /* pressed / selected fill */
+  --color-base: #050506;           /* page background */
+  --color-base-alt: #0A0A0B;       /* sidebar, inset blocks */
+  --color-surface: #111113;        /* cards */
+  --color-surface-raised: #18181B; /* elevated cards, menus */
+  --color-hover: #222225;          /* interactive fill */
+  --color-panel: #1F1F23;          /* modals, dropdowns */
+  --color-active: #2A2A2F;         /* pressed / selected fill */
 
   /* ── Text ──────────────────────────────────────────
-     Pure neutrals — no blue cast. Ratios are against the
-     *lightest* surface here (--color-panel), where the
-     previous ramp already failed: --color-negative was
-     4.49:1 and --color-info 3.69:1.
+     Neutral greys with a very slight cool cast. Ratios are
+     against the lightest surface here (--color-panel).
 
-     Inter's own tertiary (#6B6B6B) was rejected: 3.65:1.
+     --color-ink-faint is deliberately lighter than the
+     #71717A "muted" grey of the brand palette. It renders at
+     11px in .label-section, which is small text and needs
+     4.5:1; #71717A measures 3.67:1 here and fails. So #71717A
+     is reused only for borders and icons, where the 3:1
+     non-text threshold applies instead.
      ────────────────────────────────────────────────── */
-  --color-ink: #F5F5F7;           /* 12.5:1 */
-  --color-ink-muted: #BDBDBD;     /*  7.2:1 */
-  --color-ink-faint: #9E9E9E;     /*  5.1:1 */
+  --color-ink: #F5F5F5;           /* 16.3:1 */
+  --color-ink-muted: #A1A1AA;     /*  6.9:1 */
+  --color-ink-faint: #8A8A93;     /*  5.2:1 */
 
   /* ── Borders ────────────────────────────────────────
-     Inter keeps dividers light on dark so they read as a
-     drawn line, not a gap. Separators carry no information
-     on their own — separation comes from the surface ramp.
+     Hairlines only. #27272A sits at 1.27:1 on a card, which
+     is what a divider should be: legible as a line, invisible
+     as a shape.
 
      --color-edge-field is the exception. WCAG 1.4.11 wants
      3:1 on anything required to identify a control, and an
-     input qualifies: its fill (#1D1D1D) sits at 1.14:1 on the
-     page and 1.24:1 inside a modal, so the border is the only
-     thing delineating it. #787878 is the lightest grey that
-     clears 3:1 against all four surfaces; #757575 reached
-     only 2.95:1 inside a modal, where NewTransactionModal's
-     fields actually live. */
-  --color-edge: #2A2A2A;
-  --color-edge-subtle: #212121;
-  --color-edge-strong: #3D3D3D;
-  --color-edge-field: #787878;
+     input qualifies: its fill (#18181B) sits at 1.10:1 on the
+     page and 1.08:1 inside a modal, so the border is the only
+     thing delineating it. #71717A measures 3.67:1 on the
+     lightest surface; #52525B reached only 2.29:1 and was
+     rejected. */
+  --color-edge: #27272A;
+  --color-edge-subtle: #1E1E21;
+  --color-edge-strong: #3F3F46;
+  --color-edge-field: #71717A;
 
   /* ── Form fields ───────────────────────────────────*/
-  --color-field: #1D1D1D;
+  --color-field: #18181B;
 
   /* ── State ──────────────────────────────────────────*/
-  --color-positive: #17B36F;
-  --color-negative: #FF6B6B;
-  --color-warning: #FFB800;
-  --color-info: #60A5FA;
+  --color-positive: #22C55E;
+  --color-negative: #FF5C61;
+  --color-warning: #F5B82E;
+  /* Informational carries the indigo so AI and neutral system
+     messages share one family instead of a second blue hue. */
+  --color-info: #8B8BFF;
   /* Lighter red for destructive pills; --color-negative is the text tone. */
-  --color-negative-strong: #FF8080;
-  --color-negative-hover: #F45C5C;
-  --color-negative-strong-hover: #F26D6D;
-  --color-positive-hover: #12A163;
-  --color-on-positive: #06180D;
-  --color-on-negative: #2A0C0C;
+  --color-negative-strong: #FF8A8D;
+  --color-negative-hover: #F24D53;
+  --color-negative-strong-hover: #EE7C80;
+  --color-positive-hover: #16A34A;
+  --color-on-positive: #04140A;
+  --color-on-negative: #24090A;
 
   /* ── Tinted backgrounds ────────────────────────────
      For pills, callouts and low-alpha fills. The
      `-subtle` names hold the tint itself, so they work
      with plain `bg-` utilities and no colour-mix.
      ────────────────────────────────────────────────── */
-  --color-positive-subtle: rgb(23 179 111 / 0.14);
-  --color-negative-subtle: rgb(255 107 107 / 0.14);
-  --color-warning-subtle: rgb(255 184 0 / 0.12);
-  --color-info-subtle: rgb(96 165 250 / 0.14);
-  --color-accent-subtle: rgb(255 122 0 / 0.14);
+  --color-positive-subtle: rgb(34 197 94 / 0.14);
+  --color-negative-subtle: rgb(255 92 97 / 0.14);
+  --color-warning-subtle: rgb(245 184 46 / 0.12);
+  --color-info-subtle: rgb(108 99 255 / 0.14);
+  --color-accent-subtle: rgb(108 99 255 / 0.14);
 
   /* ── Brand ──────────────────────────────────────────
-     Inter orange, held to CTAs, badges, progress fills and
-     the active tab indicator. Never running text.
+     Indigo, held to CTAs, badges, progress fills, active
+     navigation, charts and AI. Never running text — for that
+     see --color-accent-text below.
      ────────────────────────────────────────── */
-  --color-accent: #FF7A00;
-  --color-accent-hover: #E56E00;
-  /* Ink that sits ON the accent. White is 2.61:1 here and
-     fails AA for button text, so the fill carries near-black
-     instead — 6.92:1. */
-  --color-on-accent: #161616;
+  --color-accent: #6C63FF;
+  --color-accent-hover: #7C75FF;
+  /* Ink that sits ON the accent. White fails here: #F5F5F5 is
+     3.96:1 on #6C63FF and pure white is 4.32:1, both under the
+     4.5:1 a button label needs. Near-black clears it at 4.72:1
+     and stays at 5.67:1 against the hover tint. */
+  --color-on-accent: #050506;
+
+  /* Indigo for text and icons ON a surface. #6C63FF measures
+     4.37:1 on a card and 4.11:1 on an elevated card, so it is a
+     fill colour, not a text colour. #7C75FF — the hover tint —
+     reaches 5.25:1 and 4.93:1, which keeps a link like
+     "Ver análise" legible on a card. */
+  --color-accent-text: #7C75FF;
 
   /* ── Radii ──────────────────────────────────────────*/
   --radius-sm: 8px;
@@ -274,7 +288,7 @@ select[aria-invalid="true"]:focus-visible {
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-edge); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #2D313A; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-edge-strong); }
 .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
@@ -476,7 +490,7 @@ select[aria-invalid="true"]:focus-visible {
   justify-content: center;
   border-radius: var(--radius-md);
   background: var(--color-field);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   transition: background-color var(--duration-fast) var(--ease-out);
 }
 
@@ -564,7 +578,7 @@ select[aria-invalid="true"]:focus-visible {
 .app-topbar-lead {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 6px;
   min-width: 0;
   flex-shrink: 1;
 }
@@ -787,7 +801,7 @@ select[aria-invalid="true"]:focus-visible {
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: 10px;
   margin-bottom: var(--sp-6);
   padding-inline: var(--sp-2);
 }
@@ -896,8 +910,13 @@ select[aria-invalid="true"]:focus-visible {
   max-width: 100%;
 }
 
+/* The active tab is the only place in the chrome where the indigo is
+   allowed to sit as text on the base page — and it is the lighter
+   token, because the inactive labels next to it are 12px. Weight,
+   not colour, carries the state distinction: a 10px label at 500 vs
+   600 needs more than a hue shift to read. */
 .bottom-nav-item-active {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .bottom-nav-item-active .bottom-nav-label {
@@ -922,9 +941,9 @@ select[aria-invalid="true"]:focus-visible {
 }
 
 /* ── CARDS ────────────────────────────────────────
-   Banco Inter separates surfaces by background step and
-   reserves shadow for things that genuinely float. So a card
-   carries NO outline: the #161616 fill against the #0D0D0D page
+   Surfaces separate by background step, not by outline, and
+   shadow is reserved for things that genuinely float. A card
+   carries no hairline: the #111113 fill against the #050506 page
    is what separates it, reinforced by a 1px top highlight —
    the standard trick for a lit edge on a dark plane, which a
    uniform hairline border cannot fake (it lit the bottom edge
@@ -942,6 +961,24 @@ select[aria-invalid="true"]:focus-visible {
 .card-hover:hover {
   background-color: var(--color-hover);
   cursor: pointer;
+}
+
+/* The net-worth panel. Not a variant of .card in paint — it is the
+   same surface on a page background that now sits only 1.10:1 away,
+   so it needs three extra cues to read as the primary object:
+   a wider radius, a larger inset highlight, and an indigo hairline.
+   The indigo is a 1px line at 22% alpha, so it tints the edge
+   without becoming a coloured surface or competing with the figure. */
+.card-hero {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 12px 32px -12px rgb(0 0 0 / 0.5);
+}
+.card-hero.card-hover:hover {
+  background-color: var(--color-hover);
 }
 
 /* Interactive card — keyboard users get the same affordance via
@@ -1028,7 +1065,7 @@ select[aria-invalid="true"]:focus-visible {
 .btn-accent-ghost {
   background-color: var(--color-accent-subtle);
   border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 .btn-accent-ghost:hover:not(:disabled) {
   background-color: var(--color-accent-subtle);
@@ -1234,12 +1271,28 @@ select[aria-invalid="true"]:focus-visible {
 .segmented-item-active,
 .segmented-item-active:active {
   background: var(--color-accent-subtle);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 /* ── TYPOGRAPHY SCALE ────────────────────────────────── */
+/* Net worth. The one figure allowed to be enormous — everything
+   else on the page is sized against it. The vw term is the only
+   fluid step in the ramp: below ~380px the 1.75rem floor holds,
+   above ~560px it stops climbing at 3.5rem so a 5-figure amount
+   still fits the content column without truncating. */
+.num-hero {
+  font-size: clamp(1.75rem, 8vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+/* Was .num-xl. Kept as the alias for the ~30 non-hero call sites
+   (modals, detail panels, empty states) so promoting a figure to
+   hero scale is an explicit choice per screen, not a default. */
 .num-xl {
-  font-size: clamp(1.75rem, 5.5vw, 2.75rem);
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -1274,13 +1327,27 @@ select[aria-invalid="true"]:focus-visible {
   color: var(--color-ink-muted);
   letter-spacing: 0.02em;
 }
-/* Was #5F6570 = 3.29:1. Now inherits the 7.2:1 token. */
+/* Section heading. 11px / 700 / wide tracking, on --color-ink-faint.
+   That token is 5.2:1 on --color-panel, which 11px small text
+   requires — the brand palette's own #71717A only reaches 3.67:1
+   and would fail here. */
 .label-section {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--color-ink-faint);
+}
+/* The eyebrow over a hero figure. Same role as .label-section but
+   one step brighter and with less tracking: it introduces a number
+   rather than a section, so it should not compete with the
+   section headings it sits next to. */
+.label-brand {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
 }
 
 /* ── PROGRESS BARS ───────────────────────────────────── */
@@ -1301,7 +1368,7 @@ select[aria-invalid="true"]:focus-visible {
 }
 .pill-positive { background: var(--color-positive-subtle); color: var(--color-positive); }
 .pill-negative { background: var(--color-negative-subtle); color: var(--color-negative); }
-.pill-accent   { background: var(--color-accent-subtle); color: var(--color-accent); }
+.pill-accent   { background: var(--color-accent-subtle); color: var(--color-accent-text); }
 .pill-neutral  { background: rgb(142 149 163 / 0.10); color: var(--color-ink-muted); }
 .pill-warning  { background: var(--color-warning-subtle); color: var(--color-warning); }
 
@@ -1316,7 +1383,7 @@ select[aria-invalid="true"]:focus-visible {
   padding: 0 6px;
   border-radius: 9999px;
   background: var(--color-negative);
-  color: #2A0C0C;
+  color: var(--color-on-negative);
   font-size: 10px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;

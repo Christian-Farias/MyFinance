@@ -117,7 +117,7 @@ export const CashFlowPage: React.FC = () => {
         </div>
 
         <div className="card p-3.5">
-          <span className="label-xs text-accent">Saldo Projetado</span>
+          <span className="label-xs text-accent-text">Saldo Projetado</span>
           <div className="text-base font-bold text-ink mt-1">{formatCurrency(cashFlow.projectedEndBalance)}</div>
           <span className="text-[11px] text-ink-muted">Estimativa em 30 dias</span>
         </div>
@@ -187,7 +187,7 @@ export const CashFlowPage: React.FC = () => {
 
         {daysWithMovements.length === 0 ? (
           <div className="card p-6 text-center text-ink-muted">
-            <Calendar size={32} className="mx-auto mb-2 opacity-30 text-accent" />
+            <Calendar size={32} className="mx-auto mb-2 opacity-30 text-accent-text" />
             <p className="text-xs">Nenhum evento financeiro agendado para o período.</p>
           </div>
         ) : (
@@ -196,7 +196,7 @@ export const CashFlowPage: React.FC = () => {
               <div key={day.date} className="card p-4 space-y-2.5">
                 <div className="flex items-center justify-between border-b border-active pb-2">
                   <div className="flex items-center space-x-2">
-                    <Calendar size={14} className="text-accent" />
+                    <Calendar size={14} className="text-accent-text" />
                     <span className="text-xs font-bold text-ink">{formatDateBR(day.date)}</span>
                   </div>
                   <span className="text-xs text-ink-muted font-medium">

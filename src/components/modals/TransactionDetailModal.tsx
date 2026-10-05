@@ -109,7 +109,7 @@ export const TransactionDetailModal: React.FC = () => {
           <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-field border border-edge-strong">
             <dt className="flex items-center space-x-3">
               {card ? (
-                <CreditCard size={16} className="text-accent" aria-hidden="true" />
+                <CreditCard size={16} className="text-accent-text" aria-hidden="true" />
               ) : (
                 <Wallet size={16} className="text-ink-muted" aria-hidden="true" />
               )}
@@ -123,7 +123,7 @@ export const TransactionDetailModal: React.FC = () => {
           {Boolean(tx.installmentNumber && tx.installmentTotal) && (
             <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-field border border-edge-strong">
               <dt className="flex items-center space-x-3">
-                <Layers size={16} className="text-accent" aria-hidden="true" />
+                <Layers size={16} className="text-accent-text" aria-hidden="true" />
                 <span className="text-xs text-ink-muted">Parcela</span>
               </dt>
               <dd className="text-xs font-semibold text-ink">
@@ -142,7 +142,7 @@ export const TransactionDetailModal: React.FC = () => {
         </dl>
 
         <div className="p-4 rounded-2xl bg-edge-strong border border-edge-strong mt-5 sm:mt-6">
-          <div className="flex items-center space-x-2 text-accent text-xs font-semibold mb-1.5">
+          <div className="flex items-center space-x-2 text-accent-text text-xs font-semibold mb-1.5">
             <Sparkles size={15} aria-hidden="true" />
             <span>Análise da IA</span>
           </div>

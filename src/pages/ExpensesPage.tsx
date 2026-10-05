@@ -173,7 +173,7 @@ export const ExpensesPage: React.FC = () => {
           <p className="label-section">Para onde vai seu dinheiro</p>
           <button
             onClick={() => navigate('/comparacao')}
-            className="flex items-center space-x-1 text-xs text-accent hover:underline"
+            className="flex items-center space-x-1 text-xs text-accent-text hover:underline"
           >
             <span>Ver comparativo</span>
             <ArrowUpRight size={12} />
@@ -195,7 +195,7 @@ export const ExpensesPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2.5">
                     <span className="text-sm">{cat.categoryIcon || '📦'}</span>
-                    <span className="text-xs font-semibold text-ink group-hover:text-accent transition-colors">
+                    <span className="text-xs font-semibold text-ink group-hover:text-accent-text transition-colors">
                       {cat.categoryName}
                     </span>
                   </div>

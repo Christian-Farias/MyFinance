@@ -18,7 +18,7 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({ explanation }) => 
     <Lightbulb
       size={14}
       aria-hidden="true"
-      className="text-accent shrink-0 mt-0.5"
+      className="text-accent-text shrink-0 mt-0.5"
     />
     <p className="text-sm text-ink-muted leading-relaxed">{explanation}</p>
   </div>

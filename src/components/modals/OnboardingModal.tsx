@@ -4,7 +4,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { Modal } from '../ui';
 
 const TONE = {
-  accent: 'bg-accent/12 text-accent',
+  accent: 'bg-accent/12 text-accent-text',
   positive: 'bg-positive/12 text-positive',
   info: 'bg-info/12 text-info',
 } as const;
