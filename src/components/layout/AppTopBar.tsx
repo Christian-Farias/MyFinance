@@ -37,16 +37,15 @@ export const AppTopBar: React.FC = () => {
   return (
     <header className="app-topbar">
       <div className="app-topbar-lead">
-        {/* logo.png carries ~46% transparent padding, so the visible mark is
-          only ~54% of whatever box it is given: at 26px the glyph
-          rendered 14px and read as a speck next to the 40px sidebar
-          mark. 30px brings the two into the same visual weight. */}
+        {/* 26px against the sidebar's 40px. The mark fills ~88% of the
+          file, so this renders ~23px of actual glyph — the same optical
+          weight the padded original was fighting for. */}
         <img
           src="/logo.png"
           alt=""
-          width={30}
-          height={30}
-          className="w-[30px] h-[30px] rounded-lg object-contain shrink-0"
+          width={26}
+          height={26}
+          className="w-[26px] h-[26px] rounded-lg object-contain shrink-0"
         />
         <span className="text-ink text-[15px] font-semibold tracking-tight truncate">
           MyFinance
