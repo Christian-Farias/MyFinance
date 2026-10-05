@@ -5,64 +5,84 @@
 ══════════════════════════════════════════════════ */
 @theme {
   /* ── Surfaces ─────────────────────────────────────
-     Bottom to top: page → sidebar → card → raised →
-     modal → hover/active. Nothing above this scale
-     should introduce a new hex.
+     Banco Inter dark ramp. Bottom to top: page →
+     sidebar → card → raised → hover → panel → active.
+     Nothing above this scale should introduce a new hex.
+
+     The previous ramp carried six steps packed inside a
+     5% luminance band (#050505…#222733), so hover and
+     active were imperceptible and every surface had to
+     be separated by a hairline border instead. Inter
+     uses four deliberately wide steps: the gap between
+     two adjacent fills is now visible on its own.
      ────────────────────────────────────────────────── */
-  --color-base: #050505;          /* page background */
-  --color-base-alt: #08090B;      /* sidebar, inset blocks */
-  --color-surface: #0D0F12;       /* cards */
-  --color-surface-raised: #121419;/* elevated cards, menus */
-  --color-panel: #14171D;         /* modals, dropdowns */
-  --color-hover: #1A1F29;         /* interactive fill */
-  --color-active: #222733;        /* pressed / selected fill */
+  --color-base: #0D0D0D;          /* page background */
+  --color-base-alt: #121212;      /* sidebar, inset blocks */
+  --color-surface: #161616;       /* cards */
+  --color-surface-raised: #1D1D1D;/* elevated cards, menus */
+  --color-hover: #262626;         /* interactive fill */
+  --color-panel: #2E2E2E;         /* modals, dropdowns */
+  --color-active: #383838;        /* pressed / selected fill */
 
   /* ── Text ──────────────────────────────────────────
-     Every value meets WCAG 2.2 AA (4.5:1) against
-     --color-surface. Tertiary was 3.29:1 before.
-     ────────────────────────────────────────────────── */
-  --color-ink: #F5F5F5;           /* 18.9:1 */
-  --color-ink-muted: #8E95A3;     /*  6.40:1 */
-  --color-ink-faint: #767C87;     /*  4.59:1 */
+     Pure neutrals — no blue cast. Ratios are against the
+     *lightest* surface here (--color-panel), where the
+     previous ramp already failed: --color-negative was
+     4.49:1 and --color-info 3.69:1.
 
-  /* ── Borders ────────────────────────────────────────*/
-  --color-edge: #1D2026;
-  --color-edge-subtle: #15181E;
-  --color-edge-strong: #262C3A;
-  --color-edge-field: #262C3A;
+     Inter's own tertiary (#6B6B6B) was rejected: 3.65:1.
+     ────────────────────────────────────────────────── */
+  --color-ink: #F5F5F7;           /* 12.5:1 */
+  --color-ink-muted: #BDBDBD;     /*  7.2:1 */
+  --color-ink-faint: #9E9E9E;     /*  5.1:1 */
+
+  /* ── Borders ────────────────────────────────────────
+     Inter keeps dividers light on dark so they read as a
+     drawn line, not a gap. These carry no information on
+     their own — separation comes from the surface ramp.
+     ────────────────────────────────────────────────── */
+  --color-edge: #2A2A2A;
+  --color-edge-subtle: #212121;
+  --color-edge-strong: #3D3D3D;
+  --color-edge-field: #3D3D3D;
 
   /* ── Form fields ───────────────────────────────────*/
-  --color-field: #1A1F29;
+  --color-field: #1D1D1D;
 
   /* ── State ──────────────────────────────────────────*/
-  --color-positive: #39D98A;
-  --color-negative: #FF5C5C;
-  --color-warning: #F59E0B;
-  --color-info: #3B82F6;
-  /* Deeper red for destructive pills; --color-negative is the text tone. */
-  --color-negative-strong: #FF5555;
-  --color-negative-hover: #E04848;
-  --color-negative-strong-hover: #E64A4A;
-  --color-positive-hover: #32C57C;
-  --color-on-positive: #04210F;
+  --color-positive: #17B36F;
+  --color-negative: #FF6B6B;
+  --color-warning: #FFB800;
+  --color-info: #60A5FA;
+  /* Lighter red for destructive pills; --color-negative is the text tone. */
+  --color-negative-strong: #FF8080;
+  --color-negative-hover: #F45C5C;
+  --color-negative-strong-hover: #F26D6D;
+  --color-positive-hover: #12A163;
+  --color-on-positive: #06180D;
   --color-on-negative: #2A0C0C;
 
   /* ── Tinted backgrounds ────────────────────────────
-     For pills, callouts and 10%-alpha fills. The
+     For pills, callouts and low-alpha fills. The
      `-subtle` names hold the tint itself, so they work
      with plain `bg-` utilities and no colour-mix.
      ────────────────────────────────────────────────── */
-  --color-positive-subtle: rgb(57 217 138 / 0.12);
-  --color-negative-subtle: rgb(255 92 92 / 0.12);
-  --color-warning-subtle: rgb(245 158 11 / 0.10);
-  --color-info-subtle: rgb(59 130 246 / 0.12);
-  --color-accent-subtle: rgb(139 124 255 / 0.12);
+  --color-positive-subtle: rgb(23 179 111 / 0.14);
+  --color-negative-subtle: rgb(255 107 107 / 0.14);
+  --color-warning-subtle: rgb(255 184 0 / 0.12);
+  --color-info-subtle: rgb(96 165 250 / 0.14);
+  --color-accent-subtle: rgb(255 122 0 / 0.14);
 
-  /* ── Brand ──────────────────────────────────────────*/
-  --color-accent: #8B7CFF;
-  --color-accent-hover: #7A6AEB;
-  /* Ink that sits ON the accent. White was 3.27:1. */
-  --color-on-accent: #0A0B0E;
+  /* ── Brand ──────────────────────────────────────────
+     Inter orange, held to CTAs, badges, progress fills and
+     the active tab indicator. Never running text.
+     ────────────────────────────────────────── */
+  --color-accent: #FF7A00;
+  --color-accent-hover: #E56E00;
+  /* Ink that sits ON the accent. White is 2.61:1 here and
+     fails AA for button text, so the fill carries near-black
+     instead — 6.92:1. */
+  --color-on-accent: #161616;
 
   /* ── Radii ──────────────────────────────────────────*/
   --radius-sm: 8px;
@@ -197,7 +217,7 @@ input:focus-visible,
 textarea:focus-visible {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgb(139 124 255 / 0.18);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
 /* Error state must not rely on colour alone — the ring
@@ -209,7 +229,7 @@ select[aria-invalid="true"] {
 .field[aria-invalid="true"]:focus-visible,
 select[aria-invalid="true"]:focus-visible {
   border-color: var(--color-negative);
-  box-shadow: 0 0 0 3px rgb(255 92 92 / 0.2);
+  box-shadow: 0 0 0 3px var(--color-negative-subtle);
 }
 
 /* Skip link — visually hidden until focused. */
@@ -235,7 +255,7 @@ select[aria-invalid="true"]:focus-visible {
 ══════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1D2026; border-radius: 9999px; }
+::-webkit-scrollbar-thumb { background: var(--color-edge); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #2D313A; }
 .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -456,7 +476,7 @@ select[aria-invalid="true"]:focus-visible {
   border-radius: var(--radius-md);
   background: var(--color-accent);
   color: var(--color-on-accent);
-  box-shadow: 0 2px 8px rgb(139 124 255 / 0.25);
+  box-shadow: 0 2px 8px var(--color-accent-subtle);
   transition:
     background-color var(--duration-fast) var(--ease-out),
     opacity var(--duration-fast) var(--ease-out);
@@ -496,12 +516,18 @@ select[aria-invalid="true"]:focus-visible {
 
    Sits above .app-scroll and never scrolls. Carries chrome
    only — no route title, which stays with the page's <h1>.
+
+   Modelled on Banco Inter's AppBar: a pill search centred in
+   the bar, actions pushed to the trailing edge, flat fill.
+
+   The brand lives here ONLY below `md`. At 768px the sidebar
+   appears and already renders logo.png + wordmark, so showing
+   it in both places printed the identity twice on desktop.
    ══════════════════════════════════════════════════ */
 .app-topbar {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sp-3);
   /* The notch is cleared here now, so .app-scroll no longer
      needs its own padding-top on mobile. */
@@ -509,10 +535,109 @@ select[aria-invalid="true"]:focus-visible {
   padding-left: max(var(--sp-4), var(--sal));
   padding-right: max(var(--sp-4), var(--sar));
   padding-bottom: var(--sp-3);
-  background: color-mix(in srgb, var(--color-base) 80%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  /* Flat, per Inter's flat-design rule. The earlier
+     `blur(20px) saturate(180%)` over a translucent base cost a
+     composited layer on every scroll and read as glassy rather
+     than solid. */
+  background: var(--color-base);
   border-bottom: 1px solid var(--color-edge);
+}
+
+.app-topbar-lead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* Visibility is handled here rather than with a `md:hidden` utility.
+   These rules are unlayered, and unlayered declarations outrank
+   Tailwind's `@layer utilities` in the cascade — a utility on the
+   element would silently lose. `.sidebar` does the same for the same
+   reason. */
+@media (min-width: 768px) {
+  .app-topbar-lead { display: none; }
+}
+
+/* ── Search trigger ──────────────────────────────────
+   A real button, not a fake field: it opens the existing
+   GlobalSearchModal, which filters transactions, accounts,
+   cards, goals and investments and is already reachable by
+   Cmd/Ctrl+K. Before this there was no visible trigger, so
+   on phones — where the sidebar is hidden and there is no
+   Cmd key — global search was unreachable entirely.
+   ──────────────────────────────────────────────────── */
+.app-topbar-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 22rem;
+  height: 40px;
+  padding-inline: var(--sp-4);
+  border-radius: 9999px;
+  background: var(--color-surface);
+  color: var(--color-ink-faint);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.app-topbar-search:hover {
+  background: var(--color-hover);
+  color: var(--color-ink-muted);
+}
+
+.app-topbar-search-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Shortcut hint, hidden on touch-sized widths where no
+   keyboard exists to press it. */
+.app-topbar-search kbd {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding-inline: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-active);
+  color: var(--color-ink-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Below the sidebar breakpoint the wordmark already occupies the
+   left edge, so there is no width for a pill here. The same button
+   collapses to a plain circle — one control, no duplicate markup. */
+@media (max-width: 767px) {
+  .app-topbar-search {
+    flex: 0 0 36px;
+    width: 36px;
+    max-width: none;
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .app-topbar-search-label,
+  .app-topbar-search kbd { display: none; }
+}
+
+.app-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 @media (min-width: 768px) {
@@ -521,8 +646,18 @@ select[aria-invalid="true"]:focus-visible {
     padding-right: var(--sp-8);
     padding-bottom: var(--sp-3);
   }
+  /* Below the sidebar breakpoint there is no room for both the
+     wordmark and a centred pill. */
+  .app-topbar-search { max-width: 14rem; }
 }
 
+@media (min-width: 1024px) {
+  .app-topbar-search { max-width: 22rem; }
+}
+
+/* Offline status. Moved off the bar and into the profile menu:
+   as an inline pill it appeared and disappeared with the network
+   state, shoving the search and the action cluster sideways. */
 .app-topbar-offline {
   display: inline-flex;
   align-items: center;
@@ -537,6 +672,10 @@ select[aria-invalid="true"]:focus-visible {
   white-space: nowrap;
 }
 
+@media (min-width: 768px) {
+  .app-topbar-offline { display: none; }
+}
+
 /* Square icon button. 36px is the minimum that stays comfortable in a
    thumb-reach strip without inflating the bar's height. */
 .app-topbar-action {
@@ -546,7 +685,7 @@ select[aria-invalid="true"]:focus-visible {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
+  border-radius: 9999px;
   color: var(--color-ink-muted);
   transition:
     background-color var(--duration-fast) var(--ease-out),
@@ -581,15 +720,15 @@ select[aria-invalid="true"]:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-1);
+  overflow: hidden;
+  width: 36px;
   height: 36px;
   min-width: 36px;
-  padding: 0 var(--sp-2);
   border-radius: 9999px;
-  background: var(--color-field);
+  background: var(--color-surface-raised);
   border: 1px solid var(--color-edge);
   color: var(--color-ink-muted);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   transition:
     background-color var(--duration-fast) var(--ease-out),
@@ -856,12 +995,12 @@ select[aria-invalid="true"]:focus-visible {
 
 /* Accent ghost — the "Add" action on page headers. */
 .btn-accent-ghost {
-  background-color: rgb(139 124 255 / 0.10);
-  border-color: rgb(139 124 255 / 0.20);
+  background-color: var(--color-accent-subtle);
+  border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
   color: var(--color-accent);
 }
 .btn-accent-ghost:hover:not(:disabled) {
-  background-color: rgb(139 124 255 / 0.15);
+  background-color: var(--color-accent-subtle);
 }
 
 /* Danger — destructive commit inside a ConfirmDialog. */
@@ -974,7 +1113,7 @@ select[aria-invalid="true"]:focus-visible {
 .field-amount:focus-visible {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgb(139 124 255 / 0.18);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
 /* Currency prefix sits inside the border via a wrapper */
@@ -1114,11 +1253,11 @@ select[aria-invalid="true"]:focus-visible {
   font-weight: 600;
   min-height: 22px;
 }
-.pill-positive { background: rgb(57 217 138 / 0.12); color: var(--color-positive); }
-.pill-negative { background: rgb(255 92 92 / 0.12);  color: var(--color-negative); }
-.pill-accent   { background: rgb(139 124 255 / 0.12); color: var(--color-accent); }
+.pill-positive { background: var(--color-positive-subtle); color: var(--color-positive); }
+.pill-negative { background: var(--color-negative-subtle); color: var(--color-negative); }
+.pill-accent   { background: var(--color-accent-subtle); color: var(--color-accent); }
 .pill-neutral  { background: rgb(142 149 163 / 0.10); color: var(--color-ink-muted); }
-.pill-warning  { background: rgb(245 158 11 / 0.12); color: var(--color-warning); }
+.pill-warning  { background: var(--color-warning-subtle); color: var(--color-warning); }
 
 /* Badge count — the dot in the nav. Unifies the two
    divergent badge styles that coexisted in Sidebar.tsx. */

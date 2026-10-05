@@ -16,7 +16,6 @@ import {
   LineChart,
   Bell,
   Upload,
-  Search,
   Clock,
   Calendar,
   TrendingUp,
@@ -42,7 +41,7 @@ interface NavItem {
 }
 
 export const Sidebar: React.FC = () => {
-  const { openNewTxModal, alerts, isOffline, setGlobalSearchOpen } = useFinance();
+  const { openNewTxModal, alerts, isOffline } = useFinance();
   const unreadAlerts = alerts.filter((alert) => !alert.isRead).length;
 
   const primaryNav: NavItem[] = [
@@ -89,35 +88,29 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside aria-label="Navegação principal" className="sidebar">
-      {/* Brand — not an <h1>: each route owns the page heading. */}
+      {/* Brand — not an <h1>: each route owns the page heading.
+          Also the only place the brand renders at md+: the top bar
+          hides its copy at that width to avoid a double identity. */}
       <div className="sidebar-brand">
         <img
           src="/logo.png"
           alt=""
           width={40}
           height={40}
-          className="w-10 h-10 rounded-xl object-contain bg-black border border-active"
+          className="w-10 h-10 rounded-xl object-contain"
         />
         <div className="min-w-0">
           <p className="text-ink font-bold text-base tracking-tight leading-none">
             MyFinance
           </p>
-          <span className="text-ink-muted text-[11px] font-medium">
+          <span className="text-ink-muted text-xs font-medium">
             Assistente Pessoal
           </span>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setGlobalSearchOpen(true)}
-        className="btn btn-secondary btn-sm w-full justify-start gap-2 mb-2"
-      >
-        <Search size={15} aria-hidden="true" />
-        <span>Buscar</span>
-        <kbd className="ml-auto text-[10px] text-ink-faint">⌘K</kbd>
-      </button>
-
+      {/* No search control here: the top bar owns it at every width,
+          matching Banco Inter's AppBar. This one duplicated it. */}
       <button
         type="button"
         onClick={() => openNewTxModal('expense')}

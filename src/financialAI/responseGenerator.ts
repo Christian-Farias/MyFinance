@@ -452,7 +452,7 @@ export function generateResponse(
             value: b.spent,
             formattedValue: `${formatCurrency(b.spent)} / ${formatCurrency(b.budget.limitAmount)}`,
             percentage: Math.min(100, b.percentage),
-            color: b.isExceeded ? '#FF5C5C' : b.isWarning ? '#FFB800' : '#39D98A',
+            color: b.isExceeded ? '#FF6B6B' : b.isWarning ? '#FFB800' : '#17B36F',
           })),
         },
         followUpSuggestions: ['Quanto gastei este mês?', 'Qual meu saldo?'],

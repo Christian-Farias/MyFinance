@@ -195,7 +195,7 @@ export function calculateCategoryBreakdown(
       categoryId: catId,
       categoryName: category?.name || 'Outros',
       categoryIcon: category?.icon || 'Tag',
-      categoryColor: category?.color || '#8E95A3',
+      categoryColor: category?.color || '#9E9E9E',
       total: amount,
       percentage: totalExpense > 0 ? (amount / totalExpense) * 100 : 0,
     });
