@@ -13,7 +13,9 @@ import {
   Clock,
   Calendar,
   TrendingUp,
-  FileSpreadsheet
+  FileSpreadsheet,
+  CreditCard,
+  Plus
 } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { Modal } from '../ui';
@@ -25,13 +27,23 @@ interface MoreMenuModalProps {
 
 export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const { alerts, bills } = useFinance();
+  const { alerts, bills, setQuickActionOpen } = useFinance();
   const unreadAlerts = alerts.filter(a => !a.isRead).length;
   const pendingBills = bills.filter(b => b.status === 'pending' || b.status === 'overdue').length;
 
   const handleNavigate = (path: string) => {
     onClose();
     navigate(path);
+  };
+
+  /**
+   * Where the floating action button went. It was the only always-visible way
+   * to start a quick entry on mobile, so it cannot just be deleted — this is
+   * the same `setQuickActionOpen` the FAB called, surfaced as the first row.
+   */
+  const handleQuickAction = () => {
+    onClose();
+    setQuickActionOpen(true);
   };
 
   const menuSections = [
@@ -55,6 +67,9 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
       items: [
         { label: 'Contas', path: '/contas', icon: Wallet, desc: 'Bancos, carteiras e saldos' },
         { label: 'Transações', path: '/transacoes', icon: ArrowLeftRight, desc: 'Histórico completo de lançamentos' },
+        /* Cartões lost its bottom-nav slot when the bar went from five
+           targets to four; this keeps it reachable on mobile. */
+        { label: 'Cartões', path: '/cartoes', icon: CreditCard, desc: 'Limites, faturas e compras' },
         { label: 'Orçamentos', path: '/orcamentos', icon: Sliders, desc: 'Limites por categoria' },
         { label: 'Metas', path: '/metas', icon: Target, desc: 'Acompanhe seus objetivos' },
         { label: 'Investimentos', path: '/investimentos', icon: LineChart, desc: 'Renda fixa, ações e carteira' },
@@ -86,6 +101,15 @@ export const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose })
       size="md"
     >
       <div className="space-y-5">
+        <button
+          type="button"
+          onClick={handleQuickAction}
+          className="btn btn-primary btn-block justify-center gap-2"
+        >
+          <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+          <span>Nova operação</span>
+        </button>
+
         {menuSections.map((sec) => (
           <div key={sec.title}>
             <h3 className="text-[11px] font-bold text-ink-faint uppercase tracking-wider block mb-2 px-1">

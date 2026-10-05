@@ -1,208 +1,218 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {  Send, ArrowRight,  MessageCircle, Bot, Check,  ShieldAlert,  Plus } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { usePageData } from '../hooks/usePageData';
 import { aiService } from '../financialAI/aiService';
 import { executeActionPlan } from '../financialAI/actionExecutor';
-import type { AIResponse, AIActionPlan } from '../financialAI/types';
+import type { AIActionPlan } from '../financialAI/types';
 import { ErrorState, LoadingState } from '../components/ui';
+import { AIEmptyState } from '../components/ai/AIEmptyState';
+import { ChatMessage } from '../components/ai/ChatMessage';
+import type { ChatMessageData } from '../components/ai/ChatMessage';
+import { ChatComposer } from '../components/ai/ChatComposer';
+import { TypingIndicator } from '../components/ai/TypingIndicator';
 
-interface ChatMessage {
-  id: string;
-  sender: 'user' | 'assistant';
-  text: string;
-  responseObj?: AIResponse;
-  timestamp: string;
-}
+/**
+ * Close enough to the bottom that auto-scroll may take over. 80px of slack
+ * covers the last bubble's margin without yanking the viewport when the user
+ * is genuinely reading earlier messages.
+ */
+const NEAR_BOTTOM_PX = 80;
 
-/* ─── Proactive agent card ─── */
-const AgentCard: React.FC<{
-  emoji: string;
-  title: string;
-  desc: string;
-  status: 'active' | 'idle';
-}> = ({ emoji, title, desc, status }) => (
-  <div className="card p-4 flex items-start space-x-3.5">
-    <div className="w-10 h-10 rounded-2xl bg-surface-raised flex items-center justify-center text-lg shrink-0">
-      {emoji}
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center justify-between mb-0.5">
-        <p className="text-xs font-semibold text-ink">{title}</p>
-        <span className={`pill ${status === 'active' ? 'pill-positive' : 'pill-neutral'} text-[10px]`}>
-          <span className={`w-1.5 h-1.5 rounded-full inline-block ${status === 'active' ? 'bg-positive' : 'bg-ink-faint'}`} />
-          {status === 'active' ? 'Ativo' : 'Em pausa'}
-        </span>
-      </div>
-      <p className="label-xs leading-relaxed">{desc}</p>
-    </div>
-  </div>
-);
+const STARTERS = [
+  'Como estão minhas finanças?',
+  'Quanto gastei este mês?',
+  'Quais contas vencem essa semana?',
+  'Posso gastar R$ 500?',
+];
+
+const clockTime = () =>
+  new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 export const AIAssistantPage: React.FC = () => {
   const { isLoading, loadFailed, retry } = usePageData();
-  const { 
-    transactions, 
-    accounts, 
-    cards, 
-    budgets, 
-    goals, 
-    investments, 
-    categories, 
+  const {
+    transactions,
+    accounts,
+    cards,
+    budgets,
+    goals,
+    investments,
+    categories,
     bills,
     receivables,
     recurringTransactions,
     subscriptions,
     refreshAll,
     setQuickActionOpen,
+    settings,
   } = useFinance();
 
-  const [tab, setTab] = useState<'chat' | 'agents'>('chat');
   const [inputQuestion, setInputQuestion] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const platform = getPlatform();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'init_1',
-      sender: 'assistant',
-      text: 'E aí! Sou o Neguin, seu assistente financeiro pessoal.\n\nAnaliso seus dados aqui mesmo, sem mandar nada pra nuvem — tudo fica entre a gente!',
-      timestamp: 'Agora',
-    },
-    {
-      id: 'pwa_guide',
-      sender: 'assistant',
-      text: getPWAInstallMessage(platform),
-      timestamp: 'Agora',
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessageData[]>([]);
+  const [isNearBottom, setIsNearBottom] = useState(true);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  function getPlatform(): 'ios' | 'android' | 'desktop' {
-  if (typeof window === 'undefined') return 'desktop';
-  const ua = navigator.userAgent || navigator.vendor || '';
-  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
-  if (/android/i.test(ua)) return 'android';
-  return 'desktop';
-}
+  /**
+   * The snapshot handed to `aiService`. Rebuilt only when the underlying
+   * collections change — previously it was reconstructed inside `handleAsk`
+   * on every keystroke-triggered submit, and re-rendering the transcript
+   * re-referenced it.
+   */
+  const financialState = useMemo(
+    () => ({
+      accounts,
+      transactions,
+      categories,
+      cards,
+      goals,
+      budgets,
+      bills,
+      receivables,
+      recurring: recurringTransactions,
+      subscriptions,
+      investments,
+    }),
+    [
+      accounts,
+      transactions,
+      categories,
+      cards,
+      goals,
+      budgets,
+      bills,
+      receivables,
+      recurringTransactions,
+      subscriptions,
+      investments,
+    ],
+  );
 
-function getPWAInstallMessage(platform: 'ios' | 'android' | 'desktop'): string {
-  if (platform === 'android') {
-    return '📲 **Instale o app na tela inicial**\n\n1. Abra o app no Chrome/Edge\n2. Toque no menu (⋮) > "Adicionar à tela inicial" ou "Instalar app"\n3. Confirme o nome e toque em "Adicionar"';
-  }
-  if (platform === 'ios') {
-    return '📲 **Adicione à Tela de Início**\n\n1. Abra no Safari\n2. Toque no botão Compartilhar (□↑) na barra inferior\n3. Role e toque em "Adicionar à Tela de Início"\n4. Ajuste o nome e toque em "Adicionar"';
-  }
-  return '📲 **Instale o app no seu PC**\n\nNo Chrome/Edge, clique no ícone de instalar (ou ⋯ > Instalar MyFinance) que aparece na barra de endereços.';
-}
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior });
+  }, []);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  /* Track how close the user is to the bottom. The listener is passive because
+     it never mutates state synchronously inside the scroll handler's scroll
+     path, and it is removed on unmount. */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    const el = scrollRef.current;
+    if (!el) return;
 
-  const suggestions = [
-    'Como estão minhas finanças?',
-    'Quanto gastei este mês?',
-    'Quais contas vencem essa semana?',
-    'Posso gastar R$ 500?',
-    'Quanto falta para minha meta?',
-    'Gastei 50 reais no supermercado',
-    'Transfira 200 reais da conta corrente para carteira'
-  ];
-
-  const handleAsk = async (question: string) => {
-    const q = question.trim();
-    if (!q) return;
-
-    const userMsg: ChatMessage = {
-      id: `usr_${Date.now()}`,
-      sender: 'user',
-      text: q,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const handleScroll = () => {
+      const distance =
+        el.scrollHeight - el.scrollTop - el.clientHeight;
+      setIsNearBottom(distance <= NEAR_BOTTOM_PX);
     };
-    setMessages(prev => [...prev, userMsg]);
-    setInputQuestion('');
-    setIsTyping(true);
 
-    try {
-      const financialState = {
-        accounts,
-        transactions,
-        categories,
-        cards,
-        goals,
-        budgets,
-        bills,
-        receivables,
-        recurring: recurringTransactions,
-        subscriptions,
-        investments,
-      };
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
 
-      const response = await aiService.processMessage(q, financialState);
-      setMessages(prev => [
+  /**
+   * Follow new messages only when the user is already at the bottom.
+   *
+   * This used to be an unconditional `scrollIntoView` on every message and on
+   * `isTyping`, which yanked the viewport away from anyone reading back
+   * through earlier replies. When the user is scrolled up we leave them
+   * there and surface the "new message" pill instead.
+   */
+  useEffect(() => {
+    if (isNearBottom) {
+      scrollToBottom();
+    }
+  }, [messages, isTyping, isNearBottom, scrollToBottom]);
+
+  const handleAsk = useCallback(
+    async (question: string) => {
+      const q = question.trim();
+      if (!q) return;
+
+      setMessages((prev) => [
         ...prev,
         {
-          id: `ai_${Date.now()}`,
-          sender: 'assistant',
-          text: response.text,
-          responseObj: response,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          id: `usr_${Date.now()}`,
+          sender: 'user',
+          text: q,
+          timestamp: clockTime(),
         },
       ]);
-    } catch {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: `ai_err_${Date.now()}`,
-          sender: 'assistant',
-          text: 'Não consegui analisar seus dados agora. Tente reformular a pergunta.',
-          timestamp: 'Agora',
-        },
-      ]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
+      setInputQuestion('');
+      setIsTyping(true);
+      /* A new question always means the user wants the reply. */
+      setIsNearBottom(true);
 
-  const handleConfirmPlan = async (plan: AIActionPlan) => {
-    plan.status = 'confirmed';
-    const result = await executeActionPlan(plan);
-    if (result.success) {
-      await refreshAll();
-    }
-    setMessages(prev => [
-      ...prev,
-      {
-        id: `ai_action_res_${Date.now()}`,
-        sender: 'assistant',
-        text: result.success ? `✅ **Ação Executada!**\n\n${result.message}` : `❌ **Falha:** ${result.message}`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      try {
+        const response = await aiService.processMessage(q, financialState);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai_${Date.now()}`,
+            sender: 'assistant',
+            text: response.text,
+            responseObj: response,
+            timestamp: clockTime(),
+          },
+        ]);
+      } catch {
+        /* No stack trace and no raw error text reaches the user — the message
+           carries the original question so retry resends it verbatim. */
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai_err_${Date.now()}`,
+            sender: 'assistant',
+            text: 'Não consegui analisar seus dados agora.',
+            timestamp: clockTime(),
+            isError: true,
+            retryQuestion: q,
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
       }
-    ]);
-  };
+    },
+    [financialState],
+  );
 
-  const handleCancelPlan = (plan: AIActionPlan) => {
-    plan.status = 'cancelled';
-    setMessages(prev => [
+  const handleConfirmPlan = useCallback(
+    async (plan: AIActionPlan) => {
+      const result = await executeActionPlan(plan);
+      if (result.success) {
+        await refreshAll();
+      }
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai_action_res_${Date.now()}`,
+          sender: 'assistant',
+          text: result.success
+            ? `**Ação executada.**\n\n${result.message}`
+            : `**Não foi possível executar:** ${result.message}`,
+          timestamp: clockTime(),
+        },
+      ]);
+    },
+    [refreshAll],
+  );
+
+  /* The plan itself needs no handling here: `AIActionCard` owns its resolved
+     state, so cancelling only has to record the outcome in the transcript. */
+  const handleCancelPlan = useCallback((_plan: AIActionPlan) => {
+    setMessages((prev) => [
       ...prev,
       {
         id: `ai_cancel_${Date.now()}`,
         sender: 'assistant',
-        text: '🚫 Ação cancelada. Nenhum dado foi modificado.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }
+        text: 'Ação cancelada. Nenhum dado foi modificado.',
+        timestamp: clockTime(),
+      },
     ]);
-  };
-
-  const proactiveAgents = [
-    { emoji: '📊', title: 'Controle de gastos', desc: 'Monitora seus gastos e avisa quando você ultrapassar limites.', status: 'active' as const },
-    { emoji: '🎯', title: 'Alerta de orçamento', desc: 'Notifica quando seu orçamento mensal atingir 80%.', status: 'active' as const },
-    { emoji: '💳', title: 'Vencimento de faturas', desc: 'Lembra do vencimento dos seus cartões com 5 dias de antecedência.', status: 'active' as const },
-    { emoji: '⏰', title: 'Contas a pagar', desc: 'Avisa com antecedência sobre boletos e vencimentos da semana.', status: 'active' as const },
-    { emoji: '📅', title: 'Fluxo de caixa & Saldo projetado', desc: 'Detecta risco de saldo baixo antes da próxima receita.', status: 'active' as const },
-    { emoji: '🏆', title: 'Progresso das metas', desc: 'Acompanha o progresso das suas metas e sugere aportes.', status: 'idle' as const },
-  ];
+  }, []);
 
   /* Sem esta guarda a página desenhava o estado vazio antes de o IndexedDB
      responder — e uma falha de leitura ficava idêntica a "não há dados". */
@@ -214,295 +224,91 @@ function getPWAInstallMessage(platform: 'ios' | 'android' | 'desktop'): string {
     return <LoadingState rows={4} />;
   }
 
+  const isEmpty = messages.length === 0;
+
   return (
-    <div
-      className="flex flex-col animate-fade-in flex-1 min-h-0 overflow-hidden pb-[calc(var(--bottom-nav-h)+max(12px,env(safe-area-inset-bottom)))] md:pb-4"
-    >
-      {/* ── HEADER ── */}
-      <div className="pt-2 pb-3 px-1 shrink-0">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="relative shrink-0">
-            <img 
-              src="/logo.png" 
-              alt="Neguin" 
-              className="w-11 h-11 rounded-2xl object-contain bg-black border border-active shadow-md shadow-accent/15" 
-            />
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-positive border-2 border-[#050505]" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-ink tracking-tight">Neguin</h1>
-            <span className="label-xs text-positive">Assistente Financeiro · Modo Offline</span>
-          </div>
-
+    <div className="flex flex-col h-full min-h-0">
+      {/* ── Identity strip ── */}
+      <div className="flex items-center gap-3 py-3 shrink-0">
+        <div className="relative shrink-0">
+          <img
+            src="/logo.png"
+            alt=""
+            width={40}
+            height={40}
+            className="w-10 h-10 rounded-2xl object-contain bg-black border border-active"
+          />
+          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-positive border-2 border-base" />
         </div>
-
-        {/* Tabs */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-surface border border-edge rounded-2xl">
-          {[
-            { key: 'chat', label: 'Conversar', icon: MessageCircle },
-            { key: 'agents', label: 'Assistentes', icon: Bot },
-          ].map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key as 'chat' | 'agents')}
-              className={`flex items-center justify-center space-x-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                tab === key ? 'bg-surface-raised text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
-              }`}
-            >
-              <Icon size={14} />
-              <span>{label}</span>
-            </button>
-          ))}
+        <div className="min-w-0">
+          <h1 className="text-base font-bold text-ink tracking-tight leading-tight">
+            Neguin
+          </h1>
+          <span className="label-xs text-positive">
+            Assistente financeiro · Análise local
+          </span>
         </div>
       </div>
 
-      {/* ── TAB: CHAT ── */}
-      {tab === 'chat' && (
-        <div className="flex flex-col flex-1 min-h-0 px-1">
-          {/* Suggestions (only early in chat) */}
-          {messages.length <= 2 && (
-            <div className="grid grid-cols-2 gap-2 mb-3 shrink-0">
-              {suggestions.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleAsk(s)}
-                  className="card card-hover p-3 text-left flex items-center justify-between group"
-                >
-                  <span className="text-xs font-medium text-ink leading-snug">{s}</span>
-                  <ArrowRight size={12} className="text-ink-faint group-hover:text-accent shrink-0 ml-2 transition-colors" />
-                </button>
-              ))}
-            </div>
+      {/* ── Transcript ── */}
+      <div className="relative flex-1 min-h-0">
+        <div
+          ref={scrollRef}
+          className="h-full overflow-y-auto overscroll-contain space-y-4 pb-3 pr-0.5"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-label="Conversa com o Neguin"
+          tabIndex={0}
+        >
+          {isEmpty ? (
+            <AIEmptyState
+              userName={settings.name}
+              starters={STARTERS}
+              onStarterClick={handleAsk}
+            />
+          ) : (
+            messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                onSuggest={handleAsk}
+                onConfirmPlan={handleConfirmPlan}
+                onCancelPlan={handleCancelPlan}
+                onRetry={handleAsk}
+              />
+            ))
           )}
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto space-y-4 pb-2 scrollbar-none">
-            {messages.map(m => {
-              const isUser = m.sender === 'user';
-              const visual = m.responseObj?.visual;
-              const plan = m.responseObj?.actionPlan;
-
-              return (
-                <div key={m.id} className={`flex items-end gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
-                  {/* Avatar */}
-                  {!isUser && (
-                    <img 
-                      src="/logo.png" 
-                      alt="Neguin" 
-                      className="w-8 h-8 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
-                    />
-                  )}
-
-                  {/* Bubble */}
-                  <div
-                    className={`max-w-[88%] px-4 py-3 rounded-3xl text-xs leading-relaxed ${
-                      isUser
-                        ? 'bg-accent text-on-accent rounded-br-sm'
-                        : 'bg-panel border border-active text-ink rounded-bl-sm'
-                    }`}
-                  >
-                    <div className="whitespace-pre-line">
-                      {m.text.split('**').map((part, idx) =>
-                        idx % 2 === 1
-                          ? <strong key={idx} className="font-bold text-ink">{part}</strong>
-                          : part,
-                      )}
-                    </div>
-
-                    {/* Visual Component Render */}
-                    {visual && visual.items && visual.items.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-active space-y-2">
-                        {visual.title && <p className="label-xs text-ink-muted mb-2">{visual.title}</p>}
-                        {visual.items.map((item, idx) => (
-                          <div key={idx} className="space-y-1">
-                            <div className="flex justify-between text-[11px] font-medium text-ink">
-                              <div>
-                                <span>{item.label}</span>
-                                {item.subtitle && <p className="text-[10px] text-ink-faint">{item.subtitle}</p>}
-                              </div>
-                              <span className="shrink-0 ml-2">{item.formattedValue}</span>
-                            </div>
-                            {item.percentage !== undefined && (
-                              <div className="w-full h-1.5 bg-edge-strong rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full rounded-full transition-all" 
-                                  style={{ 
-                                    width: `${Math.min(100, item.percentage)}%`, 
-                                    backgroundColor: item.color || 'var(--color-accent)' 
-                                  }} 
-                                />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Visual Progress Render */}
-                    {visual && visual.progress && (
-                      <div className="mt-3 pt-3 border-t border-active space-y-2">
-                        {visual.title && <p className="label-xs text-ink-muted mb-1 font-semibold">{visual.title}</p>}
-                        <div className="flex justify-between text-[11px] font-medium text-ink">
-                          <span>{visual.progress.formattedCurrent}</span>
-                          <span className="text-ink-muted">Alvo: {visual.progress.formattedTarget}</span>
-                        </div>
-                        <div className="w-full h-2 bg-edge-strong rounded-full overflow-hidden">
-                          <div 
-                            className="h-full rounded-full transition-all bg-accent" 
-                            style={{ width: `${Math.min(100, Math.max(0, visual.progress.percentage))}%` }} 
-                          />
-                        </div>
-                        <p className="text-[10px] text-right text-ink-faint font-semibold">
-                          {visual.progress.percentage.toFixed(0)}% concluído
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Visual Math Breakdown Render */}
-                    {visual && visual.breakdown && visual.breakdown.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-active space-y-1.5">
-                        {visual.title && <p className="label-xs text-ink-muted mb-2">{visual.title}</p>}
-                        {visual.breakdown.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-[11px] py-1 border-b border-active/50 last:border-b-0">
-                            <span className="text-ink-muted">{item.label}</span>
-                            <span className={`font-bold ${item.isPositive === false ? 'text-negative' : item.isPositive === true ? 'text-positive' : 'text-ink'}`}>
-                              {item.formattedAmount}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-
-                    {/* Explanation */}
-                    {m.responseObj?.explanation && (
-                      <p className="mt-2 text-[10px] text-ink-faint italic border-l-2 border-accent pl-2">
-                        {m.responseObj.explanation}
-                      </p>
-                    )}
-
-                    {/* Action Plan Confirmation Box */}
-                    {plan && plan.status === 'pending' && (
-                      <div className="mt-3 pt-3 border-t border-active space-y-2">
-                        <div className="flex items-center space-x-1.5 text-warning text-[11px] font-bold">
-                          <ShieldAlert size={14} />
-                          <span>Confirmação Exigida ({plan.riskLevel})</span>
-                        </div>
-                        <div className="bg-surface-raised p-3 rounded-2xl border border-active space-y-1 text-[11px]">
-                          {Object.entries(plan.details).map(([k, v]) => (
-                            <div key={k} className="flex justify-between">
-                              <span className="text-ink-muted">{k}:</span>
-                              <span className="font-semibold text-ink">{v}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex items-center space-x-2 pt-1">
-                          <button
-                            onClick={() => handleConfirmPlan(plan)}
-                            className="flex-1 py-2 px-3 rounded-xl bg-positive text-surface font-bold text-xs flex items-center justify-center space-x-1 hover:bg-positive transition-all"
-                          >
-                            <Check size={14} />
-                            <span>Confirmar</span>
-                          </button>
-                          <button
-                            onClick={() => handleCancelPlan(plan)}
-                            className="py-2 px-3 rounded-xl bg-field hover:bg-active text-ink-muted hover:text-ink text-xs font-semibold"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Suggestions Buttons */}
-                    {m.responseObj?.followUpSuggestions && m.responseObj.followUpSuggestions.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-3 pt-2">
-                        {m.responseObj.followUpSuggestions.map((sug, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleAsk(sug)}
-                            className="px-2.5 py-1 rounded-lg bg-field hover:bg-active text-accent text-[11px] font-semibold transition-colors flex items-center space-x-1 border border-edge-strong"
-                          >
-                            <span>{sug}</span>
-                            <ArrowRight size={10} />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-
-            {isTyping && (
-              <div className="flex items-end gap-2.5">
-                <img 
-                  src="/logo.png" 
-                  alt="Neguin digitando..." 
-                  className="w-8 h-8 rounded-full object-contain bg-black border border-active shrink-0 mb-1" 
-                />
-                <div className="bg-panel border border-active px-4 py-3 rounded-3xl rounded-bl-sm flex items-center space-x-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:0.4s]" />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Bar */}
-          <div className="pt-2 pb-1 shrink-0">
-            <form
-              onSubmit={e => {
-                e.preventDefault();
-                handleAsk(inputQuestion);
-              }}
-              className="flex items-center space-x-1.5 p-1.5 rounded-2xl bg-panel border border-active focus-within:border-accent transition-all min-h-[48px]"
-            >
-              <button
-                type="button"
-                onClick={() => setQuickActionOpen(true)}
-                className="w-9 h-9 rounded-xl bg-field hover:bg-active text-accent flex items-center justify-center transition-all shrink-0 active:scale-95 min-w-[36px] min-h-[36px]"
-                title="Ação Rápida"
-                aria-label="Nova Operação Rápida"
-              >
-                <Plus size={18} strokeWidth={2.5} />
-              </button>
-
-              <input
-                type="text"
-                value={inputQuestion}
-                onChange={e => setInputQuestion(e.target.value)}
-                placeholder="Pergunte algo ou solicite uma ação..."
-                className="flex-1 bg-transparent px-2.5 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none"
-                style={{ fontSize: '16px' }}
-              />
-              <button
-                type="submit"
-                disabled={!inputQuestion.trim() || isTyping}
-                className="w-10 h-10 rounded-xl bg-accent disabled:bg-field disabled:text-ink-faint text-on-accent flex items-center justify-center transition-all shrink-0 active:scale-95 shadow-sm min-w-[40px] min-h-[40px]"
-                aria-label="Enviar mensagem"
-              >
-                <Send size={16} />
-              </button>
-            </form>
-          </div>
+          {isTyping && <TypingIndicator />}
         </div>
-      )}
 
-      {/* ── TAB: AGENTS ── */}
-      {tab === 'agents' && (
-        <div className="flex-1 overflow-y-auto space-y-2.5 px-1 pr-1">
-          <div className="flex items-center space-x-2 mb-3">
-            <img src="/logo.png" alt="Neguin" className="w-6 h-6 rounded-lg object-contain bg-black border border-[#222733]" />
-            <p className="label-xs">Agentes do Neguin em segundo plano:</p>
-          </div>
-          {proactiveAgents.map(a => (
-            <AgentCard key={a.title} {...a} />
-          ))}
-        </div>
-      )}
+        {!isNearBottom && !isEmpty && (
+          <button
+            type="button"
+            onClick={() => {
+              setIsNearBottom(true);
+              scrollToBottom();
+            }}
+            className="chat-new-message"
+            aria-label="Ir para a mensagem mais recente"
+          >
+            <ChevronDown size={13} aria-hidden="true" />
+            <span>Nova mensagem</span>
+          </button>
+        )}
+      </div>
+
+      {/* ── Composer ── */}
+      <div className="shrink-0 pt-1 pb-[var(--bottom-nav-pad)]">
+        <ChatComposer
+          value={inputQuestion}
+          onChange={setInputQuestion}
+          onSubmit={() => handleAsk(inputQuestion)}
+          onQuickAction={() => setQuickActionOpen(true)}
+          isBusy={isTyping}
+        />
+      </div>
     </div>
   );
 };

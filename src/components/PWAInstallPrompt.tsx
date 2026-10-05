@@ -50,7 +50,9 @@ export const PWAInstallPrompt: React.FC = () => {
     <div
       className="fixed right-4 left-4 md:left-auto md:w-96 z-30 p-4 rounded-2xl bg-surface border border-edge-strong shadow-2xl flex items-start space-x-3.5 animate-slide-up"
       style={{
-        bottom: 'calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom)) + 70px)',
+        /* Clears the fixed bottom nav. The extra 70px it used to add was
+           FAB breathing room and the FAB is gone. */
+        bottom: 'var(--bottom-nav-pad)',
       }}
     >
       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-info flex items-center justify-center text-on-accent shrink-0 shadow-md">

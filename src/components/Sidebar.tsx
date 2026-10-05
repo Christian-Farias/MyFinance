@@ -127,7 +127,10 @@ export const Sidebar: React.FC = () => {
         <span>Nova Transação</span>
       </button>
 
-      <nav className="flex-1 overflow-y-auto">
+      <nav
+        className="flex-1 min-h-0 overflow-y-auto"
+        aria-label="Seções do aplicativo"
+      >
         <p className="label-section">Principal</p>
         <div className="space-y-1">{primaryNav.map(renderItem)}</div>
 

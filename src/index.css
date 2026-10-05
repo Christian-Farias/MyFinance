@@ -87,7 +87,7 @@
    base       → 0
    sticky     → 10
    dropdown   → 20
-   fab        → 30
+   nav        → 25  (sidebar chrome)
    bottom-nav → 40
    overlay    → 50
    modal      → 60
@@ -105,8 +105,16 @@
   /* Bottom nav height — single source of truth */
   --bottom-nav-h: 64px;
 
-  /* Content bottom clearance = nav + safe area + extra breathing for FAB */
-  --page-bottom-pad: calc(var(--bottom-nav-h) + var(--sab) + 68px);
+  /* Content bottom clearance = fixed bottom nav + safe area + a
+     little breathing room. Applied in ONE place only (.page-width);
+     it used to also sit on .page-content, which stacked the two
+     and left ~264px of dead space under every page on mobile. */
+  --page-bottom-pad: calc(var(--bottom-nav-h) + var(--sab) + var(--sp-4));
+
+  /* Clearance for a pinned element that sits INSIDE the scroll column and must
+     not be covered by the fixed bottom nav (the AI chat composer). Pages that
+     get their clearance from .page-width do not need this. */
+  --bottom-nav-pad: calc(var(--bottom-nav-h) + var(--sab));
 
   /* Spacing scale */
   --sp-1:  4px;
@@ -124,7 +132,7 @@
   --z-base: 0;
   --z-sticky: 10;
   --z-dropdown: 20;
-  --z-fab: 30;
+  --z-nav: 25;
   --z-bottom-nav: 40;
   --z-overlay: 50;
   --z-modal: 60;
@@ -138,12 +146,12 @@
 html {
   /* dvh respects mobile browser chrome properly */
   min-height: 100dvh;
-  background-color: #050505;
+  background-color: var(--color-base);
 }
 
 body {
-  background-color: #050505;
-  color: #F5F5F5;
+  background-color: var(--color-base);
+  color: var(--color-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -209,7 +217,7 @@ select[aria-invalid="true"]:focus-visible {
   position: absolute;
   left: var(--sp-4);
   top: -100px;
-  z-index: 100;
+  z-index: var(--z-skip-link);
   padding: var(--sp-3) var(--sp-4);
   background: var(--color-accent);
   color: var(--color-on-accent);
@@ -250,44 +258,47 @@ select[aria-invalid="true"]:focus-visible {
 
 /* ══════════════════════════════════════════════════
    LAYOUT — Page content padding
-   Every page gets bottom clearance so content
-   doesn't hide behind bottom nav.
-══════════════════════════════════════════════════ */
+
+   Bottom clearance lives on .page-width ONLY. It used to
+   also sit on .page-content, which is always nested inside
+   .page-width — the two stacked and left ~264px of dead
+   space under every page on mobile.
+   ══════════════════════════════════════════════════ */
 .page-content {
-  /* On mobile: clear bottom nav + safe area + FAB breathing room */
-  padding-bottom: var(--page-bottom-pad);
   /* Pages extend to the bottom of the scroll container */
   min-height: 100%;
-}
-
-/* On desktop (md+) bottom nav is hidden, so reset */
-@media (min-width: 768px) {
-  .page-content {
-    padding-bottom: var(--sp-8);
-    min-height: unset;
-  }
 }
 
 /* ══════════════════════════════════════════════════
    APP SHELL
 
-   Mobile: viewport-locked, inner container scrolls, so
-   the bottom nav and FAB stay put. This is right for a
-   phone and wrong on desktop — there the document
-   scrolls, the sidebar sticks, and resizing the window
-   actually changes the layout.
+   One scroll model at every size: the shell is locked to
+   the viewport and only .app-scroll scrolls. Previously
+   mobile was locked and desktop scrolled the document with
+   a position:sticky sidebar, which meant the shell behaved
+   differently depending on window width — and meant the AI
+   chat had no definite height chain on desktop, so its own
+   overflow-y:auto never engaged.
+
+   html/body keep min-height (not a locked height) so
+   AuthPage and the ProtectedRoute loading state — which
+   render outside .app-shell — stay scrollable.
    ══════════════════════════════════════════════════ */
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  background: var(--color-bg);
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-base);
   color: var(--color-ink);
 }
 
 .app-main {
   flex: 1;
   min-width: 0;
+  /* Without this the flex child refuses to shrink and the
+     locked shell spills instead of scrolling. */
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -295,35 +306,31 @@ select[aria-invalid="true"]:focus-visible {
 .app-scroll {
   flex: 1;
   min-height: 0;
-  /* Clears the notch without a spacer element */
-  padding-top: max(16px, var(--sat));
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* The notch is cleared by .app-topbar, so the scroller needs no
+     top padding of its own. */
+  /* Stops the rubber-band from scrolling the shell behind us */
+  overscroll-behavior: contain;
 }
 
 .app-scroll:focus {
   outline: none;
 }
 
-@media (max-width: 767px) {
-  .app-shell {
-    /* Locked to the viewport; the inner region scrolls. */
-    height: 100dvh;
-  }
-
-  .app-scroll {
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-}
-
 @media (min-width: 768px) {
   .app-shell {
     flex-direction: row;
-    height: auto;
   }
+}
 
-  .app-scroll {
-    padding-top: 0;
-  }
+/* ── SCROLL LOCK OPT-IN ──────────────────────────────
+   Routes that manage their own inner scroll (the AI chat)
+   need the outer scroller out of the way and a full-height
+   column. Applied per-route rather than app-wide so every
+   other page keeps the normal document-like behaviour. */
+.app-scroll--locked {
+  overflow: hidden;
 }
 
 /* Single definition of the content column width */
@@ -334,7 +341,7 @@ select[aria-invalid="true"]:focus-visible {
   padding-inline: var(--sp-4);
   display: flex;
   flex-direction: column;
-  /* Leaves room for the fixed bottom nav + FAB on mobile */
+  /* Clears the fixed bottom nav + safe area. Single source. */
   padding-bottom: var(--page-bottom-pad);
 }
 
@@ -344,11 +351,20 @@ select[aria-invalid="true"]:focus-visible {
 
 @media (min-width: 768px) {
   .page-width {
-    max-width: 56rem;
+    max-width: 68rem;
     padding-inline: var(--sp-8);
     padding-top: var(--sp-6);
     padding-bottom: var(--sp-8);
   }
+}
+
+/* Full-bleed column for routes that own their scroll (AI chat):
+   no side padding, no max width, fills the scroller's height so
+   its inner flex children can resolve against a definite size. */
+.page-width--full {
+  max-width: none;
+  height: 100%;
+  padding-bottom: 0;
 }
 
 /* ── SEARCH RESULT ROW ───────────────────────────────── */
@@ -369,6 +385,224 @@ select[aria-invalid="true"]:focus-visible {
 }
 
 /* ══════════════════════════════════════════════════
+   AI CHAT
+
+   The composer is pinned below the scrolling message list, so it is a flex
+   sibling rather than a fixed overlay — a fixed footer would sit on top of
+   the list and force bottom padding to compensate.
+   ══════════════════════════════════════════════════ */
+.chat-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--radius-xl);
+  background: var(--color-panel);
+  border: 1px solid var(--color-active);
+  transition: border-color var(--duration-fast) var(--ease-out);
+  min-height: 48px;
+}
+
+.chat-composer:focus-within {
+  border-color: var(--color-accent);
+}
+
+.chat-composer-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  resize: none;
+  padding: var(--sp-2) var(--sp-2);
+  color: var(--color-ink);
+  line-height: 1.5;
+  /* Set from script as the content grows; these are the bounds. */
+  min-height: 24px;
+  max-height: 120px;
+}
+
+.chat-composer-input::placeholder {
+  color: var(--color-ink-faint);
+}
+
+.chat-composer-input:focus {
+  outline: none;
+}
+
+.chat-composer-side-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-field);
+  color: var(--color-accent);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.chat-composer-side-btn:hover {
+  background: var(--color-active);
+}
+
+.chat-composer-send {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: 0 2px 8px rgb(139 124 255 / 0.25);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+
+.chat-composer-send:disabled {
+  background: var(--color-field);
+  color: var(--color-ink-faint);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Floating "jump to latest" pill. Positioned inside the scroll container so it
+   tracks the list, and offset above the composer rather than the viewport. */
+.chat-new-message {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: var(--sp-3);
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 9999px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-edge-strong);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+  animation: fadeInOnly var(--duration-base) var(--ease-out) forwards;
+}
+
+/* ══════════════════════════════════════════════════
+   TOP BAR (utility bar, all sizes)
+
+   Sits above .app-scroll and never scrolls. Carries chrome
+   only — no route title, which stays with the page's <h1>.
+   ══════════════════════════════════════════════════ */
+.app-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  /* The notch is cleared here now, so .app-scroll no longer
+     needs its own padding-top on mobile. */
+  padding-top: var(--sat);
+  padding-left: max(var(--sp-4), var(--sal));
+  padding-right: max(var(--sp-4), var(--sar));
+  padding-bottom: var(--sp-3);
+  background: color-mix(in srgb, var(--color-base) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--color-edge);
+}
+
+@media (min-width: 768px) {
+  .app-topbar {
+    padding-left: var(--sp-8);
+    padding-right: var(--sp-8);
+    padding-bottom: var(--sp-3);
+  }
+}
+
+.app-topbar-offline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-subtle);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 20%, transparent);
+  color: var(--color-warning);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Square icon button. 36px is the minimum that stays comfortable in a
+   thumb-reach strip without inflating the bar's height. */
+.app-topbar-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--color-ink-muted);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.app-topbar-action:hover {
+  background: var(--color-hover);
+  color: var(--color-ink);
+}
+
+.app-topbar-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--color-negative-strong);
+  color: var(--color-on-negative);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  border: 1.5px solid var(--color-base);
+}
+
+.app-topbar-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  height: 36px;
+  min-width: 36px;
+  padding: 0 var(--sp-2);
+  border-radius: 9999px;
+  background: var(--color-field);
+  border: 1px solid var(--color-edge);
+  color: var(--color-ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.app-topbar-avatar:hover {
+  background: var(--color-hover);
+  border-color: var(--color-edge-strong);
+  color: var(--color-ink);
+}
+
+/* ══════════════════════════════════════════════════
    SIDEBAR (desktop)
 ══════════════════════════════════════════════════ */
 .sidebar {
@@ -376,10 +610,12 @@ select[aria-invalid="true"]:focus-visible {
   flex-direction: column;
   width: 16rem;
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  align-self: flex-start;
-  height: 100dvh;
+  /* No position:sticky needed. The shell no longer scrolls,
+     so the sidebar is pinned simply by being a flex row
+     child that stretches to the shell's locked height. */
+  align-self: stretch;
+  min-height: 0;
+  height: 100%;
   padding: var(--sp-5);
   background: var(--color-base-alt);
   border-right: 1px solid var(--color-edge);
@@ -453,11 +689,11 @@ select[aria-invalid="true"]:focus-visible {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: var(--z-nav);
+  z-index: var(--z-bottom-nav);
   padding-bottom: max(12px, var(--sab));
   padding-left: var(--sal);
   padding-right: var(--sar);
-  background: rgb(5 5 5 / 0.94);
+  background: color-mix(in srgb, var(--color-base) 94%, transparent);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-top: 1px solid var(--color-edge);
@@ -916,6 +1152,12 @@ select[aria-invalid="true"]:focus-visible {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+/* Opacity-only variant for elements whose own transform must survive
+   the animation (e.g. the centred "new message" pill). */
+@keyframes fadeInOnly {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1073,33 +1315,6 @@ select[aria-invalid="true"]:focus-visible {
     box-shadow: 0 20px 60px rgb(0 0 0 / 0.8);
   }
 }
-
-/* ══════════════════════════════════════════════════
-   FAB — Floating Action Button
-   Position must account for bottom nav + safe area
-══════════════════════════════════════════════════ */
-.fab {
-  position: fixed;
-  right: max(20px, var(--sar));
-  /* bottom = nav height + safe area + gap */
-  bottom: calc(var(--bottom-nav-h) + max(12px, var(--sab)) + 12px);
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgb(139 124 255 / 0.35);
-  transition: transform 0.2s, box-shadow 0.2s;
-  z-index: var(--z-fab);
-  /* Minimum touch target */
-  min-width: 44px;
-  min-height: 44px;
-}
-.fab:hover  { transform: scale(1.06); box-shadow: 0 6px 24px rgb(139 124 255 / 0.45); }
-.fab:active { transform: scale(0.94); }
 
 /* ══════════════════════════════════════════════════
    FORM INPUTS

@@ -1,46 +1,37 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, PieChart, Sparkles, CreditCard, Menu, Plus } from 'lucide-react';
-import { useFinance } from '../context/FinanceContext';
+import { NavLink } from 'react-router-dom';
+import { Home, PieChart, Sparkles, Menu } from 'lucide-react';
 import { MoreMenuModal } from './modals/MoreMenuModal';
 
 /**
  * Mobile navigation.
  *
- * The five tabs were laid out with `justify-around` and `flex-1`, which gave
- * each item a width driven by its label length — "IA" was visibly narrower
- * than "Cartões". Fixed slots plus an accent indicator is what the iOS and
- * Material patterns both converge on.
+ * Was six touch targets in the bottom strip: four tabs, a "Mais" button and a
+ * floating FAB. On a 360px screen that is crowded, and the FAB also covered
+ * the chat composer (it needed its own route check to hide itself).
+ *
+ * Now four equal slots. The FAB's job — starting a quick entry — moved into
+ * the "Mais" sheet, which is the one place that already collects actions that
+ * do not warrant a permanent slot.
+ *
+ * The tab label is "IA" rather than "Neguin" so it matches the icon and the
+ * other three labels; the assistant is still named Neguin in the chat header.
+ *
+ * Slot widths come from `.bottom-nav-inner` (an equal `grid-template-columns`),
+ * not `flex-1` + `justify-around`, which sized each tab by its label and made
+ * "IA" visibly narrower than "Cartões".
  */
-
 export const BottomNavigation: React.FC = () => {
-  const { setQuickActionOpen } = useFinance();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const location = useLocation();
-
-  // Hide FAB on IA chat page to prevent covering the input box and send button
-  const isAIPage = location.pathname.startsWith('/ia');
 
   const mainNav = [
     { to: '/', label: 'Início', icon: Home },
     { to: '/gastos', label: 'Gastos', icon: PieChart },
-    { to: '/ia', label: 'Neguin', icon: Sparkles },
-    { to: '/cartoes', label: 'Cartões', icon: CreditCard },
+    { to: '/ia', label: 'IA', icon: Sparkles },
   ];
 
   return (
     <>
-      {!isAIPage && (
-        <button
-          type="button"
-          onClick={() => setQuickActionOpen(true)}
-          aria-label="Nova Operação Rápida"
-          className="fab md:hidden"
-        >
-          <Plus size={22} strokeWidth={2.5} aria-hidden="true" />
-        </button>
-      )}
-
       <nav
         aria-label="Navegação principal"
         className="bottom-nav md:hidden"
@@ -84,7 +75,10 @@ export const BottomNavigation: React.FC = () => {
         </div>
       </nav>
 
-      <MoreMenuModal isOpen={isMoreMenuOpen} onClose={() => setIsMoreMenuOpen(false)} />
+      <MoreMenuModal
+        isOpen={isMoreMenuOpen}
+        onClose={() => setIsMoreMenuOpen(false)}
+      />
     </>
   );
 };
