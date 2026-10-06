@@ -148,7 +148,7 @@
   --sal: env(safe-area-inset-left, 0px);
 
   /* Bottom nav height — single source of truth */
-  --bottom-nav-h: 64px;
+  --bottom-nav-h: 72px;
 
   /* Content bottom clearance = fixed bottom nav + safe area + a
      little breathing room. Applied in ONE place only (.page-width);
@@ -882,13 +882,9 @@ select[aria-invalid="true"]:focus-visible {
   padding-bottom: max(12px, var(--sab));
   padding-left: var(--sal);
   padding-right: var(--sar);
-  /* Solid, not glass. The previous
-     `color-mix(base 94%)` + `blur(24px) saturate(180%)` composited a
-     full-width layer on every scroll and read as a separate glass panel
-     sitting over the content — the opposite of "part of the system".
-     Opaque #050506 with a single hairline does the same job. */
-  background: var(--color-base);
-  border-top: 1px solid var(--color-edge);
+  /* Solid, not glass. */
+  background: #08080D;
+  border-top: 1px solid #23232F;
   /* Stops the tap highlight flashing white on iOS */
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -902,6 +898,15 @@ select[aria-invalid="true"]:focus-visible {
   padding-inline: 4px;
 }
 
+.bottom-nav-inner--five {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+  height: var(--bottom-nav-h);
+  padding-inline: 4px;
+  position: relative;
+}
+
 .bottom-nav-item {
   /* Equal slots regardless of label length */
   flex: 1 1 0;
@@ -913,7 +918,7 @@ select[aria-invalid="true"]:focus-visible {
   justify-content: center;
   gap: 3px;
   padding: 4px 2px;
-  color: var(--color-ink-muted);
+  color: #8F8FA6;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
@@ -922,22 +927,18 @@ select[aria-invalid="true"]:focus-visible {
 }
 
 .bottom-nav-label {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
 
-/* The active tab is the only place in the chrome where the indigo is
-   allowed to sit as text on the base page — and it is the lighter
-   token, because the inactive labels next to it are 12px. Weight,
-   not colour, carries the state distinction: a 10px label at 500 vs
-   600 needs more than a hue shift to read. */
+/* Active tab */
 .bottom-nav-item-active {
-  color: var(--color-accent-text);
+  color: #A99EFF;
 }
 
 .bottom-nav-item-active .bottom-nav-label {
@@ -1703,6 +1704,37 @@ nav a, nav button {
     border-radius: var(--radius-lg);
   }
   :root {
-    --bottom-nav-h: 52px;
+    --bottom-nav-h: 60px;
   }
+}
+
+/* Bottom nav FAB - central action button */
+.bottom-nav-fab {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--bottom-nav-h) / 2 + 26px);
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: #7C6CFF;
+  color: #0B0B14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #050508;
+  box-shadow: 0 4px 12px rgb(124 108 255 / 0.25);
+  transition: transform var(--duration-fast) var(--ease-out);
+  min-height: 56px;
+  min-width: 56px;
+  z-index: calc(var(--z-bottom-nav) + 1);
+}
+
+.bottom-nav-fab:active {
+  transform: translateX(-50%) scale(0.94);
+}
+
+.bottom-nav-fab:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: 2px;
 }

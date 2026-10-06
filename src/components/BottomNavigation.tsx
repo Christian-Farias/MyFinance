@@ -1,33 +1,29 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, PieChart, Sparkles, Menu } from 'lucide-react';
+import { Home, PieChart, Sparkles, Menu, Plus } from 'lucide-react';
+import { useFinance } from '../context/FinanceContext';
 import { MoreMenuModal } from './modals/MoreMenuModal';
 
 /**
  * Mobile navigation.
  *
- * Was six touch targets in the bottom strip: four tabs, a "Mais" button and a
- * floating FAB. On a 360px screen that is crowded, and the FAB also covered
- * the chat composer (it needed its own route check to hide itself).
- *
- * Now four equal slots. The FAB's job — starting a quick entry — moved into
- * the "Mais" sheet, which is the one place that already collects actions that
- * do not warrant a permanent slot.
- *
- * The tab label is "IA" rather than "Neguin" so it matches the icon and the
- * other three labels; the assistant is still named Neguin in the chat header.
- *
- * Slot widths come from `.bottom-nav-inner` (an equal `grid-template-columns`),
- * not `flex-1` + `justify-around`, which sized each tab by its label and made
- * "IA" visibly narrower than "Cartões".
+ * Five positions: Início | Gastos | [ + ] | IA | Mais
+ * - Início, Gastos, IA are NavLinks to existing routes
+ * - Central + button is an action (not a route/tab), reuses the existing
+ *   quick action flow from "Nova operação" in the Mais menu
+ * - Mais opens the MoreMenuModal (same behavior as before)
  */
 export const BottomNavigation: React.FC = () => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const { setQuickActionOpen } = useFinance();
+
+  const handleQuickAction = () => {
+    setQuickActionOpen(true);
+  };
 
   const mainNav = [
     { to: '/', label: 'Início', icon: Home },
     { to: '/gastos', label: 'Gastos', icon: PieChart },
-    { to: '/ia', label: 'IA', icon: Sparkles },
   ];
 
   return (
@@ -36,7 +32,7 @@ export const BottomNavigation: React.FC = () => {
         aria-label="Navegação principal"
         className="bottom-nav md:hidden"
       >
-        <div className="bottom-nav-inner">
+        <div className="bottom-nav-inner bottom-nav-inner--five">
           {mainNav.map((item) => {
             const Icon = item.icon;
             return (
@@ -52,10 +48,6 @@ export const BottomNavigation: React.FC = () => {
                   <>
                     <Icon
                       size={20}
-                      /* 1.75 idle / 2 active. Thinner than the previous
-                         1.8/2.3 pair: a 20px glyph at 2.3 reads heavy next
-                         to a 10px label, and the state is carried by colour
-                         plus label weight as well as by this stroke. */
                       strokeWidth={isActive ? 2 : 1.75}
                       aria-hidden="true"
                     />
@@ -65,6 +57,33 @@ export const BottomNavigation: React.FC = () => {
               </NavLink>
             );
           })}
+
+          <button
+            type="button"
+            onClick={handleQuickAction}
+            aria-label="Nova transação"
+            className="bottom-nav-fab"
+          >
+            <Plus size={26} strokeWidth={2.4} aria-hidden="true" />
+          </button>
+
+          <NavLink
+            to="/ia"
+            className={({ isActive }) =>
+              `bottom-nav-item ${isActive ? 'bottom-nav-item-active' : ''}`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <Sparkles
+                  size={20}
+                  strokeWidth={isActive ? 2 : 1.75}
+                  aria-hidden="true"
+                />
+                <span className="bottom-nav-label">IA</span>
+              </>
+            )}
+          </NavLink>
 
           <button
             type="button"
