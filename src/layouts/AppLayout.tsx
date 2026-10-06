@@ -46,13 +46,29 @@ export const AppLayout: React.FC = () => {
         <Sidebar />
 
         <div className="app-main">
-          <AppTopBar />
-
           <main
             id="main-content"
             className={`app-scroll ${isChatRoute ? 'app-scroll--locked' : ''}`}
             tabIndex={-1}
           >
+            {/* The topbar lives INSIDE the scroller, not beside it. As a flex
+                sibling it reserved ~52px permanently and could never leave —
+                a flex sibling does not scroll. As the scroller's first child it
+                rides the content and is gone once the user scrolls into the
+                numbers, which is where the space was needed. No scroll listener,
+                no JS state: the browser already knows the offset.
+
+                The brand lockup and the safe-area inset therefore scroll away
+                too. That is deliberate for a phone (the notch is only ever a
+                problem at the top of the document), and at >=768px the bar goes
+                sticky because the sidebar no longer carries the wordmark and
+                the global-search trigger has to stay reachable.
+
+                It is a <header> inside <main>, which is valid: only <main>
+                inside <header>/<nav>/<aside> is forbidden. The skip link still
+                lands on main, which now contains everything visible. */}
+            <AppTopBar />
+
             <div className={`page-width ${isChatRoute ? 'page-width--full' : ''}`}>
               {/* Routes are lazy; the fallback is the same skeleton the
                   pages use while IndexedDB answers. */}

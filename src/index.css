@@ -360,8 +360,11 @@ select[aria-invalid="true"]:focus-visible {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  /* The notch is cleared by .app-topbar, so the scroller needs no
-     top padding of its own. */
+  /* The topbar is a child of this scroller and leaves with the scroll, so it
+     can no longer clear the notch. This is what does. It has to be here rather
+     than on .app-topbar: padding that scrolls away stops protecting anything
+     once the content reaches the top of the viewport. */
+  padding-top: var(--sat);
   /* Stops the rubber-band from scrolling the shell behind us */
   overscroll-behavior: contain;
 }
@@ -380,9 +383,18 @@ select[aria-invalid="true"]:focus-visible {
    Routes that manage their own inner scroll (the AI chat)
    need the outer scroller out of the way and a full-height
    column. Applied per-route rather than app-wide so every
-   other page keeps the normal document-like behaviour. */
+   other page keeps the normal document-like behaviour.
+
+   display:flex + min-height:0 replaces the old height:100%
+   on .page-width--full. This container is no longer
+   exclusively the chat: the topbar is its first child, so a
+   height:100% child would measure the full scroller and
+   overflow by the bar's height — with overflow:hidden that
+   clips the composer's bottom rather than showing it. */
 .app-scroll--locked {
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Single definition of the content column width */
@@ -391,6 +403,7 @@ select[aria-invalid="true"]:focus-visible {
   max-width: 42rem;
   margin-inline: auto;
   padding-inline: var(--sp-4);
+  padding-top: var(--sp-4);
   display: flex;
   flex-direction: column;
   /* Clears the fixed bottom nav + safe area. Single source. */
@@ -405,17 +418,18 @@ select[aria-invalid="true"]:focus-visible {
   .page-width {
     max-width: 68rem;
     padding-inline: var(--sp-8);
-    padding-top: var(--sp-6);
+    padding-top: var(--sp-4);
     padding-bottom: var(--sp-8);
   }
 }
 
 /* Full-bleed column for routes that own their scroll (AI chat):
-   no side padding, no max width, fills the scroller's height so
-   its inner flex children can resolve against a definite size. */
+   no side padding, no max width, and it absorbs the leftover height
+   instead of claiming 100% of it — see .app-scroll--locked. */
 .page-width--full {
   max-width: none;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   padding-bottom: 0;
 }
 
@@ -561,18 +575,20 @@ select[aria-invalid="true"]:focus-visible {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  /* The notch is cleared here now, so .app-scroll no longer
-     needs its own padding-top on mobile. */
-  padding-top: var(--sat);
+  /* No safe-area padding here. The bar scrolls out of view, so its inset
+     padding scrolls away with it — the notch has to be cleared by whoever
+     stays, which is .app-scroll. */
   padding-left: max(var(--sp-4), var(--sal));
   padding-right: max(var(--sp-4), var(--sar));
   padding-bottom: var(--sp-3);
-  /* Flat, per Inter's flat-design rule. The earlier
-     `blur(20px) saturate(180%)` over a translucent base cost a
-     composited layer on every scroll and read as glassy rather
-     than solid. */
   background: var(--color-base);
-  border-bottom: 1px solid var(--color-edge);
+  /* Below the sidebar breakpoint this is an ordinary block child of the
+     scroller, so it scrolls away with everything else. At >=768px it sticks:
+     the sidebar no longer carries the wordmark and the search trigger has to
+     survive the scroll. The z-index is the sticky step of the scale, well
+     under the fixed bottom nav (40) and the modals (60). */
+  position: relative;
+  z-index: var(--z-sticky);
 }
 
 .app-topbar-lead {
@@ -674,12 +690,14 @@ select[aria-invalid="true"]:focus-visible {
 
 @media (min-width: 768px) {
   .app-topbar {
+    position: relative;
     padding-left: var(--sp-8);
     padding-right: var(--sp-8);
-    padding-bottom: var(--sp-3);
+    padding-bottom: var(--sp-2);
+    max-width: 68rem;
+    margin-inline: auto;
+    background: transparent;
   }
-  /* Below the sidebar breakpoint there is no room for both the
-     wordmark and a centred pill. */
   .app-topbar-search { max-width: 14rem; }
 }
 
@@ -864,9 +882,12 @@ select[aria-invalid="true"]:focus-visible {
   padding-bottom: max(12px, var(--sab));
   padding-left: var(--sal);
   padding-right: var(--sar);
-  background: color-mix(in srgb, var(--color-base) 94%, transparent);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  /* Solid, not glass. The previous
+     `color-mix(base 94%)` + `blur(24px) saturate(180%)` composited a
+     full-width layer on every scroll and read as a separate glass panel
+     sitting over the content — the opposite of "part of the system".
+     Opaque #050506 with a single hairline does the same job. */
+  background: var(--color-base);
   border-top: 1px solid var(--color-edge);
   /* Stops the tap highlight flashing white on iOS */
   -webkit-tap-highlight-color: transparent;
@@ -964,15 +985,16 @@ select[aria-invalid="true"]:focus-visible {
 }
 
 /* The net-worth panel. Not a variant of .card in paint — it is the
-   same surface on a page background that now sits only 1.10:1 away,
-   so it needs three extra cues to read as the primary object:
-   a wider radius, a larger inset highlight, and an indigo hairline.
-   The indigo is a 1px line at 22% alpha, so it tints the edge
-   without becoming a coloured surface or competing with the figure. */
+   same surface on a page background that sits only 1.10:1 away, so
+   it needs a wider radius and a stronger top highlight to read as the
+   primary object.
+
+   Deliberately NO border. The previous indigo hairline at 22% alpha
+   drew a rectangle around the figure and competed with it; the net
+   worth is now delimited by whitespace alone. */
 .card-hero {
   background-color: var(--color-surface);
   border-radius: var(--radius-2xl);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.06),
     0 12px 32px -12px rgb(0 0 0 / 0.5);

@@ -52,7 +52,11 @@ export const BottomNavigation: React.FC = () => {
                   <>
                     <Icon
                       size={20}
-                      strokeWidth={isActive ? 2.3 : 1.8}
+                      /* 1.75 idle / 2 active. Thinner than the previous
+                         1.8/2.3 pair: a 20px glyph at 2.3 reads heavy next
+                         to a 10px label, and the state is carried by colour
+                         plus label weight as well as by this stroke. */
+                      strokeWidth={isActive ? 2 : 1.75}
                       aria-hidden="true"
                     />
                     <span className="bottom-nav-label">{item.label}</span>
@@ -69,7 +73,7 @@ export const BottomNavigation: React.FC = () => {
             aria-haspopup="dialog"
             className="bottom-nav-item"
           >
-            <Menu size={20} strokeWidth={1.8} aria-hidden="true" />
+            <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
             <span className="bottom-nav-label">Mais</span>
           </button>
         </div>
