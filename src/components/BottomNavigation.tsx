@@ -21,7 +21,7 @@ export const BottomNavigation: React.FC = () => {
     <>
       <nav
         aria-label="Navegação principal"
-        className="bottom-nav md:hidden"
+        className="bottom-nav bottom-nav-premium md:hidden"
       >
         <div className="bottom-nav-inner bottom-nav-inner--five">
           {mainNav.map((item) => {
@@ -39,7 +39,7 @@ export const BottomNavigation: React.FC = () => {
                   <>
                     <Icon
                       size={20}
-                      strokeWidth={isActive ? 2 : 1.75}
+                      strokeWidth={1.75}
                       aria-hidden="true"
                     />
                     <span className="bottom-nav-label">{item.label}</span>
@@ -53,9 +53,9 @@ export const BottomNavigation: React.FC = () => {
             type="button"
             onClick={handleQuickAction}
             aria-label="Nova transação"
-            className="bottom-nav-fab"
+            className="bottom-nav-fab bottom-nav-fab-premium"
           >
-            <Plus size={26} strokeWidth={2.4} aria-hidden="true" />
+            <Plus size={26} strokeWidth={2.25} aria-hidden="true" />
           </button>
 
           <NavLink
@@ -68,7 +68,7 @@ export const BottomNavigation: React.FC = () => {
               <>
                 <Sparkles
                   size={20}
-                  strokeWidth={isActive ? 2 : 1.75}
+                  strokeWidth={1.75}
                   aria-hidden="true"
                 />
                 <span className="bottom-nav-label">IA</span>

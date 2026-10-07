@@ -1778,3 +1778,108 @@ nav a, nav button {
   outline: var(--focus-ring-width) solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* Premium bottom nav redesign */
+.bottom-nav-premium {
+  position: fixed;
+  bottom: max(10px, env(safe-area-inset-bottom, 10px) + 6px);
+  left: 12px;
+  right: 12px;
+  width: calc(100% - 24px);
+  height: 68px;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: #0B0B0D;
+  border: 1px solid #27272A;
+  border-radius: 9999px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+  z-index: var(--z-bottom-nav);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.bottom-nav-premium .bottom-nav-inner {
+  height: 100%;
+  padding-inline: 16px;
+}
+
+.bottom-nav-premium .bottom-nav-inner--five {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+  height: 100%;
+  padding-inline: 16px;
+  position: relative;
+  gap: 4px;
+}
+
+.bottom-nav-premium .bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 48px;
+  padding: 2px 4px;
+  color: #8B8B95;
+  transition: color 150ms ease, transform 150ms ease;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.bottom-nav-premium .bottom-nav-item:active {
+  transform: scale(0.95);
+}
+
+.bottom-nav-premium .bottom-nav-item-active {
+  color: #6C63FF;
+}
+
+.bottom-nav-premium .bottom-nav-label {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bottom-nav-premium .bottom-nav-item-active .bottom-nav-label {
+  font-weight: 600;
+  color: #6C63FF;
+}
+
+.bottom-nav-fab-premium {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: #6C63FF;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.25);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  min-height: 56px;
+  min-width: 56px;
+  z-index: calc(var(--z-bottom-nav) + 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-fab-premium:active {
+  transform: translateX(-50%) scale(0.95);
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.22);
+}
+
+.bottom-nav-fab-premium:focus-visible {
+  outline: 2px solid #AFA8FF;
+  outline-offset: 3px;
+}
