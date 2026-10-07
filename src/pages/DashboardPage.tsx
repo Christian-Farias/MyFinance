@@ -10,7 +10,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   ArrowLeftRight,
+  Bell,
   Plus,
+  AlertTriangle,
   Target,
 } from 'lucide-react';
 import {
@@ -27,6 +29,7 @@ import {
   calculateTotalExpenses,
   calculateCategoryBreakdown,
   calculateMonthlyComparison,
+  calculateBudgetUsage,
 } from '../calculations/financialCalculations';
 import { TransactionItem } from '../components/TransactionItem';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui';
@@ -39,7 +42,190 @@ function getGreeting(hour: number): string {
   return 'Boa noite';
 }
 
+/* ─── Sparkline mini chart ─── */
+const MiniSparkline: React.FC<{ data: { v: number }[]; color: string }> = ({ data, color }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 2 }}>
+      <defs>
+        <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor={color} stopOpacity={0.25} />
+          <stop offset="95%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <Area type="monotone" dataKey="v" stroke={color} strokeWidth={2} fillOpacity={1} fill="url(#sparkGrad)" dot={false} />
+    </AreaChart>
+  </ResponsiveContainer>
+);
 
+export const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { isLoading, loadFailed, retry } = usePageData();
+  const [now] = useState(() => new Date());
+  const {
+    accounts,
+    transactions,
+    categories,
+    cards,
+    investments,
+    budgets,
+    alerts,
+    settings,
+    selectedPeriod,
+    openNewTxModal,
+    openTxDetail,
+  } = useFinance();
+
+  /* ─── Core calculations ─── */
+  const netWorth = calculateNetWorth(accounts, investments, cards);
+  const accountsBalance = calculateTotalBalance(accounts);
+  const totalInvested = investments.reduce((s, i) => s + (i.currentValue ?? i.totalInvested), 0);
+  const totalCardsDebt = cards.reduce((s, c) => s + Math.max(0, c.limit - c.availableLimit), 0);
+  const monthIncome = calculateTotalIncome(transactions, selectedPeriod);
+  const monthExpenses = calculateTotalExpenses(transactions, selectedPeriod);
+
+  const comparison = useMemo(
+    () => calculateMonthlyComparison(transactions, categories, selectedPeriod),
+    [transactions, categories, selectedPeriod],
+  );
+
+  const categoryBreakdown = useMemo(
+    () => calculateCategoryBreakdown(transactions, categories, selectedPeriod),
+    [transactions, categories, selectedPeriod],
+  );
+
+  const budgetReports = useMemo(
+    () => calculateBudgetUsage(budgets, transactions, categories, selectedPeriod),
+    [budgets, transactions, categories, selectedPeriod],
+  );
+
+  /* ─── Sparkline data (6 months) ─── */
+  const sparklineData = useMemo(() => {
+    let baseYear = now.getFullYear();
+    let baseMonth = now.getMonth() + 1;
+    if (selectedPeriod?.includes('-')) {
+      const [y, m] = selectedPeriod.split('-');
+      baseYear = parseInt(y, 10);
+      baseMonth = parseInt(m, 10);
+    }
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(baseYear, baseMonth - 1 - (5 - i), 1);
+      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const inc = calculateTotalIncome(transactions, ym);
+      const exp = calculateTotalExpenses(transactions, ym);
+      return { v: Math.max(0, inc - exp + netWorth / 6) };
+    });
+  }, [transactions, selectedPeriod, netWorth, now]);
+
+  /* ─── Dynamic insight ─── */
+  const insight = useMemo(() => {
+    const pct = comparison.expenseVariationPercent;
+    if (categoryBreakdown.length === 0) {
+      return {
+        emoji: '👋',
+        headline: 'Bem-vindo ao seu assistente financeiro.',
+        sub: 'Adicione suas primeiras transações para começar a receber insights.',
+        type: 'neutral' as const,
+      };
+    }
+    if (pct < -5) {
+      return {
+        emoji: '🎉',
+        headline: `Você gastou ${Math.abs(pct).toFixed(0)}% menos este mês.`,
+        sub: `Seus gastos caíram principalmente em ${categoryBreakdown[0]?.categoryName?.toLowerCase() ?? 'despesas'}.`,
+        type: 'positive' as const,
+      };
+    }
+    if (pct > 10) {
+      return {
+        emoji: '⚠️',
+        headline: `Seus gastos aumentaram ${pct.toFixed(0)}% este mês.`,
+        sub: `O principal aumento foi em ${categoryBreakdown[0]?.categoryName?.toLowerCase() ?? 'despesas'}.`,
+        type: 'negative' as const,
+      };
+    }
+    const top = categoryBreakdown[0];
+    return {
+      emoji: '📊',
+      headline: `${top?.categoryName ?? 'Outros'} é sua maior despesa este mês.`,
+      sub: `Representa ${top?.percentage?.toFixed(0) ?? 0}% do total gasto — ${formatCurrency(top?.total ?? 0)}.`,
+      type: 'neutral' as const,
+    };
+  }, [comparison, categoryBreakdown]);
+
+  /* ─── Attention items (max 3) ─── */
+  const attentionItems = useMemo(() => {
+    const items: { icon: React.ElementType; iconColor: string; title: string; desc: string; href: string }[] = [];
+
+    /* Budget near limit */
+    const criticalBudget = budgetReports.find(r => r.percentage >= 85);
+    if (criticalBudget) {
+      items.push({
+        icon: AlertTriangle,
+        iconColor: 'var(--color-warning)',
+        title: 'Orçamento próximo do limite',
+        desc: `Você já usou ${criticalBudget.percentage.toFixed(0)}% do orçamento de ${criticalBudget.category?.name ?? 'uma categoria'}.`,
+        href: '/orcamentos',
+      });
+    }
+
+    /* Cards invoice due soon */
+    const cardsDueSoon = cards.find(c => {
+      if (!c.dueDay) return false;
+      const diff = c.dueDay - now.getDate();
+      return diff >= 0 && diff <= 5;
+    });
+    if (cardsDueSoon) {
+      const diff = (cardsDueSoon.dueDay ?? 0) - now.getDate();
+      items.push({
+        icon: CreditCard,
+        iconColor: 'var(--color-accent)',
+        title: 'Fatura próxima do vencimento',
+        desc: `Sua fatura do ${cardsDueSoon.name} vence em ${diff === 0 ? 'hoje' : `${diff} dia${diff > 1 ? 's' : ''}`}.`,
+        href: '/cartoes',
+      });
+    }
+
+    /* Unread alerts */
+    const unread = alerts.filter(a => !a.isRead);
+    if (unread.length > 0 && items.length < 3) {
+      items.push({
+        icon: Bell,
+        iconColor: 'var(--color-negative)',
+        title: unread[0].title,
+        desc: unread[0].message,
+        href: '/alertas',
+      });
+    }
+
+    /* Spending spike */
+    if (items.length < 3 && comparison.expenseVariationPercent > 15) {
+      const topCat = categoryBreakdown[0];
+      items.push({
+        icon: TrendingUp,
+        iconColor: 'var(--color-negative)',
+        title: 'Gasto incomum detectado',
+        desc: `Seus gastos com ${topCat?.categoryName?.toLowerCase() ?? 'despesas'} aumentaram ${comparison.expenseVariationPercent.toFixed(0)}% este mês.`,
+        href: '/gastos',
+      });
+    }
+
+    return items.slice(0, 3);
+  }, [budgetReports, cards, alerts, comparison, categoryBreakdown, now]);
+
+  /* ─── Recent transactions ─── */
+  const recent = transactions.slice(0, 5);
+  const insightBorderColor = insight.type === 'positive' ? 'var(--color-positive)' : insight.type === 'negative' ? 'var(--color-negative)' : 'var(--color-accent)';
+
+  if (loadFailed) {
+    return <ErrorState onRetry={retry} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState rows={5} />;
+  }
+
+  return (
+    <div className="page-content space-y-5 animate-fade-in px-0.5">
       {/* ── PATRIMÔNIO ──
           O objeto principal da tela. O valor é o único elemento em
           escala .num-hero e fica sozinho na primeira faixa; a
