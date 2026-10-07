@@ -4,15 +4,6 @@ import { Home, PieChart, Sparkles, Menu, Plus } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { MoreMenuModal } from './modals/MoreMenuModal';
 
-/**
- * Mobile navigation.
- *
- * Five positions: Início | Gastos | [ + ] | IA | Mais
- * - Início, Gastos, IA are NavLinks to existing routes
- * - Central + button is an action (not a route/tab), reuses the existing
- *   quick action flow from "Nova operação" in the Mais menu
- * - Mais opens the MoreMenuModal (same behavior as before)
- */
 export const BottomNavigation: React.FC = () => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const { setQuickActionOpen } = useFinance();
