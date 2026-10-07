@@ -233,7 +233,7 @@ export const DashboardPage: React.FC = () => {
           informação. As três métricas abaixo são filhas do
           patrimônio, então compartilham a mesma divisória. */}
       <div className="mt-6">
-        <p className="label-section mb-2">Seu patrimônio</p>
+        <p className="label-brand mb-2">Seu patrimônio</p>
 
         <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 mb-1">
           <div className="num-hero">{formatCurrency(netWorth)}</div>
@@ -251,7 +251,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Sub-row: contas / cartões / investimentos */}
-        <div className="grid grid-cols-3 gap-2 pt-5 border-t border-edge">
+        <div className="grid grid-cols-3 gap-2 pt-6">
           <button
             onClick={() => navigate('/contas')}
             className="flex flex-col items-start p-2.5 rounded-2xl hover:bg-surface-raised transition-colors group min-w-0"
@@ -296,7 +296,7 @@ export const DashboardPage: React.FC = () => {
           diferentes, então têm cards diferentes. Burying it below
           the transaction list made the month invisible on first
           scroll. */}
-      <div className="mt-6">
+      <div className="mt-5">
         <div className="flex items-center justify-between mb-4">
           <p className="label-section">Resumo do mês</p>
           <button
@@ -347,23 +347,23 @@ export const DashboardPage: React.FC = () => {
       <button
         type="button"
         onClick={() => navigate('/gastos')}
-        className="w-full text-left rounded-2xl p-5 bg-accent-subtle border border-accent/25 card-hover mt-6"
+        className="w-full text-left rounded-2xl p-5 bg-accent-subtle border border-accent/25 card-hover mt-5"
         style={{ borderColor: `color-mix(in srgb, ${insightBorderColor} 28%, transparent)`, backgroundColor: `color-mix(in srgb, ${insightBorderColor} 8%, var(--color-accent-subtle))` }}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1 pr-3">
-            <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center justify-between gap-3 mb-2.5">
               <span className="label-section">Insight do mês</span>
               <Sparkles size={14} className="shrink-0" style={{ color: insightBorderColor }} aria-hidden="true" />
             </div>
-            <p className="text-[15px] font-semibold text-ink leading-snug mb-1.5">
+            <p className="text-[15px] font-semibold text-ink leading-snug mb-1">
               {insight.emoji} {insight.headline}
             </p>
             <p className="text-sm text-ink-muted leading-relaxed">{insight.sub}</p>
           </div>
           <ChevronRight size={16} className="text-ink-faint shrink-0 mt-0.5" aria-hidden="true" />
         </div>
-        <span className="mt-4 inline-block text-xs font-semibold text-accent-text">
+        <span className="mt-3.5 inline-block text-xs font-semibold text-accent-text">
           Ver análise →
         </span>
       </button>
@@ -379,7 +379,7 @@ export const DashboardPage: React.FC = () => {
                 <button
                   key={i}
                   onClick={() => navigate(item.href)}
-                  className="animate-fade-in w-full card p-4 card-hover flex items-start space-x-3.5 text-left"
+                  className="animate-fade-in w-full card p-4 card-hover flex items-start space-x-3 text-left"
                 >
                   <div
                     className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
@@ -409,9 +409,9 @@ export const DashboardPage: React.FC = () => {
           sobre a superfície neutra, o que mantém a distinção
           Despesa/Receita/Transferir/Gastos com muito menos peso.
           O alvo de toque continua acima de 44px. */}
-      <div className="pt-5 mt-6">
-        <p className="label-section mb-3">Ações rápidas</p>
-        <div className="grid grid-cols-4 gap-1">
+      <div className="mt-5">
+        <p className="label-section mb-3.5">Ações rápidas</p>
+        <div className="grid grid-cols-4 gap-2">
           {[
             { label: 'Despesa',  icon: ArrowDownLeft,  color: 'var(--color-negative)', action: () => openNewTxModal('expense') },
             { label: 'Receita',  icon: ArrowUpRight,   color: 'var(--color-positive)', action: () => openNewTxModal('income') },
@@ -436,7 +436,7 @@ export const DashboardPage: React.FC = () => {
 
       {/* ── MOVIMENTAÇÕES RECENTES ── */}
       <div>
-        <div className="flex items-center justify-between mb-3 px-0.5">
+        <div className="flex items-center justify-between mb-3">
           <p className="label-section">Movimentações recentes</p>
           <button
             onClick={() => navigate('/transacoes')}
