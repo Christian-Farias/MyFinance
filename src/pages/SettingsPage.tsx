@@ -118,8 +118,8 @@ export const SettingsPage: React.FC = () => {
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2">
-            <h3 className="text-base font-bold text-ink tracking-tight">MyFinance</h3>
-            <span className="pill pill-accent text-[11px]">PWA v2.0</span>
+            <h3 className="text-base font-semibold text-ink tracking-tight">MyFinance</h3>
+            <span className="pill pill-neutral text-[11px]">PWA v2.0</span>
           </div>
           <p className="text-xs text-ink-muted mt-0.5">Gestão financeira pessoal moderna e offline-first.</p>
         </div>

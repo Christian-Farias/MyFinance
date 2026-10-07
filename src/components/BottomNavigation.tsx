@@ -39,7 +39,7 @@ export const BottomNavigation: React.FC = () => {
                   <>
                     <Icon
                       size={20}
-                      strokeWidth={1.75}
+                      strokeWidth={2}
                       aria-hidden="true"
                     />
                     <span className="bottom-nav-label">{item.label}</span>
@@ -55,7 +55,7 @@ export const BottomNavigation: React.FC = () => {
             aria-label="Nova transação"
             className="bottom-nav-fab bottom-nav-fab-premium"
           >
-            <Plus size={26} strokeWidth={2.25} aria-hidden="true" />
+            <Plus size={26} strokeWidth={2.5} aria-hidden="true" />
           </button>
 
           <NavLink
@@ -68,7 +68,7 @@ export const BottomNavigation: React.FC = () => {
               <>
                 <Sparkles
                   size={20}
-                  strokeWidth={1.75}
+                  strokeWidth={2}
                   aria-hidden="true"
                 />
                 <span className="bottom-nav-label">IA</span>
@@ -83,7 +83,7 @@ export const BottomNavigation: React.FC = () => {
             aria-haspopup="dialog"
             className="bottom-nav-item"
           >
-            <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
+            <Menu size={20} strokeWidth={2} aria-hidden="true" />
             <span className="bottom-nav-label">Mais</span>
           </button>
         </div>

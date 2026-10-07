@@ -42,14 +42,14 @@ export const AccountsPage: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => openNewTxModal('transfer')}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-surface border border-edge text-ink-muted text-xs font-semibold hover:text-ink hover:border-edge-strong transition-colors"
+            className="btn btn-secondary btn-sm"
           >
             <ArrowLeftRight size={14} />
             <span>Transferir</span>
           </button>
           <button
             onClick={() => { setAccountToEdit(undefined); setIsAccountModalOpen(true); }}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
+            className="btn btn-primary btn-sm"
           >
             <Plus size={15} strokeWidth={2.5} />
             <span>Nova conta</span>

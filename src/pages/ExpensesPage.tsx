@@ -60,7 +60,7 @@ const CategoryDetailDrawer: React.FC<{
 
         <p className="label-section mb-3">Transações do mês</p>
         {catTxs.length === 0 ? (
-          <p className="text-xs text-ink-faint py-4 text-center">Nenhuma transação encontrada.</p>
+          <p className="text-sm text-ink-faint py-6 text-center">Nenhuma transação encontrada.</p>
         ) : (
           <div className="space-y-0 max-h-72 overflow-y-auto">
             {catTxs.map(tx => (
@@ -170,7 +170,7 @@ export const ExpensesPage: React.FC = () => {
       {/* ── PARA ONDE SEU DINHEIRO VAI ── */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="label-section">Para onde vai seu dinheiro</p>
+          <p className="label-section">Categorias</p>
           <button
             onClick={() => navigate('/comparacao')}
             className="flex items-center space-x-1 text-xs text-accent-text hover:underline"
@@ -195,7 +195,7 @@ export const ExpensesPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2.5">
                     <span className="text-sm">{cat.categoryIcon || '📦'}</span>
-                    <span className="text-xs font-semibold text-ink group-hover:text-accent-text transition-colors">
+                    <span className="text-sm font-medium text-ink group-hover:text-accent-text transition-colors">
                       {cat.categoryName}
                     </span>
                   </div>

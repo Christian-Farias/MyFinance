@@ -68,7 +68,7 @@ export const TransactionsPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-ink tracking-tight">Transações</h1>
         <button
           onClick={() => openNewTxModal('expense')}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent-text text-xs font-semibold hover:bg-accent/15 transition-colors"
+          className="btn btn-primary btn-sm"
         >
           <Plus size={15} strokeWidth={2.5} />
           <span>Nova</span>
@@ -85,13 +85,13 @@ export const TransactionsPage: React.FC = () => {
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`py-2 text-xs font-semibold rounded-xl transition-all ${
+              className={`py-2 text-xs font-semibold rounded-xl transition-colors ${
               activeTab === key
                 ? key === 'income'
-                  ? 'bg-positive/15 text-positive shadow-sm'
+                  ? 'bg-positive-subtle text-positive'
                   : key === 'expense'
-                    ? 'bg-negative/15 text-negative shadow-sm'
-                    : 'bg-surface-raised text-ink shadow-sm'
+                    ? 'bg-negative-subtle text-negative'
+                    : 'bg-surface-raised text-ink'
                 : 'text-ink-muted hover:text-ink'
             }`}
           >

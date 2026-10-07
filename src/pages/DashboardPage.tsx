@@ -233,7 +233,7 @@ export const DashboardPage: React.FC = () => {
           informação. As três métricas abaixo são filhas do
           patrimônio, então compartilham a mesma divisória. */}
       <div className="mt-6">
-        <p className="label-section mb-2">SEU PATRIMÔNIO</p>
+        <p className="label-section mb-2">Seu patrimônio</p>
 
         <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 mb-1">
           <div className="num-hero">{formatCurrency(netWorth)}</div>
@@ -246,7 +246,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Mini sparkline */}
-        <div className="h-8 w-full mt-3 mb-5 opacity-40" aria-hidden="true">
+          <div className="h-8 w-full mt-3 mb-5 opacity-70" aria-hidden="true">
           <MiniSparkline data={sparklineData} color="var(--color-accent)" />
         </div>
 
@@ -296,9 +296,9 @@ export const DashboardPage: React.FC = () => {
           diferentes, então têm cards diferentes. Burying it below
           the transaction list made the month invisible on first
           scroll. */}
-      <div className="border-t border-edge pt-6 mt-10">
+      <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
-          <p className="label-section">RESUMO DO MÊS</p>
+          <p className="label-section">Resumo do mês</p>
           <button
             type="button"
             onClick={() => navigate('/gastos')}
@@ -347,12 +347,13 @@ export const DashboardPage: React.FC = () => {
       <button
         type="button"
         onClick={() => navigate('/gastos')}
-        className="w-full text-left rounded-2xl p-5 bg-surface border border-edge card-hover mt-8"
+        className="w-full text-left rounded-2xl p-5 bg-accent-subtle border border-accent/25 card-hover mt-6"
+        style={{ borderColor: `color-mix(in srgb, ${insightBorderColor} 28%, transparent)`, backgroundColor: `color-mix(in srgb, ${insightBorderColor} 8%, var(--color-accent-subtle))` }}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1 pr-3">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <span className="label-section">INSIGHT DO MÊS</span>
+              <span className="label-section">Insight do mês</span>
               <Sparkles size={14} className="shrink-0" style={{ color: insightBorderColor }} aria-hidden="true" />
             </div>
             <p className="text-[15px] font-semibold text-ink leading-snug mb-1.5">
@@ -408,8 +409,8 @@ export const DashboardPage: React.FC = () => {
           sobre a superfície neutra, o que mantém a distinção
           Despesa/Receita/Transferir/Gastos com muito menos peso.
           O alvo de toque continua acima de 44px. */}
-      <div className="border-t border-edge pt-6 mt-10">
-        <p className="label-section mb-4">AÇÕES RÁPIDAS</p>
+      <div className="pt-5 mt-6">
+        <p className="label-section mb-3">Ações rápidas</p>
         <div className="grid grid-cols-4 gap-1">
           {[
             { label: 'Despesa',  icon: ArrowDownLeft,  color: 'var(--color-negative)', action: () => openNewTxModal('expense') },

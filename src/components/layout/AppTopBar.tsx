@@ -50,7 +50,7 @@ export const AppTopBar: React.FC = () => {
         {/* The wordmark carries the brand weight; the mark beside it is
             supporting. Trimming the gap to 6px keeps the pair reading as
             one lockup instead of two separate objects. */}
-        <span className="text-ink text-[15px] font-semibold tracking-tight truncate -ml-0.5">
+        <span className="text-ink text-[15px] font-medium tracking-tight truncate -ml-0.5">
           MyFinance
         </span>
       </div>

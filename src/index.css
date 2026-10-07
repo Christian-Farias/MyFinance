@@ -1293,8 +1293,8 @@ select[aria-invalid="true"]:focus-visible {
 
 .segmented-item-active,
 .segmented-item-active:active {
-  background: var(--color-accent-subtle);
-  color: #A99EFF;
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
 }
 
 /* ── TYPOGRAPHY SCALE ────────────────────────────────── */
@@ -1856,7 +1856,7 @@ nav a, nav button {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: -12px;
+  top: -10px;
   width: 56px;
   height: 56px;
   border-radius: 9999px;
@@ -1866,7 +1866,7 @@ nav a, nav button {
   align-items: center;
   justify-content: center;
   border: none;
-  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.25);
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.18), 0 2px 6px rgba(0, 0, 0, 0.5);
   transition: transform 150ms ease, box-shadow 150ms ease;
   min-height: 56px;
   min-width: 56px;
@@ -1876,7 +1876,7 @@ nav a, nav button {
 
 .bottom-nav-fab-premium:active {
   transform: translateX(-50%) scale(0.95);
-  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.22);
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.16), 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .bottom-nav-fab-premium:focus-visible {
